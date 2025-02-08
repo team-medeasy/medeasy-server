@@ -1,4 +1,4 @@
-package com.medeasy.medicine.db;
+package com.medeasy.domain.medicine.db;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,19 +19,19 @@ public class MedicineEntity {
     private Long id;
 
     @Column(name = "item_code", nullable = true)
-    private Long item_code;
+    private Long itemCode;
 
     @Column(name = "entp_name", nullable = false, length = 100)
-    private String entp_name;
+    private String entpName;
 
-    @Column(name = "entp_name", nullable = false, length = 100)
-    private String item_name;
+    @Column(name = "item_name", nullable = false, length = 100)
+    private String itemName;
 
     @Column(name = "efficacy", columnDefinition = "TEXT")
     private String efficacy;
 
     @Column(name = "use_method", columnDefinition = "TEXT")
-    private String use_method;
+    private String useMethod;
 
     @Column(name = "attention", columnDefinition = "TEXT")
     private String attention;
