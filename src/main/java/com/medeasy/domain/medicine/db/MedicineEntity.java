@@ -18,8 +18,8 @@ public class MedicineEntity {
     @Column(name = "id", nullable = false, updatable = false)
     private Long id;
 
-    @Column(name = "item_code", nullable = true)
-    private Long itemCode;
+    @Column(name = "item_code", nullable = true, length = 50)
+    private String itemCode;
 
     @Column(name = "entp_name", nullable = false, length = 100)
     private String entpName;
@@ -53,4 +53,7 @@ public class MedicineEntity {
 
     @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl; // 이미지 URL
+
+    @Column(name = "bizrno", nullable = true, length = 50)
+    private String bizrno;
 }
