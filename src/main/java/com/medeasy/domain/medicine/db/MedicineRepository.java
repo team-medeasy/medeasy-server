@@ -1,4 +1,4 @@
-package com.medeasy.medicine.db;
+package com.medeasy.domain.medicine.db;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
