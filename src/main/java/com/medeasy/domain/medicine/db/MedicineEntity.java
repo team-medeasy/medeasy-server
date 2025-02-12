@@ -12,13 +12,19 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(
+        name = "medicine_seq_generator",
+        sequenceName = "public.medicine_id_seq",
+        allocationSize = 50,
+        initialValue = 2350
+)
 public class MedicineEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "medicine_seq_generator")
     @Column(name = "id", nullable = false, updatable = false)
     private Long id;
 
-    @Column(name = "item_code", nullable = true, length = 50)
+    @Column(name = "item_code", nullable = true, length = 50, columnDefinition = "varchar")
     private String itemCode;
 
     @Column(name = "entp_name", nullable = false, length = 100)
