@@ -13,6 +13,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ES_HOST: ${{secrets.ES_HOST}}
+      ES_PORT: ${{secrets.ES_PORT}}
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
