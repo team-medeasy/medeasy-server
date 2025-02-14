@@ -51,7 +51,7 @@ jobs:
           REPOSITORY: medeasy
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build --platform linux/amd64 -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ./Dockerfile
+          docker build --platform linux/amd64 -t $REGISTRY/$REPOSITORY:$IMAGE_TAG:latest -f ./Dockerfile .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG:latest
 
       - name: deploy to Server
