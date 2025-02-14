@@ -2,6 +2,8 @@ package com.medeasy.domain.medicine.controller;
 
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.medicine.business.MedicineBusiness;
+import com.medeasy.domain.medicine.db.MedicineDocument;
+import com.medeasy.domain.medicine.db.MedicineSearchRepository;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import jakarta.validation.Valid;
@@ -19,6 +21,7 @@ import java.util.List;
 public class MedicineController {
 
     private final MedicineBusiness medicineBusiness;
+    private final MedicineSearchRepository medicineSearchRepository;
 
     @GetMapping("")
     public Api<Page<MedicineResponse>> getMedicine(Pageable pageable) {
@@ -38,5 +41,11 @@ public class MedicineController {
         return ResponseEntity.ok()
                 .body("save successful")
                 .toString();
+    }
+
+    // 약 검색 API
+    @GetMapping("/search")
+    public List<MedicineDocument> searchMedicines(@RequestParam String medicineName) {
+        return medicineSearchRepository.findByItemNameContaining(medicineName);
     }
 }
