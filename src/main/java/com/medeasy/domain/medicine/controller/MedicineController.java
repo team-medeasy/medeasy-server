@@ -6,6 +6,7 @@ import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.db.MedicineSearchRepository;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +22,6 @@ import java.util.List;
 public class MedicineController {
 
     private final MedicineBusiness medicineBusiness;
-    private final MedicineSearchRepository medicineSearchRepository;
 
     @GetMapping("")
     public Api<Page<MedicineResponse>> getMedicine(Pageable pageable) {
@@ -32,6 +32,7 @@ public class MedicineController {
 
     // 개발 중 약 데이터 저장시 사용
     @PostMapping("/upload")
+    @Operation(summary = "약 json 리스트 저장", description = "개발 중 약 데이터 저장용 API")
     public String saveMedicines(
             @Valid
             @RequestBody List<MedicineRequest> requests
@@ -45,7 +46,10 @@ public class MedicineController {
 
     // 약 검색 API
     @GetMapping("/search")
-    public List<MedicineDocument> searchMedicines(@RequestParam String medicineName) {
-        return medicineSearchRepository.findByItemNameContaining(medicineName);
+    @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
+    public Api<List<MedicineResponse>> searchMedicines(@RequestParam String medicineName) {
+        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName);
+
+        return Api.OK(medicineResponses);
     }
 }

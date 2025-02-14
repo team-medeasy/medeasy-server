@@ -1,5 +1,7 @@
 package com.medeasy.domain.medicine.service;
 
+import com.medeasy.common.error.MedicineErrorCode;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.db.MedicineEntity;
 import com.medeasy.domain.medicine.db.MedicineRepository;
@@ -12,7 +14,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MedicineSearchService {
+public class MedicineDocumentService {
 
     private final MedicineSearchRepository medicineSearchRepository;
     private final MedicineRepository medicineRepository; // 기존 JPA Repository
@@ -45,5 +47,14 @@ public class MedicineSearchService {
                 ).toList();
 
         medicineSearchRepository.saveAll(medicineDocuments);
+    }
+
+    public List<MedicineDocument> searchMedicineContainingName(String medicineName) {
+        List<MedicineDocument> medicineDocuments=medicineSearchRepository.findByItemNameContaining(medicineName);
+        medicineDocuments.stream()
+                .findAny()
+                .orElseThrow(()-> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE))
+                ;
+        return medicineDocuments;
     }
 }

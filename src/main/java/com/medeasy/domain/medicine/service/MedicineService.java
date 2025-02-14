@@ -6,6 +6,7 @@ import com.medeasy.domain.medicine.db.MedicineEntity;
 import com.medeasy.domain.medicine.db.MedicineRepository;
 import com.medeasy.domain.medicine.db.MedicineSearchRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MedicineService {
@@ -37,6 +39,7 @@ public class MedicineService {
         MedicineDocument medicineDocument=medicineConverter.toDocument(medicineEntity);
         medicineSearchRepository.save(medicineDocument);
 
+        log.info("Saved medicine with id: {}", medicineEntity.getId());
         return savedMedicineEntity;
     }
 
@@ -59,6 +62,7 @@ public class MedicineService {
         MedicineDocument medicineDocument = medicineConverter.toDocument(savedMedicine);
 
         medicineSearchRepository.save(medicineDocument);
+        log.info("Updated medicine with id: {}", id);
 
         return savedMedicine;
     }
@@ -72,6 +76,7 @@ public class MedicineService {
 
         // Elasticsearch에서도 삭제
         medicineSearchRepository.deleteById(medicine.getId().toString());
+        log.info("Deleted medicine with id: {}", id);
     }
 
     // TODO 저장시 동기화 조건 체크, 약 중복 발생시 처리 체크
@@ -95,11 +100,13 @@ public class MedicineService {
 
                     // 업데이트 저장
                     medicineRepository.save(existingEntity);
-                    System.out.println("Duplicate item_code (" + entity.getItemCode() + ") detected. Updating existing record.");
+                    log.info("Duplicate item_code ({}) detected.", entity.getItemCode());
                 } else {
-                    System.out.println("Duplicate item_code (" + entity.getItemCode() + ") detected, but existing record not found.");
+                    log.info("Duplicate item_code ({}) detected, but existing record not found.", entity.getItemCode());
                 }
             }
         }
     }
+
+
 }
