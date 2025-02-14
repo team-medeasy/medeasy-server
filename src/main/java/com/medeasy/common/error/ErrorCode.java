@@ -20,7 +20,7 @@ public enum ErrorCode implements ErrorCodeIfs{
 
     private final Integer httpStatusCode;
 
-    private final Integer errorCode; //내부 코드
+    private final Integer errorCode; // 커스텀 코드
 
     private final String description;
 }

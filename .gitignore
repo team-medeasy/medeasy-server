@@ -1,3 +1,4 @@
+logs
 docker-compose.yaml
 medicine_itemseq_record.txt
 deploy.sh

@@ -1,6 +1,7 @@
 package com.medeasy.domain.medicine.converter;
 
 import com.medeasy.common.annotation.Converter;
+import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.db.MedicineEntity;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
@@ -15,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 @Builder
 public class MedicineConverter {
 
-    public MedicineResponse toResponse(MedicineEntity entity) {
+    public MedicineResponse toResponseWithEntity(MedicineEntity entity) {
 
         return MedicineResponse.builder()
                 .id(entity.getId())
@@ -36,8 +37,29 @@ public class MedicineConverter {
                 ;
     }
 
+    public MedicineResponse toResponseWithDocument(MedicineDocument document) {
+
+        return MedicineResponse.builder()
+                .id(Long.parseLong(document.getId()))
+                .itemCode(document.getItemCode())
+                .entpName(document.getEntpName())
+                .itemName(document.getItemName())
+                .efficacy(document.getEfficacy())
+                .useMethod(document.getUseMethod())
+                .attention(document.getAttention())
+                .interaction(document.getInteraction())
+                .sideEffect(document.getSideEffect())
+                .depositMethod(document.getDepositMethod())
+                .openAt(document.getOpenAt())
+                .updateAt(document.getUpdateAt())
+                .imageUrl(document.getImageUrl())
+                .bizrno(document.getBizrno())
+                .build()
+                ;
+    }
+
     public Page<MedicineResponse> toResponse(Page<MedicineEntity> medicineEntities) {
-        return medicineEntities.map(this::toResponse);
+        return medicineEntities.map(this::toResponseWithEntity);
     }
 
     public MedicineEntity toEntity(MedicineRequest request){
@@ -61,6 +83,21 @@ public class MedicineConverter {
                 .updateAt(parseUpdateDate(request.getUpdateDe()))
                 .imageUrl(request.getItemImage())
                 .bizrno(request.getBizrno())
+                .build();
+    }
+
+    public MedicineDocument toDocument(MedicineEntity entity) {
+        return MedicineDocument.builder()
+                .id(entity.getId().toString())
+                .itemCode(entity.getItemCode())
+                .entpName(entity.getEntpName())
+                .itemName(entity.getItemName())
+                .efficacy(entity.getEfficacy())
+                .useMethod(entity.getUseMethod())
+                .attention(entity.getAttention())
+                .interaction(entity.getInteraction())
+                .sideEffect(entity.getSideEffect())
+                .depositMethod(entity.getDepositMethod())
                 .build();
     }
 
