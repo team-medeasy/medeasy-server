@@ -1,8 +1,5 @@
 package com.medeasy.domain.medicine.db;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,10 +47,10 @@ public class MedicineDocument {
     @Field(type = FieldType.Text)
     private String depositMethod; // 보관법
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Date)
     private LocalDate openAt; // 공개일자
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Date)
     private LocalDate updateAt; // 수정일자
 
     @Field(type = FieldType.Text)

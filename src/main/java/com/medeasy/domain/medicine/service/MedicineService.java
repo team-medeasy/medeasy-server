@@ -74,6 +74,7 @@ public class MedicineService {
         medicineSearchRepository.deleteById(medicine.getId().toString());
     }
 
+    // TODO 저장시 동기화 조건 체크, 약 중복 발생시 처리 체크
     public void saveAllWithDuplicate(List<MedicineEntity> entities) {
         for (MedicineEntity entity : entities) {
             try {

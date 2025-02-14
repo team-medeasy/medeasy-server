@@ -17,6 +17,7 @@ public class MedicineSearchService {
     private final MedicineSearchRepository medicineSearchRepository;
     private final MedicineRepository medicineRepository; // 기존 JPA Repository
 
+    // 애플리케이션 실행시 elasticsearch repository, repo 동기화 작업
     @PostConstruct
     public void init() {
         indexAllMedicines();
@@ -36,6 +37,10 @@ public class MedicineSearchService {
                         .interaction(m.getInteraction())
                         .sideEffect(m.getSideEffect())
                         .depositMethod(m.getDepositMethod())
+                        .openAt(m.getOpenAt())
+                        .updateAt(m.getUpdateAt())
+                        .imageUrl(m.getImageUrl())
+                        .bizrno(m.getBizrno())
                         .build()
                 ).toList();
 
