@@ -1,6 +1,7 @@
 package com.medeasy.domain.medicine.converter;
 
 import com.medeasy.common.annotation.Converter;
+import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.db.MedicineEntity;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
@@ -61,6 +62,21 @@ public class MedicineConverter {
                 .updateAt(parseUpdateDate(request.getUpdateDe()))
                 .imageUrl(request.getItemImage())
                 .bizrno(request.getBizrno())
+                .build();
+    }
+
+    public MedicineDocument toDocument(MedicineEntity entity) {
+        return MedicineDocument.builder()
+                .id(entity.getId().toString())
+                .itemCode(entity.getItemCode())
+                .entpName(entity.getEntpName())
+                .itemName(entity.getItemName())
+                .efficacy(entity.getEfficacy())
+                .useMethod(entity.getUseMethod())
+                .attention(entity.getAttention())
+                .interaction(entity.getInteraction())
+                .sideEffect(entity.getSideEffect())
+                .depositMethod(entity.getDepositMethod())
                 .build();
     }
 
