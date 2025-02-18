@@ -22,7 +22,7 @@ public class MedicineDocumentService {
     // 애플리케이션 실행시 elasticsearch repository, repo 동기화 작업
     @PostConstruct
     public void init() {
-        indexAllMedicines();
+        //indexAllMedicines();
     }
 
     public void indexAllMedicines() {
