@@ -1,33 +1,33 @@
 package com.medeasy.domain.user.controller;
 
 import com.medeasy.common.api.Api;
+import com.medeasy.domain.user.business.AuthBusiness;
 import com.medeasy.domain.user.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
 import com.medeasy.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/open-api/user")
+@RequestMapping("/open-api/auth")
 @RequiredArgsConstructor
-public class UserController {
+@Slf4j
+public class AuthController {
 
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
-    private final UserService userService;
+    private final AuthBusiness authBusiness;
 
-    @PostMapping("/register")
+    @PostMapping("/sign_up")
     public Api<UserResponse> register(
             @Valid
             @RequestBody(required = true) UserRegisterRequest userRegisterRequest
             ){
-        UserResponse userResponse=userService.registerUser(userRegisterRequest);
-        log.info(userResponse.getEmail());
+        UserResponse userResponse=authBusiness.registerUser(userRegisterRequest);
+        log.info("{}가입 완료", userResponse.getEmail());
         return Api.OK(userResponse);
     }
 

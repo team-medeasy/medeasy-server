@@ -19,3 +19,11 @@ spring:
 springdoc:
   swagger-ui:
     path: /api/swagger
+
+token:
+  secret:
+    key: ${TOKEN_SECRET_KEY}
+  access-token:
+    plus-hour: ${ACCESS_TOKEN_HOUR}
+  refresh-token:
+    plus-hour: ${REFRESH_TOKEN_HOUR}
