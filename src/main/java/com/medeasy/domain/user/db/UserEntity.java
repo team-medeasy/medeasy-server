@@ -3,7 +3,6 @@ package com.medeasy.domain.user.db;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Type;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,6 +51,7 @@ public class UserEntity {
     private UserEntity nok;
 
     // 반대쪽 관계 (필요한 경우)
+    @Builder.Default
     @OneToMany(mappedBy = "nok")
     private List<UserEntity> subUsers = new ArrayList<>();
 }

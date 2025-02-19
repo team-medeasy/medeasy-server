@@ -22,8 +22,8 @@ springdoc:
 
 token:
   secret:
-    key: ${TOKEN_SECRET_KEY}
+    key: ${TOKEN_SECRET_KEY:default}
   access-token:
-    plus-hour: ${ACCESS_TOKEN_HOUR}
+    plus-hour: ${ACCESS_TOKEN_HOUR:2}
   refresh-token:
-    plus-hour: ${REFRESH_TOKEN_HOUR}
+    plus-hour: ${REFRESH_TOKEN_HOUR:24}
