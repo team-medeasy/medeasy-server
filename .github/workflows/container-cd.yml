@@ -16,6 +16,10 @@ jobs:
     env:
       ES_HOST: ${{secrets.ES_HOST}}
       ES_PORT: ${{secrets.ES_PORT}}
+      TOKEN_SECRET_KEY: ${{secrets.TOKEN_SECRET_KEY}}
+      ACCESS_TOKEN_HOUR: ${{secrets.ACCESS_TOKEN_HOUR}}
+      REFRESH_TOKEN_HOUR: ${{secrets.REFRESH_TOKEN_HOUR}}
+
 
     steps:
       - name: Checkout Source Code
