@@ -47,7 +47,7 @@ public class MedicineController {
     // 약 검색 API
     @GetMapping("/search")
     @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
-    public Api<List<MedicineResponse>> searchMedicines(@RequestParam String medicineName) {
+    public Api<List<MedicineResponse>> searchMedicines(@RequestParam("medicine_name") String medicineName) {
         List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName);
 
         return Api.OK(medicineResponses);
