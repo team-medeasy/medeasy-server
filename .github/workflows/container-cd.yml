@@ -1,6 +1,6 @@
 name: medeasy-container-cd
 on:
-  pull_request:
+  push:
     branches:
       - prod
 
