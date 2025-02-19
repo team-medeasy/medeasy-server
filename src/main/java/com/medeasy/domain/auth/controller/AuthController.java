@@ -1,10 +1,12 @@
-package com.medeasy.domain.user.controller;
+package com.medeasy.domain.auth.controller;
 
 import com.medeasy.common.api.Api;
-import com.medeasy.domain.user.business.AuthBusiness;
+import com.medeasy.domain.auth.business.AuthBusiness;
+import com.medeasy.domain.auth.dto.LoginRequest;
+import com.medeasy.domain.auth.dto.TokenDto;
+import com.medeasy.domain.user.dto.UserDto;
 import com.medeasy.domain.user.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
-import com.medeasy.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,4 +33,15 @@ public class AuthController {
         return Api.OK(userResponse);
     }
 
+    // 로그인 API
+    @PostMapping("/login")
+    public Api<TokenDto> login(
+            @Valid
+            @RequestBody LoginRequest request
+    ) {
+        UserDto user=authBusiness.validateUser(request);
+        TokenDto tokenDto=authBusiness.issueToken(user);
+
+        return Api.OK(tokenDto);
+    }
 }
