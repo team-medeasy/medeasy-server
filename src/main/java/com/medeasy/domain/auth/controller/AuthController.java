@@ -3,17 +3,17 @@ package com.medeasy.domain.auth.controller;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.auth.business.AuthBusiness;
 import com.medeasy.domain.auth.dto.LoginRequest;
+import com.medeasy.domain.auth.dto.RefreshRequest;
 import com.medeasy.domain.auth.dto.TokenDto;
+import com.medeasy.domain.auth.dto.TokenResponse;
 import com.medeasy.domain.user.dto.UserDto;
 import com.medeasy.domain.user.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/open-api/auth")
@@ -35,13 +35,25 @@ public class AuthController {
 
     // 로그인 API
     @PostMapping("/login")
-    public Api<TokenDto> login(
+    public Api<TokenResponse> login(
             @Valid
             @RequestBody LoginRequest request
     ) {
         UserDto user=authBusiness.validateUser(request);
-        TokenDto tokenDto=authBusiness.issueToken(user);
+        TokenResponse tokenResponse=authBusiness.issueToken(user);
 
-        return Api.OK(tokenDto);
+        return Api.OK(tokenResponse);
+    }
+
+    // 토큰 재발급
+    @PostMapping("/refresh")
+    public Api<TokenResponse> refresh(
+            @Valid
+            @RequestBody RefreshRequest request
+    ) {
+//        String refreshToken=request.getHeader("X-Refresh-Token");
+        TokenResponse tokenResponse=authBusiness.recreateAccessToken(request.getRefreshToken());
+
+        return Api.OK(tokenResponse);
     }
 }

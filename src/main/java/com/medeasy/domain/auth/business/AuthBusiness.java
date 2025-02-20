@@ -6,6 +6,7 @@ import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.dto.LoginRequest;
 import com.medeasy.domain.auth.dto.TokenDto;
+import com.medeasy.domain.auth.dto.TokenResponse;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.dto.UserDto;
@@ -44,13 +45,29 @@ public class AuthBusiness {
         return userConverter.toDto(user);
     }
 
-    public TokenDto issueToken(UserDto userDto) {
-        // JWT 클레임에 필요한 정보 추가
+    // 토큰 발급
+    public TokenResponse issueToken(UserDto userDto) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userDto.getId());
 
-        TokenDto tokenDto = jwtTokenHelper.issueAcessToken(claims);
+        TokenDto acessToken = jwtTokenHelper.issueAcessToken(claims);
+        TokenDto refreshToken = jwtTokenHelper.issueRefreshToken(claims);
 
-        return tokenDto;
+        return TokenResponse.builder()
+                .accessToken(acessToken.getToken())
+                .accessTokenExpiredAt(acessToken.getExpiredAt())
+                .refreshToken(refreshToken.getToken())
+                .refreshTokenExpiredAt(refreshToken.getExpiredAt())
+                .build()
+                ;
+    }
+
+    public TokenResponse recreateAccessToken(String refreshToken) {
+        TokenDto accessToken = jwtTokenHelper.recreateAccessToken(refreshToken);
+        return TokenResponse.builder()
+                .accessToken(accessToken.getToken())
+                .accessTokenExpiredAt(accessToken.getExpiredAt())
+                .build()
+                ;
     }
 }
