@@ -10,5 +10,7 @@ public interface TokenHelperIfs {
 
     TokenDto issueRefreshToken(Map<String, Object> data);
 
+    TokenDto recreateAccessToken(String refreshToken);
+
     Map<String, Object> validationTokenWithThrow(String token);
 }

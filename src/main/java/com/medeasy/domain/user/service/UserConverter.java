@@ -3,7 +3,7 @@ package com.medeasy.domain.user.service;
 import com.medeasy.common.annotation.Converter;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.dto.UserDto;
-import com.medeasy.domain.user.dto.UserRegisterRequest;
+import com.medeasy.domain.auth.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
 
 @Converter
