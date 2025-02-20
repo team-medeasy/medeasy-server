@@ -5,7 +5,7 @@ import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.db.UserRepository;
-import com.medeasy.domain.user.dto.UserRegisterRequest;
+import com.medeasy.domain.auth.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;

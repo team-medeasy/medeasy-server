@@ -6,7 +6,7 @@ import com.medeasy.domain.auth.dto.LoginRequest;
 import com.medeasy.domain.auth.dto.RefreshRequest;
 import com.medeasy.domain.auth.dto.TokenResponse;
 import com.medeasy.domain.user.dto.UserDto;
-import com.medeasy.domain.user.dto.UserRegisterRequest;
+import com.medeasy.domain.auth.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -23,7 +23,11 @@ public class AuthController {
     private final AuthBusiness authBusiness;
 
     @PostMapping("/sign_up")
-    @Operation(summary = "회원가입", description = "회원가입 API")
+    @Operation(summary = "회원가입", description =
+            """
+            회원가입 API
+            """
+    )
     public Api<UserResponse> register(
             @Valid
             @RequestBody(required = true) UserRegisterRequest userRegisterRequest

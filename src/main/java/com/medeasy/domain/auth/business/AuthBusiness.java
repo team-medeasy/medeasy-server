@@ -1,7 +1,6 @@
 package com.medeasy.domain.auth.business;
 
 import com.medeasy.common.annotation.Business;
-import com.medeasy.common.error.TokenErrorCode;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.dto.LoginRequest;
@@ -10,7 +9,7 @@ import com.medeasy.domain.auth.dto.TokenResponse;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.dto.UserDto;
-import com.medeasy.domain.user.dto.UserRegisterRequest;
+import com.medeasy.domain.auth.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
 import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
