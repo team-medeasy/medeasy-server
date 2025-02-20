@@ -8,8 +8,10 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -18,10 +20,14 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class JwtTokenHelper implements TokenHelperIfs{
+
+    private final StringRedisTemplate redisTemplate;
 
     @Value("${token.secret.key}")
     private String secretKey;
@@ -60,10 +66,68 @@ public class JwtTokenHelper implements TokenHelperIfs{
                 .setExpiration(expiredAt)
                 .compact();
 
+        // 예) data에 userId라는 key가 있다고 가정
+        String userId = String.valueOf(data.get("userId"));
+
+        // Redis에 (refreshToken -> userId) 저장 + TTL 설정(시간 단위 HOUR)
+        // refreshToken이 만료되면 자동으로 레디스에서 제거되도록
+        redisTemplate.opsForValue().set(
+                userId,
+                jwtToken,
+                refreshTokenPlusHour,
+                TimeUnit.HOURS
+        );
+
+
         return TokenDto.builder()
                 .token(jwtToken)
                 .expiredAt(expiredLocalDateTime)
                 .build();
+    }
+
+    // access token이 만료되었을 때 refresh token 비교하여 accesstoken 재발급해주는 메서드
+    @Override
+    public TokenDto recreateAccessToken(String refreshToken) {
+        var key=Keys.hmacShaKeyFor(secretKey.getBytes());
+        var parser=Jwts.parser()
+                .setSigningKey(key)
+                .build();
+
+        try {
+            var result = parser.parseClaimsJws(refreshToken); // 토큰 문자열 파싱, 서명 검증, 클레임 추출 result는 Jws<Claims> 형식
+            log.info("토큰 문자열 파싱 결과: {}", result);
+
+
+            var data=new HashMap<>(result.getBody());
+            String userIdFromToken=String.valueOf(data.get("userId"));
+
+            if (userIdFromToken == null || userIdFromToken.isEmpty()) {
+                throw new ApiException(TokenErrorCode.INVALID_TOKEN, "토큰 내 user 정보가 없습니다.");
+            }
+
+            String storedRefreshToken = redisTemplate.opsForValue().get(userIdFromToken);
+            if (storedRefreshToken == null) {
+                // Redis에 토큰이 없다면 이미 만료되었거나, 로그아웃되었을 수 있음
+                throw new ApiException(TokenErrorCode.INVALID_TOKEN, "Redis에 저장된 Refresh Token이 없습니다.");
+            }
+
+            // 4) 요청으로 들어온 Refresh Token과 Redis에 저장된 토큰이 일치하는지 확인
+            if (!storedRefreshToken.equals(refreshToken)) {
+                throw new ApiException(TokenErrorCode.INVALID_TOKEN, "Refresh Token 불일치");
+            }
+
+            return issueAcessToken(data);
+
+        } catch (SignatureException e) {
+            // 서명 검증 실패
+            throw new ApiException(TokenErrorCode.INVALID_TOKEN, "토큰 서명 검증 실패");
+        } catch (ExpiredJwtException e) {
+            // 토큰 만료
+            throw new ApiException(TokenErrorCode.EXPIRED_TOKEN, "Refresh Token이 만료되었습니다.");
+        } catch (ApiException e) {
+            // 위에서 직접 던진 ApiException은 그대로 다시 던짐
+            throw e;
+        }
     }
 
     @Override
@@ -81,13 +145,19 @@ public class JwtTokenHelper implements TokenHelperIfs{
 
         }catch (Exception e){
 
-            if(e instanceof SignatureException){
+            if(e instanceof SignatureException signatureException){
                 // 토큰이 유효하지 않을때
-                throw new ApiException(TokenErrorCode.INVALID_TOKEN, e);
+                throw new SignatureException(
+                        "유효하지 않는 토큰"
+                );
             }
-            else if(e instanceof ExpiredJwtException){
+            else if(e instanceof ExpiredJwtException expiredJwtException){
                 //  만료된 토큰
-                throw new ApiException(TokenErrorCode.EXPIRED_TOKEN, e);
+                throw new ExpiredJwtException(
+                        expiredJwtException.getHeader(),
+                        expiredJwtException.getClaims(),
+                        "만료된 토큰"
+                );
             }
             else{
                 // 그외 에러
