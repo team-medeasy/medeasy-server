@@ -2,8 +2,6 @@ package com.medeasy.domain.medicine.controller;
 
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.medicine.business.MedicineBusiness;
-import com.medeasy.domain.medicine.db.MedicineDocument;
-import com.medeasy.domain.medicine.db.MedicineSearchRepository;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import io.swagger.v3.oas.annotations.Operation;

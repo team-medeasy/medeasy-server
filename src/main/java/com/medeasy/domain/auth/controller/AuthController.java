@@ -4,12 +4,11 @@ import com.medeasy.common.api.Api;
 import com.medeasy.domain.auth.business.AuthBusiness;
 import com.medeasy.domain.auth.dto.LoginRequest;
 import com.medeasy.domain.auth.dto.RefreshRequest;
-import com.medeasy.domain.auth.dto.TokenDto;
 import com.medeasy.domain.auth.dto.TokenResponse;
 import com.medeasy.domain.user.dto.UserDto;
 import com.medeasy.domain.user.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
-import jakarta.servlet.http.HttpServletRequest;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +23,7 @@ public class AuthController {
     private final AuthBusiness authBusiness;
 
     @PostMapping("/sign_up")
+    @Operation(summary = "회원가입", description = "회원가입 API")
     public Api<UserResponse> register(
             @Valid
             @RequestBody(required = true) UserRegisterRequest userRegisterRequest
@@ -35,6 +35,7 @@ public class AuthController {
 
     // 로그인 API
     @PostMapping("/login")
+    @Operation(summary = "로그인", description = "사용자 정보 확인 후 JWT 토큰 발급")
     public Api<TokenResponse> login(
             @Valid
             @RequestBody LoginRequest request
@@ -47,6 +48,7 @@ public class AuthController {
 
     // 토큰 재발급
     @PostMapping("/refresh")
+    @Operation(summary = "JWT 토큰 재발급", description = "refresh_token을 통해 access_token 재발급")
     public Api<TokenResponse> refresh(
             @Valid
             @RequestBody RefreshRequest request

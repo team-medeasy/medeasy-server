@@ -19,6 +19,8 @@ jobs:
       TOKEN_SECRET_KEY: ${{secrets.TOKEN_SECRET_KEY}}
       ACCESS_TOKEN_HOUR: ${{secrets.ACCESS_TOKEN_HOUR}}
       REFRESH_TOKEN_HOUR: ${{secrets.REFRESH_TOKEN_HOUR}}
+      REDIS_HOST: ${{secrets.REDIS_HOST}}
+      REDIS_PORT: ${{secrets.REDIS_PORT}}
 
 
     steps:
