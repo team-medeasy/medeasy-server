@@ -1,9 +1,12 @@
 package com.medeasy.domain.medicine.db;
 
+import com.medeasy.domain.routine.db.RoutineEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "medicine")
@@ -62,4 +65,8 @@ public class MedicineEntity {
 
     @Column(name = "bizrno", nullable = true, length = 50)
     private String bizrno;
+
+    // 양방향 매핑이 필요없다고 판단. 주석처리
+//    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+//    private List<RoutineEntity> routines=new ArrayList<>();
 }
