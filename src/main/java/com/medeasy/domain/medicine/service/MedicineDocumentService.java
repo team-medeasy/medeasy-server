@@ -8,6 +8,8 @@ import com.medeasy.domain.medicine.db.MedicineRepository;
 import com.medeasy.domain.medicine.db.MedicineSearchRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,8 +51,9 @@ public class MedicineDocumentService {
         medicineSearchRepository.saveAll(medicineDocuments);
     }
 
-    public List<MedicineDocument> searchMedicineContainingName(String medicineName) {
-        List<MedicineDocument> medicineDocuments=medicineSearchRepository.findByItemNameContaining(medicineName);
+    public List<MedicineDocument> searchMedicineContainingName(String medicineName, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+        List<MedicineDocument> medicineDocuments=medicineSearchRepository.findByItemNameContaining(medicineName, pageable);
         medicineDocuments.stream()
                 .findAny()
                 .orElseThrow(()-> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE))

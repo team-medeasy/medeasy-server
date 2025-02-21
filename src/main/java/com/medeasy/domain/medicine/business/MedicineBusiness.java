@@ -46,8 +46,8 @@ public class MedicineBusiness {
         saveLogToTxt.saveItemSeqToFile(requests);
     }
 
-    public List<MedicineResponse> searchMedicines(String medicineName) {
-        List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingName(medicineName);
+    public List<MedicineResponse> searchMedicines(String medicineName, int size) {
+        List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingName(medicineName, size);
 
         return medicineDocuments.stream()
                 .map(medicineConverter::toResponseWithDocument).toList();

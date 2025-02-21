@@ -49,9 +49,12 @@ public class MedicineController {
     public Api<List<MedicineResponse>> searchMedicines(
             @RequestParam("medicine_name")
             @Parameter(description = "약 이름 키워드", required = true)
-            String medicineName
+            String medicineName,
+            @RequestParam(value = "size", defaultValue = "10")
+            @Parameter(description = "불러올 데이터 개수", required = false)
+            int size
     ) {
-        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName);
+        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName, size);
 
         return Api.OK(medicineResponses);
     }
