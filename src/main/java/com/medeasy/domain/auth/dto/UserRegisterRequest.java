@@ -28,7 +28,7 @@ public class UserRegisterRequest {
     @Schema(description = "사용자 이름", example = "김한성")
     private String name;
 
-    @Schema(description = "사용자 생년월일", example = " 2025-02-20T05:21:40.635Z")
+    @Schema(description = "사용자 생년월일", example = " 2025-02-20")
     private Date birthday;
 
     @Schema(description = "사용자 성별", example = "MALE, FEMALE")
