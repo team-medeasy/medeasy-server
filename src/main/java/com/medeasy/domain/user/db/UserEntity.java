@@ -1,5 +1,6 @@
 package com.medeasy.domain.user.db;
 
+import com.medeasy.domain.routine.db.RoutineEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -50,8 +51,11 @@ public class UserEntity {
     @JoinColumn(name = "nok_id")
     private UserEntity nok;
 
-    // 반대쪽 관계 (필요한 경우)
     @Builder.Default
     @OneToMany(mappedBy = "nok")
     private List<UserEntity> subUsers = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<RoutineEntity> routines= new ArrayList<>();
 }
