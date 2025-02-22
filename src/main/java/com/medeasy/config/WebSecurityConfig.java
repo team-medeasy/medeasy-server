@@ -1,7 +1,7 @@
 package com.medeasy.config;
 
-import com.medeasy.common.filter.ExceptionHandlerFilter;
-import com.medeasy.common.filter.JwtAuthenticationFilter;
+import com.medeasy.filter.ExceptionHandlerFilter;
+import com.medeasy.filter.JwtAuthenticationFilter;
 import com.medeasy.domain.auth.util.JwtTokenHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
