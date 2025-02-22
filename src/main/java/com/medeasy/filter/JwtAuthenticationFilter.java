@@ -1,4 +1,4 @@
-package com.medeasy.common.filter;
+package com.medeasy.filter;
 
 import com.medeasy.common.error.TokenErrorCode;
 import com.medeasy.common.error.UserErrorCode;

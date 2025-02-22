@@ -1,4 +1,4 @@
-package com.medeasy.common.filter;
+package com.medeasy.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.api.Api;
