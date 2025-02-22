@@ -1,5 +1,7 @@
 package com.medeasy.domain.medicine.service;
 
+import com.medeasy.common.error.MedicineErrorCode;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.converter.MedicineConverter;
 import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.db.MedicineEntity;
@@ -107,6 +109,8 @@ public class MedicineService {
             }
         }
     }
-
+    public MedicineEntity getMedicineById(Long id) {
+        return medicineRepository.findById(id).orElseThrow(() -> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE));
+    }
 
 }
