@@ -2,9 +2,7 @@ package com.medeasy.domain.routine.dto;
 
 import lombok.*;
 
-import java.sql.Time;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -17,11 +15,13 @@ public class RoutineRegisterRequest {
 
     private String nickname;
 
-    private Long dose;
+    private int dose;
 
-    private Long totalQuantity;
+    private int totalQuantity;
 
-    private List<Date> dates;
+    private List<LocalDate> dates;
 
-    private List<Time> times;
+    private List<String> types;
+
+    private String typeDescription;
 }
