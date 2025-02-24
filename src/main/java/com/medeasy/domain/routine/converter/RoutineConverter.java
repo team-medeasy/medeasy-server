@@ -24,6 +24,7 @@ public class RoutineConverter {
 
         for(RoutineDto routineDto : routineGroupDto.getRoutines()) {
             var medicine= RoutineGroupResponse.RoutineMedicineResponse.builder()
+                    .routineId(routineDto.getRoutineId())
                     .medicineName(routineDto.getNickname())
                     .isTaken(routineDto.getIsTaken())
                     .build()
