@@ -4,7 +4,11 @@ import com.medeasy.domain.medicine.db.MedicineEntity;
 import com.medeasy.domain.user.db.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
 
 
 @Entity
@@ -27,9 +31,13 @@ public class RoutineEntity {
     @Column(nullable = false, length = 150)
     private String nickname;
 
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @Column(nullable = false)
-    private LocalDateTime takeTime;
+    private LocalDate takeDate;
+
+    @Temporal(TemporalType.TIME)
+    @Column(nullable = false)
+    private LocalTime takeTime;
 
     @Column(nullable = false, columnDefinition = "bool")
     private boolean isTaken;
