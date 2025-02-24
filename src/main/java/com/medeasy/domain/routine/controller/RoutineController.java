@@ -52,6 +52,16 @@ public class RoutineController {
         return Api.OK(null);
     }
 
+    @Operation(summary = "특정 날짜 루틴 조회", description =
+            """
+            루틴 조회 API: 특정 날짜의 사용자 루틴 리스트 조회 
+            
+            PathVariable을 통해 date 정보를 요청에 포함
+            
+            형식: 2025-02-25
+             
+            """
+    )
     @GetMapping("/{date}")
     public Api<List<RoutineGroupResponse>> getRoutineListByDate(
             @Parameter(hidden = true) @UserSession Long userId,
