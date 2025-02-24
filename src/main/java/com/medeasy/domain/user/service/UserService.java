@@ -38,4 +38,8 @@ public class UserService {
 
         return userEntity;
     }
+
+    public UserEntity getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(()-> new ApiException(UserErrorCode.USER_NOT_FOUNT));
+    }
 }

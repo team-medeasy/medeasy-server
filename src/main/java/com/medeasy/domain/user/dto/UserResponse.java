@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Builder
@@ -22,7 +23,7 @@ public class UserResponse {
 
     private Date registeredAt;
 
-    private Date loginedAt;
+    private LocalDateTime loginedAt;
 
     private Date birthday;
 }

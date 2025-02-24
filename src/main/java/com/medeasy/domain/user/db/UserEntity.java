@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,9 +42,9 @@ public class UserEntity {
     private Date registeredAt;
 
     @CreationTimestamp
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "logined_at")
-    private Date loginedAt;
+    private LocalDateTime loginedAt;
 
     @Temporal(TemporalType.DATE)
     private Date birthday;
@@ -50,6 +52,14 @@ public class UserEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nok_id")
     private UserEntity nok;
+
+    private LocalTime morning;
+
+    private LocalTime lunch;
+
+    private LocalTime dinner;
+
+    private LocalTime bedTime;
 
     @Builder.Default
     @OneToMany(mappedBy = "nok")
