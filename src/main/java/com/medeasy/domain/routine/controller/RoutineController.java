@@ -3,8 +3,9 @@ package com.medeasy.domain.routine.controller;
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.routine.business.RoutineBusiness;
+import com.medeasy.domain.routine.dto.RoutineGroupDto;
+import com.medeasy.domain.routine.dto.RoutineGroupResponse;
 import com.medeasy.domain.routine.dto.RoutineRegisterRequest;
-import com.medeasy.domain.routine.dto.RoutineResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
@@ -13,7 +14,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -53,12 +53,13 @@ public class RoutineController {
     }
 
     @GetMapping("/{date}")
-    public Api<List<Object>> getRoutineListByDate(
+    public Api<List<RoutineGroupResponse>> getRoutineListByDate(
+            @Parameter(hidden = true) @UserSession Long userId,
             @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
-        routineBusiness.getRoutineListByDate(date);
+        var response=routineBusiness.getRoutineListByDate(userId, date);
 
-        return null;
+        return Api.OK(response);
     }
 
     @GetMapping("test/{date}")

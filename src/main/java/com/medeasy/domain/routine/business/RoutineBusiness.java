@@ -5,7 +5,10 @@ import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.db.MedicineEntity;
 import com.medeasy.domain.medicine.service.MedicineService;
+import com.medeasy.domain.routine.converter.RoutineConverter;
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.routine.dto.RoutineGroupDto;
+import com.medeasy.domain.routine.dto.RoutineGroupResponse;
 import com.medeasy.domain.routine.dto.RoutineRegisterRequest;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.db.UserEntity;
@@ -28,6 +31,7 @@ public class RoutineBusiness {
     private final RoutineService routineService;
     private final UserService userService;
     private final MedicineService medicineService;
+    private final RoutineConverter routineConverter;
 
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
 
@@ -202,8 +206,11 @@ public class RoutineBusiness {
         return times;
     }
 
-    public void getRoutineListByDate(LocalDate date) {
+    public List<RoutineGroupResponse> getRoutineListByDate(Long userId, LocalDate date) {
+        List<RoutineGroupDto> routineGroupDtos=routineService.getRoutineGroups(date, userId);
 
+        return routineGroupDtos.stream()
+                .map(routineConverter::toGroupResponse).toList();
     }
 
     public void test(LocalDate date) {
