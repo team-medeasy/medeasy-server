@@ -2,6 +2,8 @@ package com.medeasy.domain.routine.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.common.error.RoutineErrorCode;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineDto;
@@ -52,5 +54,10 @@ public class RoutineService {
                     }
                 })
                 .collect(Collectors.toList());
+    }
+
+
+    public RoutineEntity getRoutineById(Long id) {
+        return routineRepository.findById(id).orElseThrow(()-> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
     }
 }
