@@ -113,4 +113,7 @@ public class MedicineService {
         return medicineRepository.findById(id).orElseThrow(() -> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE));
     }
 
+    public MedicineEntity getMedicineByItemCode(String itemCode) {
+        return medicineRepository.findByItemCode(itemCode).orElse(null);
+    }
 }

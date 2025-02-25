@@ -11,6 +11,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+/*
+* 사용자 루틴 등록을 위한 dto
+* */
 public class RoutineRegisterRequest {
     @Schema(description = "복용 루틴으로 등록할 약 id", example = "3594")
     private Long medicineId;

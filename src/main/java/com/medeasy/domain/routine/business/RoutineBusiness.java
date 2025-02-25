@@ -7,6 +7,7 @@ import com.medeasy.domain.medicine.db.MedicineEntity;
 import com.medeasy.domain.medicine.service.MedicineService;
 import com.medeasy.domain.routine.converter.RoutineConverter;
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.routine.dto.RoutineCheckResponse;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
 import com.medeasy.domain.routine.dto.RoutineGroupResponse;
 import com.medeasy.domain.routine.dto.RoutineRegisterRequest;
@@ -15,6 +16,7 @@ import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -240,5 +242,20 @@ public class RoutineBusiness {
             }
         }
         routineService.saveAll(entities);
+    }
+
+    @Transactional()
+    public RoutineCheckResponse checkRoutine(Long routineId, Boolean isTaken) {
+
+        RoutineEntity routineEntity=routineService.getRoutineById(routineId);
+        Boolean beforeIsTaken=routineEntity.getIsTaken();
+        routineEntity.setIsTaken(isTaken);
+
+        return RoutineCheckResponse.builder()
+                .routineId(routineEntity.getId())
+                .beforeIsTaken(beforeIsTaken)
+                .afterIsTaken(routineEntity.getIsTaken())
+                .build()
+                ;
     }
 }

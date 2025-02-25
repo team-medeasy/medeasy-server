@@ -33,6 +33,12 @@ public class MedicineEntity {
     @Column(name = "entp_name", nullable = false, length = 100)
     private String entpName;
 
+    @Column(name = "shape", nullable = false, length = 50)
+    private String shape;
+
+    @Column(name = "color", nullable = false, length = 50)
+    private String color;
+
     @Column(name = "item_name", nullable = false, length = 100)
     private String itemName;
 

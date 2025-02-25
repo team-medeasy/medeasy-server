@@ -30,6 +30,12 @@ public class MedicineDocument {
     private String itemName;
 
     @Field(type = FieldType.Text)
+    private String shape;
+
+    @Field(type = FieldType.Text)
+    private String color;
+
+    @Field(type = FieldType.Text)
     private String efficacy;
 
     @Field(type = FieldType.Text)

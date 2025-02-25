@@ -25,6 +25,10 @@ public class MedicineResponse {
 
     private String itemName;
 
+    private String shape;
+
+    private String color;
+
     private String efficacy;
 
     private String useMethod;

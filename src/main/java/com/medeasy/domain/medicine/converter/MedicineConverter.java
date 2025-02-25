@@ -44,6 +44,8 @@ public class MedicineConverter {
                 .itemCode(document.getItemCode())
                 .entpName(document.getEntpName())
                 .itemName(document.getItemName())
+                .shape(document.getShape())
+                .color(document.getColor())
                 .efficacy(document.getEfficacy())
                 .useMethod(document.getUseMethod())
                 .attention(document.getAttention())

@@ -35,6 +35,8 @@ public class MedicineDocumentService {
                         .itemCode(m.getItemCode())
                         .entpName(m.getEntpName())
                         .itemName(m.getItemName())
+                        .shape(m.getShape())
+                        .color(m.getColor())
                         .efficacy(m.getEfficacy())
                         .useMethod(m.getUseMethod())
                         .attention(m.getAttention())

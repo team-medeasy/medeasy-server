@@ -11,6 +11,9 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+/*
+* 사용자 루틴 일별 조회 응답 dto
+* */
 public class RoutineGroupResponse {
     private LocalTime takeTime;
     private LocalDate takeDate;
