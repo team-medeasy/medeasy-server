@@ -30,4 +30,5 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             @Param("take_date")LocalDate takeDate,
             @Param("user_id") Long userId
     );
+
 }
