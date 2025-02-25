@@ -12,6 +12,9 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+/*
+* 그룹형 쿼리 튜플 변환을 위한 dto
+* */
 public class RoutineDto {
     private Long routineId;
     private Long medicineId;

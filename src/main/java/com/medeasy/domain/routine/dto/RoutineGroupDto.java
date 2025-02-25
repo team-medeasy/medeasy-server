@@ -12,6 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+/*
+* 그룹형 쿼리 튜플 변환을 위한 dto
+* */
 public class RoutineGroupDto {
     private LocalTime takeTime;
     private List<RoutineDto> routines;
