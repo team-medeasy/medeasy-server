@@ -4,6 +4,7 @@ import com.medeasy.common.api.Api;
 import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
+import com.medeasy.domain.medicine.dto.MedicineUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
@@ -57,5 +58,19 @@ public class MedicineController {
         List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName, size);
 
         return Api.OK(medicineResponses);
+    }
+
+    // 약 데이터 추가 컬럼
+    @PostMapping("/update")
+    @Operation(summary = "약 json 리스트 저장", description = "개발 중 약 데이터 저장용 API")
+    public String updateMedicines(
+            @Valid
+            @RequestBody List<MedicineUpdateRequest> requests
+    ) {
+        medicineBusiness.updateMedicines(requests);
+
+        return ResponseEntity.ok()
+                .body("updated successful")
+                .toString();
     }
 }
