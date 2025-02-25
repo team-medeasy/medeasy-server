@@ -2,7 +2,6 @@ package com.medeasy.filter;
 
 import com.medeasy.common.error.TokenErrorCode;
 import com.medeasy.common.error.UserErrorCode;
-import com.medeasy.common.exception.ApiException;
 import com.medeasy.common.exception.AuthException;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import io.jsonwebtoken.JwtException;
