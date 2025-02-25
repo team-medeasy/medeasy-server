@@ -38,13 +38,13 @@ public class RoutineEntity {
     private LocalTime takeTime;
 
     @Column(nullable = false, columnDefinition = "bool")
-    private boolean isTaken;
+    private Boolean isTaken;
 
     @Column(nullable = false)
     private String type;
 
     @Column(nullable = false)
-    private int dose;
+    private Integer dose;
 
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
