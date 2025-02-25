@@ -3,6 +3,7 @@ package com.medeasy.filter;
 import com.medeasy.common.error.TokenErrorCode;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
+import com.medeasy.common.exception.AuthException;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -46,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         if (header == null || !header.startsWith("Bearer ")) {
-            throw new ApiException(TokenErrorCode.AUTHORIZATION_TOKEN_NOT_FOUND);
+            throw new AuthException(TokenErrorCode.AUTHORIZATION_TOKEN_NOT_FOUND);
         }
 
         String token = header.substring(7);
@@ -56,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Object userIdObject = claims.get("userId");
 
         if(userIdObject == null){
-            throw new ApiException(UserErrorCode.USER_NOT_FOUNT);
+            throw new AuthException(UserErrorCode.USER_NOT_FOUNT);
         }
 
         Long userId = Long.parseLong(userIdObject.toString());
@@ -73,7 +74,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtException | IllegalArgumentException e) {
             // 토큰 검증 실패 시 SecurityContext 초기화
             SecurityContextHolder.clearContext();
-            throw new ApiException(TokenErrorCode.ERROR_CREATE_AUTHORIZATION);
+            throw new AuthException(TokenErrorCode.ERROR_CREATE_AUTHORIZATION);
         }
         filterChain.doFilter(request, response);
     }

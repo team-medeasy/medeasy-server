@@ -2,8 +2,11 @@ package com.medeasy.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.api.Api;
+import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.ErrorCodeIfs;
 import com.medeasy.common.error.TokenErrorCode;
+import com.medeasy.common.exception.ApiException;
+import com.medeasy.common.exception.AuthException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -38,6 +41,9 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
             setErrorResponse(response, TokenErrorCode.EXPIRED_TOKEN);
         }catch (JwtException | IllegalArgumentException e){
             setErrorResponse(response, TokenErrorCode.INVALID_TOKEN);
+        }catch (AuthException e) {  // ApiException 처리 추가
+            log.error("API 예외 발생: {}", e.getMessage());
+            setErrorResponse(response, ErrorCode.BAD_REQEUST, e.getMessage());
         }
     }
     private void setErrorResponse(
@@ -50,6 +56,22 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
 
         try{
             response.getWriter().write(objectMapper.writeValueAsString(Api.ERROR(errorCode)));
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void setErrorResponse(
+            HttpServletResponse response,
+            ErrorCodeIfs errorCode,
+            String message
+    ){
+        response.setStatus(errorCode.getHttpStatusCode());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+
+        try{
+            response.getWriter().write(objectMapper.writeValueAsString(Api.ERROR(errorCode, message)));
         }catch (IOException e){
             e.printStackTrace();
         }
