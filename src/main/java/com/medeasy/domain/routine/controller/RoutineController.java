@@ -3,6 +3,7 @@ package com.medeasy.domain.routine.controller;
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.routine.business.RoutineBusiness;
+import com.medeasy.domain.routine.dto.RoutineCheckResponse;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
 import com.medeasy.domain.routine.dto.RoutineGroupResponse;
 import com.medeasy.domain.routine.dto.RoutineRegisterRequest;
@@ -79,5 +80,28 @@ public class RoutineController {
         routineBusiness.test(date);
 
         return "ok";
+    }
+
+
+    @Operation(summary = "루틴 복용 여부 체크", description =
+            """
+            루틴 복용 여부 체크 API: 특정 routine의 복용 여부 체크
+            
+            routine_id와 복용 여부 'true' or 'false'를 query sting 으로 요청 
+            
+            반환값: routine_id, beforeIsTaken, afterIsTaken
+            """
+    )
+    @PatchMapping("/check")
+    public Api<Object> checkRoutine(
+            @RequestParam("routine_id")
+            @Parameter(description = "체크할 루틴 id", required = true)
+            Long routineId,
+            @RequestParam("is_taken")
+            @Parameter(description = "약 복용 여부", required = true)
+            Boolean isTaken
+    ) {
+        RoutineCheckResponse response=routineBusiness.checkRoutine(routineId, isTaken);
+        return Api.OK(response);
     }
 }
