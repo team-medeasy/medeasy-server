@@ -3,6 +3,7 @@ package com.medeasy.domain.ai.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.common.error.AiErrorCode;
 import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.ai.dto.AiResponseDto;
@@ -104,7 +105,7 @@ public class AiService {
             return restTemplate.postForObject(url, requestEntity, String.class);
 
         } catch (JsonProcessingException e) {
-            throw new ApiException(ErrorCode.SERVER_ERROR, "OCR 데이터를 JSON으로 변환하는 중 오류 발생"+e);
+            throw new ApiException(AiErrorCode.PARSING_ERROR, "OCR 데이터를 JSON으로 변환하는 중 오류 발생"+e);
         }
     }
 
@@ -124,23 +125,23 @@ public class AiService {
                     .path("text")
                     .asText();
 
-            // JSON 코드 블록 제거 및 파싱
+            // gemini text 응답에 포함되어 있는 JSON 코드 블록 제거 및 빈칸 제거
             String cleanedJson = jsonResponse.replaceAll("```json|```", "").trim();
 
             JsonNode parsedJson = objectMapper.readTree(cleanedJson);
             List<AiResponseDto.DoseDto> doseDtos = objectMapper
                     .readerForListOf(AiResponseDto.DoseDto.class)
-                    .readValue(parsedJson.path("results"));
+                    .readValue(parsedJson.path("results"))
+                    ;
 
-            // 결과 매핑
-            AiResponseDto responseDto = new AiResponseDto();
-            responseDto.setTotalTokenCount(totalTokenCount);
-            responseDto.setDoseDtos(doseDtos);
-
-            return responseDto;
+            return AiResponseDto.builder()
+                    .totalTokenCount(totalTokenCount)
+                    .doseDtos(doseDtos)
+                    .build()
+                    ;
 
         } catch (Exception e) {
-            throw new RuntimeException("Gemini API 응답을 파싱하는 중 오류 발생", e);
+            throw new ApiException(AiErrorCode.PARSING_ERROR);
         }
     }
 }
