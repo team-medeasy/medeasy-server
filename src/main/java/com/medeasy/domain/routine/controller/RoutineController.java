@@ -2,6 +2,7 @@ package com.medeasy.domain.routine.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
+import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.routine.business.RoutineBusiness;
 import com.medeasy.domain.routine.dto.RoutineCheckResponse;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
@@ -12,7 +13,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +26,7 @@ import java.util.List;
 public class RoutineController {
 
     private final RoutineBusiness routineBusiness;
+    private final MedicineBusiness medicineBusiness;
 
     @Operation(summary = "루틴 등록", description =
             """
@@ -103,5 +107,17 @@ public class RoutineController {
     ) {
         RoutineCheckResponse response=routineBusiness.checkRoutine(routineId, isTaken);
         return Api.OK(response);
+    }
+
+    @PostMapping(
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            path = "/ocr"
+    )
+    public Api<Object> registerRoutineByPrescription(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @RequestPart("image") MultipartFile image
+    ) {
+        routineBusiness.registerRoutineByPrescription(userId, image);
+        return Api.OK(null);
     }
 }
