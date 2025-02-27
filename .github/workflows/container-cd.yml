@@ -21,7 +21,10 @@ jobs:
       REFRESH_TOKEN_HOUR: ${{secrets.REFRESH_TOKEN_HOUR}}
       REDIS_HOST: ${{secrets.REDIS_HOST}}
       REDIS_PORT: ${{secrets.REDIS_PORT}}
-
+      OCR_API_URL: ${{secrets.OCR_API_URL}}
+      OCR_SECRET: ${{secrets.OCR_SECRET}}
+      GEMINI_API_URL: ${{secrets.GEMINI_API_URL}}
+      GEMINI_API_KEY: ${{secrets.GEMINI_API_KEY}}
 
     steps:
       - name: Checkout Source Code
