@@ -10,6 +10,7 @@ import com.medeasy.domain.routine.dto.RoutineDto;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
 import java.time.LocalDate;
@@ -59,5 +60,10 @@ public class RoutineService {
 
     public RoutineEntity getRoutineById(Long id) {
         return routineRepository.findById(id).orElseThrow(()-> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
+    }
+
+    @Transactional
+    public void deleteRoutine(Long routineId) {
+        routineRepository.deleteById(routineId);
     }
 }

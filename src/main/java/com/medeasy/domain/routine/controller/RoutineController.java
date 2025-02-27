@@ -138,4 +138,24 @@ public class RoutineController {
         routineBusiness.registerRoutineByPrescription(userId, image);
         return Api.OK(null);
     }
+
+    @Operation(summary = "단일 루틴 삭제 api", description =
+            """
+            단일 루틴 삭제 api 
+            
+            요청: 
+            
+            PathVariable로 삭제하려는 routine_id값 지정 
+            """
+    )
+    @DeleteMapping("/{routine_id}")
+    public Api<Object> deleteRoutine(
+            @Parameter(hidden = true)
+            @UserSession Long userId,
+            @Parameter(description = "삭제 하려는 루틴 id", required = true)
+            @PathVariable("routine_id") Long routineId
+    ) {
+        routineBusiness.deleteRoutine(userId, routineId);
+        return Api.OK(null);
+    }
 }

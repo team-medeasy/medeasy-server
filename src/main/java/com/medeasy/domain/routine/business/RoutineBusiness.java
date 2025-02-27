@@ -330,4 +330,11 @@ public class RoutineBusiness {
 
         throw new ApiException(ErrorCode.BAD_REQEUST, "잘못된 type count 입력");
     }
+
+    public void deleteRoutine(Long userId, Long routineId) {
+        // routine 존재 여부 파악
+        RoutineEntity routineEntity=routineService.getRoutineById(routineId);
+
+        routineService.deleteRoutine(routineId);
+    }
 }
