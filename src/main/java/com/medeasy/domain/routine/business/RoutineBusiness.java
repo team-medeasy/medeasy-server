@@ -3,8 +3,15 @@ package com.medeasy.domain.routine.business;
 import com.medeasy.common.annotation.Business;
 import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.exception.ApiException;
+import com.medeasy.domain.ai.dto.AiResponseDto;
+import com.medeasy.domain.ai.service.AiService;
+import com.medeasy.domain.medicine.converter.MedicineConverter;
+import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.db.MedicineEntity;
+import com.medeasy.domain.medicine.service.MedicineDocumentService;
 import com.medeasy.domain.medicine.service.MedicineService;
+import com.medeasy.domain.ocr.dto.OcrParsedDto;
+import com.medeasy.domain.ocr.service.OcrServiceByMultipart;
 import com.medeasy.domain.routine.converter.RoutineConverter;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.dto.RoutineCheckResponse;
@@ -17,12 +24,11 @@ import com.medeasy.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -33,7 +39,11 @@ public class RoutineBusiness {
     private final RoutineService routineService;
     private final UserService userService;
     private final MedicineService medicineService;
+    private final MedicineDocumentService medicineDocumentService;
     private final RoutineConverter routineConverter;
+    private final OcrServiceByMultipart ocrService;
+    private final AiService aiService;
+    private final MedicineConverter medicineConverter;
 
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
 
@@ -257,5 +267,74 @@ public class RoutineBusiness {
                 .afterIsTaken(routineEntity.getIsTaken())
                 .build()
                 ;
+    }
+
+    public void registerRoutineByPrescription(Long userId, MultipartFile file) {
+        var userEntity = userService.getUserById(userId);
+
+        // 처방전 이미지 파싱
+        List<OcrParsedDto> parseData=ocrService.sendOcrRequest(file);
+        log.info("처방전 이미지 ocr 분석 완료");
+
+        // ai api를 통하여 복약 정보 추출
+        String analysis=aiService.analysis(parseData);
+        log.info("gemini 요청 완료");
+
+        AiResponseDto aiResponseDto=aiService.parseGeminiResponse(analysis);
+        log.info("추출 데이터 파싱 완료, api token 비용: {}", aiResponseDto.getTotalTokenCount());
+
+        aiResponseDto.getDoseDtos().stream().forEach(doseDto -> {
+            // TODO 처방전 약 검색 로직 수정 필요, 임시로 하나의 약만 찾도록 작성
+            // 수정할 내용: name의 길이가 길어서 완전히 똑같은 약이 나오지 않을 수 있음. 따라서 형태소 분석 추가, 유사한 약이라도 검색 되게끔
+            // 현재 사이즈를 1로 설정하여 하나의 약만 검색하도록 하였지만, 나중에 요청사항 변경 시 처방전 스캔 약이 맞는지 확인하는 api, method 추가 필요성 있음.
+            MedicineDocument medicineDocument=medicineDocumentService.searchMedicineContainingName(doseDto.getName(), 1).getFirst();
+            MedicineEntity medicineEntity=medicineConverter.toEntity(medicineDocument);
+
+            int totalQuantity=doseDto.getTotalDays()*doseDto.getTypeCount()*doseDto.getDose();
+            List<String> types = convertTypeCountToTypes(doseDto.getTypeCount());
+
+            // TODO 하루 중 언제 먹을지 일주일 중 어느 요일에 먹을지
+            RoutineRegisterRequest registerRequest = RoutineRegisterRequest.builder()
+                    .nickname(medicineDocument.getItemName())
+                    .dose(doseDto.getDose())
+                    .types(types)
+                    .dayOfWeeks(List.of(1, 2, 3, 4, 5, 6, 7))
+                    .totalQuantity(totalQuantity)
+                    .medicineId(Long.parseLong(medicineDocument.getId()))
+                    .build()
+                    ;
+
+            registerRoutine(userId, registerRequest);
+        });
+
+    }
+
+    // TODO type 임시 배치
+    private List<String> convertTypeCountToTypes(int typeCount) {
+
+        if(typeCount==1){
+            return List.of("LUNCH");
+        }
+
+        if(typeCount==2){
+            return List.of("MORNING", "DINNER");
+        }
+
+        if(typeCount==3){
+            return List.of("MORNING", "LUNCH", "DINNER");
+        }
+
+        if(typeCount==4){
+            return List.of("MORNING", "LUNCH", "DINNER", "BEDTIME");
+        }
+
+        throw new ApiException(ErrorCode.BAD_REQEUST, "잘못된 type count 입력");
+    }
+
+    public void deleteRoutine(Long userId, Long routineId) {
+        // routine 존재 여부 파악
+        RoutineEntity routineEntity=routineService.getRoutineById(routineId);
+
+        routineService.deleteRoutine(routineId);
     }
 }

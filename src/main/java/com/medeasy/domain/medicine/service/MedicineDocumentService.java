@@ -8,6 +8,8 @@ import com.medeasy.domain.medicine.db.MedicineRepository;
 import com.medeasy.domain.medicine.db.MedicineSearchRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MedicineDocumentService {
 
+    private static final Logger log = LoggerFactory.getLogger(MedicineDocumentService.class);
     private final MedicineSearchRepository medicineSearchRepository;
     private final MedicineRepository medicineRepository; // 기존 JPA Repository
 
@@ -53,12 +56,15 @@ public class MedicineDocumentService {
         medicineSearchRepository.saveAll(medicineDocuments);
     }
 
+    // TODO 검색한 약이 존재하지 않을 경우 크롤링 고려
     public List<MedicineDocument> searchMedicineContainingName(String medicineName, int size) {
+        log.info("약 검색 {}", medicineName);
+
         Pageable pageable = PageRequest.of(0, size);
         List<MedicineDocument> medicineDocuments=medicineSearchRepository.findByItemNameContaining(medicineName, pageable);
         medicineDocuments.stream()
                 .findAny()
-                .orElseThrow(()-> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE))
+                .orElseThrow(()-> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE, "해당하는 약이 존재하지 않습니다. "+medicineName))
                 ;
         return medicineDocuments;
     }

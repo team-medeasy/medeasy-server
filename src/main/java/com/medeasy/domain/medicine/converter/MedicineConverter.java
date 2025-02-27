@@ -60,6 +60,24 @@ public class MedicineConverter {
                 ;
     }
 
+    public MedicineEntity toEntity(MedicineDocument medicineDocument) {
+        return MedicineEntity.builder()
+                .itemCode(medicineDocument.getItemCode())
+                .entpName(medicineDocument.getEntpName())
+                .itemName(medicineDocument.getItemName())
+                .efficacy(medicineDocument.getEfficacy())
+                .useMethod(medicineDocument.getUseMethod())
+                .attention(medicineDocument.getAttention()) // getAtpnQesitm의 값과 getAtpnWarnQesitm 값 병합
+                .interaction(medicineDocument.getInteraction())
+                .sideEffect(medicineDocument.getSideEffect())
+                .depositMethod(medicineDocument.getDepositMethod())
+                .openAt(medicineDocument.getOpenAt())
+                .updateAt(medicineDocument.getUpdateAt())
+                .imageUrl(medicineDocument.getImageUrl())
+                .bizrno(medicineDocument.getBizrno())
+                .build();
+    }
+
     public Page<MedicineResponse> toResponse(Page<MedicineEntity> medicineEntities) {
         return medicineEntities.map(this::toResponseWithEntity);
     }

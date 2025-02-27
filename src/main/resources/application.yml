@@ -31,3 +31,13 @@ token:
     plus-hour: ${ACCESS_TOKEN_HOUR}
   refresh-token:
     plus-hour: ${REFRESH_TOKEN_HOUR}
+
+ocr:
+  api:
+    url: ${OCR_API_URL}
+  secret: ${OCR_SECRET}
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
+    url: ${GEMINI_API_URL}

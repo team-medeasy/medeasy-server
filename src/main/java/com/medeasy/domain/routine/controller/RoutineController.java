@@ -2,6 +2,7 @@ package com.medeasy.domain.routine.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
+import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.routine.business.RoutineBusiness;
 import com.medeasy.domain.routine.dto.RoutineCheckResponse;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
@@ -12,7 +13,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +26,7 @@ import java.util.List;
 public class RoutineController {
 
     private final RoutineBusiness routineBusiness;
+    private final MedicineBusiness medicineBusiness;
 
     @Operation(summary = "루틴 등록", description =
             """
@@ -103,5 +107,55 @@ public class RoutineController {
     ) {
         RoutineCheckResponse response=routineBusiness.checkRoutine(routineId, isTaken);
         return Api.OK(response);
+    }
+
+    @Operation(summary = "처방전 OCR 루틴 등록(임시)", description =
+            """
+            처방전 사진을 통한 루틴 등록 API:
+            
+            1. 처방전의 글자 데이터를 추출
+            
+            2. 의약품에 해당하는 데이터만 가지고 gemini api 가공 
+            
+            3. 루틴 등록 알고리즘을 통해 사용자 루틴등록  
+                        
+            요청 방법:
+            
+            MultipartRequest를 통해 이미지 파일 전송 
+            
+            응답 값: 
+            상태 코드, 메시지만 응답 
+            """
+    )
+    @PostMapping(
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            path = "/ocr"
+    )
+    public Api<Object> registerRoutineByPrescription(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @RequestPart("image") MultipartFile image
+    ) {
+        routineBusiness.registerRoutineByPrescription(userId, image);
+        return Api.OK(null);
+    }
+
+    @Operation(summary = "단일 루틴 삭제 api", description =
+            """
+            단일 루틴 삭제 api 
+            
+            요청: 
+            
+            PathVariable로 삭제하려는 routine_id값 지정 
+            """
+    )
+    @DeleteMapping("/{routine_id}")
+    public Api<Object> deleteRoutine(
+            @Parameter(hidden = true)
+            @UserSession Long userId,
+            @Parameter(description = "삭제 하려는 루틴 id", required = true)
+            @PathVariable("routine_id") Long routineId
+    ) {
+        routineBusiness.deleteRoutine(userId, routineId);
+        return Api.OK(null);
     }
 }
