@@ -109,6 +109,24 @@ public class RoutineController {
         return Api.OK(response);
     }
 
+    @Operation(summary = "처방전 OCR 루틴 등록(임시)", description =
+            """
+            처방전 사진을 통한 루틴 등록 API:
+            
+            1. 처방전의 글자 데이터를 추출
+            
+            2. 의약품에 해당하는 데이터만 가지고 gemini api 가공 
+            
+            3. 루틴 등록 알고리즘을 통해 사용자 루틴등록  
+                        
+            요청 방법:
+            
+            MultipartRequest를 통해 이미지 파일 전송 
+            
+            응답 값: 
+            상태 코드, 메시지만 응답 
+            """
+    )
     @PostMapping(
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             path = "/ocr"
