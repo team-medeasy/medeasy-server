@@ -14,10 +14,7 @@ import com.medeasy.domain.ocr.dto.OcrParsedDto;
 import com.medeasy.domain.ocr.service.OcrServiceByMultipart;
 import com.medeasy.domain.routine.converter.RoutineConverter;
 import com.medeasy.domain.routine.db.RoutineEntity;
-import com.medeasy.domain.routine.dto.RoutineCheckResponse;
-import com.medeasy.domain.routine.dto.RoutineGroupDto;
-import com.medeasy.domain.routine.dto.RoutineGroupResponse;
-import com.medeasy.domain.routine.dto.RoutineRegisterRequest;
+import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
@@ -26,10 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Business
