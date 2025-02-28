@@ -45,4 +45,16 @@ public class UserBusiness {
                 .build()
                 ;
     }
+
+    public UserScheduleResponse getRoutineSchedule(Long userId) {
+        UserEntity userEntity=userService.getUserById(userId);
+
+        return UserScheduleResponse.builder()
+                .morning(userEntity.getMorning())
+                .lunch(userEntity.getLunch())
+                .dinner(userEntity.getDinner())
+                .bedTime(userEntity.getBedTime())
+                .build()
+                ;
+    }
 }
