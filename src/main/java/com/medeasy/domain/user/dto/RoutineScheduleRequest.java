@@ -17,19 +17,20 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoutineScheduleRequest {
-    @Schema(description = "아침 기상 시간 (형식: HH:mm:ss)", example = "08:30:00", nullable = true)
+
     @JsonFormat(pattern = "HH:mm:ss")
+    @Schema(description = "아침 기상 시간 (형식: HH:mm:ss)", example = "08:30:00", nullable = true, type = "string")
     private LocalTime morningTime;
 
-    @Schema(description = "점심 시간 (형식: HH:mm:ss)", example = "12:00:00", nullable = true)
     @JsonFormat(pattern = "HH:mm:ss")
+    @Schema(description = "점심 시간 (형식: HH:mm:ss)", example = "12:00:00", nullable = true, type = "string")
     private LocalTime lunchTime;
 
-    @Schema(description = "저녁 식사 시간 (형식: HH:mm:ss)", example = "18:00:00", nullable = true)
     @JsonFormat(pattern = "HH:mm:ss")
+    @Schema(description = "저녁 식사 시간 (형식: HH:mm:ss)", example = "18:00:00", nullable = true, type = "string")
     private LocalTime dinnerTime;
 
-    @Schema(description = "취침 시간 (형식: HH:mm:ss)", example = "22:00:00", nullable = true)
     @JsonFormat(pattern = "HH:mm:ss")
+    @Schema(description = "취침 시간 (형식: HH:mm:ss)", example = "22:00:00", nullable = true, type = "string")
     private LocalTime bedTime;
 }
