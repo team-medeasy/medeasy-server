@@ -60,6 +60,28 @@ public class MedicineController {
         return Api.OK(medicineResponses);
     }
 
+    // 약 검색 색상 필터링
+    @GetMapping("/search/color")
+    @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
+    public Api<List<MedicineResponse>> searchMedicinesWithColor(
+            @RequestParam(value = "medicine_name", required = true)
+            @Parameter(description = "약 이름 키워드", required = true)
+            String medicineName,
+
+            @RequestParam(value = "medicine_colors", required = false)
+            @Parameter(description = "약 색상 필터링 (nullable)", required = false)
+            List<String> medicineColor,
+
+            @RequestParam(value = "size", defaultValue = "10")
+            @Parameter(description = "불러올 데이터 개수", required = false)
+            int size
+    ) {
+        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(medicineName, medicineColor, size);
+
+        return Api.OK(medicineResponses);
+    }
+
+
     // 약 데이터 추가 컬럼
     @PostMapping("/update")
     @Operation(summary = "약 json 리스트 저장", description = "개발 중 약 데이터 저장용 API")

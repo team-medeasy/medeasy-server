@@ -68,4 +68,14 @@ public class MedicineDocumentService {
                 ;
         return medicineDocuments;
     }
+
+    public List<MedicineDocument> searchMedicineContainingNameWithColor(String medicineName, List<String> colors, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+        List<MedicineDocument> medicineDocuments=medicineSearchRepository.findByItemNameAndColors(medicineName, colors, pageable);
+        medicineDocuments.stream()
+                .findAny()
+                .orElseThrow(()-> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE, "해당하는 약이 존재하지 않습니다. "+medicineName))
+        ;
+        return medicineDocuments;
+    }
 }
