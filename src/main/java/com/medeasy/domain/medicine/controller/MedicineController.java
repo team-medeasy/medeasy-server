@@ -64,19 +64,23 @@ public class MedicineController {
     @GetMapping("/search/color")
     @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
     public Api<List<MedicineResponse>> searchMedicinesWithColor(
-            @RequestParam(value = "medicine_name", required = true)
+            @RequestParam(value = "name", required = true)
             @Parameter(description = "약 이름 키워드", required = true)
-            String medicineName,
+            String name,
 
-            @RequestParam(value = "medicine_colors", required = false)
+            @RequestParam(value = "colors", required = false)
             @Parameter(description = "약 색상 필터링 (nullable)", required = false)
-            List<String> medicineColor,
+            List<String> colors,
+
+            @RequestParam(value = "shape", required = false)
+            @Parameter(description = "약 모양 (nullable)", required = false)
+            String shape,
 
             @RequestParam(value = "size", defaultValue = "10")
             @Parameter(description = "불러올 데이터 개수", required = false)
             int size
     ) {
-        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(medicineName, medicineColor, size);
+        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(name, colors, shape, size);
 
         return Api.OK(medicineResponses);
     }
