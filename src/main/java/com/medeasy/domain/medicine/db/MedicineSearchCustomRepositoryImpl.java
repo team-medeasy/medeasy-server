@@ -22,17 +22,17 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
     private final ElasticsearchOperations elasticsearchOperations;
 
     @Override
-    public List<MedicineDocument> findByItemNameAndColor(String itemName, List<String> colors, Pageable pageable) {
+    public List<MedicineDocument> findMedicineBySearching(String itemName, List<String> colors, String shape, Pageable pageable) {
         Query boolQuery= QueryBuilders.bool(boolQueryBuilder->boolQueryBuilder
-                .must(queryBuilder->queryBuilder.match(matchQueryBuilder->matchQueryBuilder
+                .must(QueryBuilder->QueryBuilder.match(matchQueryBuilder->matchQueryBuilder
                         .field("itemName")
                         .query(itemName)))
                 .should(colors!=null && !colors.isEmpty() ?
                         colors.stream().map(color ->
-                                QueryBuilders.term(termQueryBuilder->termQueryBuilder.field("color.keyword").value(color))
+                                QueryBuilders.term(t->t.field("color").value(color))
                         ).toList()
                         :List.of()
-                        )
+                ).minimumShouldMatch("1")
         );
 
         NativeQuery nativeQuery = NativeQuery.builder()
@@ -47,6 +47,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                 .stream()
                 .map(SearchHit::getContent)
                 .collect(Collectors.toList());
+
     }
 
 }

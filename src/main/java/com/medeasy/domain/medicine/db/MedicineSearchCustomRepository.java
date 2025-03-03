@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface MedicineSearchCustomRepository {
 
-    List<MedicineDocument> findByItemNameAndColor(String itemName, List<String> colors, Pageable pageable);
+    List<MedicineDocument> findMedicineBySearching(String itemName, List<String> colors, String shape, Pageable pageable);
 
 }
