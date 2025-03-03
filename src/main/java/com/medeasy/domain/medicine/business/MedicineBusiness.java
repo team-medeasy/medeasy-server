@@ -88,8 +88,8 @@ public class MedicineBusiness {
         return color;
     }
 
-    public List<MedicineResponse> searchMedicinesWithColor(String medicineName, List<String> colors, int size) {
-        List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingNameWithColor(medicineName, colors, size);
+    public List<MedicineResponse> searchMedicinesWithColor(String medicineName, List<String> colors, String shape, int size) {
+        List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingNameWithColor(medicineName, colors, shape, size);
 
         return medicineDocuments.stream()
                 .map(medicineConverter::toResponseWithDocument).toList();

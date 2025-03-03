@@ -68,9 +68,9 @@ public class MedicineDocumentService {
         return medicineDocuments;
     }
 
-    public List<MedicineDocument> searchMedicineContainingNameWithColor(String medicineName, List<String> colors, int size) {
+    public List<MedicineDocument> searchMedicineContainingNameWithColor(String medicineName, List<String> colors, String shape, int size) {
         Pageable pageable = PageRequest.of(0, size);
-        List<MedicineDocument> medicineDocuments=medicineSearchCustomRepository.findByItemNameAndColor(medicineName, colors, pageable);
+        List<MedicineDocument> medicineDocuments=medicineSearchCustomRepository.findMedicineBySearching(medicineName, colors, shape, pageable);
         medicineDocuments.stream()
                 .findAny()
                 .orElseThrow(()-> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE, "해당하는 약이 존재하지 않습니다. "+medicineName))
