@@ -44,36 +44,36 @@ public class MedicineController {
                 .toString();
     }
 
-    // 약 검색 API
-    @GetMapping("/search")
-    @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
-    public Api<List<MedicineResponse>> searchMedicines(
-            @RequestParam("medicine_name")
-            @Parameter(description = "약 이름 키워드", required = true)
-            String medicineName,
-            @RequestParam(value = "size", defaultValue = "10")
-            @Parameter(description = "불러올 데이터 개수", required = false)
-            int size
-    ) {
-        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName, size);
-
-        return Api.OK(medicineResponses);
-    }
+//    // 약 검색 API
+//    @GetMapping("/search")
+//    @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
+//    public Api<List<MedicineResponse>> searchMedicines(
+//            @RequestParam("medicine_name")
+//            @Parameter(description = "약 이름 키워드", required = true)
+//            String medicineName,
+//            @RequestParam(value = "size", defaultValue = "10")
+//            @Parameter(description = "불러올 데이터 개수", required = false)
+//            int size
+//    ) {
+//        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName, size);
+//
+//        return Api.OK(medicineResponses);
+//    }
 
     // 약 검색 색상 필터링
-    @GetMapping("/search/color")
-    @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
+    @GetMapping("/search")
+    @Operation(summary = "약 검색 API v2", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
     public Api<List<MedicineResponse>> searchMedicinesWithColor(
             @RequestParam(value = "name", required = true)
             @Parameter(description = "약 이름 키워드", required = true)
             String name,
 
             @RequestParam(value = "colors", required = false)
-            @Parameter(description = "약 색상 필터링 (nullable)", required = false)
+            @Parameter(description = "약 색상 필터링 (nullable) ex) 하양, 노랑, 분홍, 파랑, 금, 기타", required = false)
             List<String> colors,
 
             @RequestParam(value = "shape", required = false)
-            @Parameter(description = "약 모양 (nullable)", required = false)
+            @Parameter(description = "약 모양 (nullable) ex) 원형, 삼각형 ...", required = false)
             String shape,
 
             @RequestParam(value = "size", defaultValue = "10")
