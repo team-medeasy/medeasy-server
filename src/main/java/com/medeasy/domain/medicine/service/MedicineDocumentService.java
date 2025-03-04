@@ -68,7 +68,7 @@ public class MedicineDocumentService {
         return medicineDocuments;
     }
 
-    public List<MedicineDocument> searchMedicineContainingNameWithColor(String medicineName, List<String> colors, String shape, int size) {
+    public List<MedicineDocument> searchMedicineContainingNameWithColor(String medicineName, List<String> colors, List<String> shape, int size) {
         Pageable pageable = PageRequest.of(0, size);
         List<MedicineDocument> medicineDocuments=medicineSearchCustomRepository.findMedicineBySearching(medicineName, colors, shape, pageable);
         medicineDocuments.stream()
