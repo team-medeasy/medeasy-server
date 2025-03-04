@@ -36,9 +36,8 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                                 .value(color)))
                         .toList();
                 boolQueryBuilder.should(colorQueries);
+                boolQueryBuilder.minimumShouldMatch("1");
             }
-
-            boolQueryBuilder.minimumShouldMatch("1");
 
             return boolQueryBuilder;
         });
