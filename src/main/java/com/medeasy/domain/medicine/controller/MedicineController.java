@@ -3,6 +3,7 @@ package com.medeasy.domain.medicine.controller;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.medicine.db.MedicineColor;
+import com.medeasy.domain.medicine.db.MedicineShape;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import com.medeasy.domain.medicine.dto.MedicineUpdateRequest;
@@ -75,13 +76,13 @@ public class MedicineController {
 
             @RequestParam(value = "shape", required = false)
             @Parameter(description = "약 모양 (nullable) ex) 원형, 삼각형 ...", required = false)
-            String shape,
+            List<MedicineShape> shapes,
 
             @RequestParam(value = "size", defaultValue = "10")
             @Parameter(description = "불러올 데이터 개수", required = false)
             int size
     ) {
-        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(name, colors, shape, size);
+        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(name, colors, shapes, size);
 
         return Api.OK(medicineResponses);
     }
