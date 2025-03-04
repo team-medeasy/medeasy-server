@@ -6,7 +6,6 @@ import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
-import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -23,17 +22,26 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
 
     @Override
     public List<MedicineDocument> findMedicineBySearching(String itemName, List<String> colors, String shape, Pageable pageable) {
-        Query boolQuery= QueryBuilders.bool(boolQueryBuilder->boolQueryBuilder
-                .must(QueryBuilder->QueryBuilder.match(matchQueryBuilder->matchQueryBuilder
+        Query boolQuery = QueryBuilders.bool(boolQueryBuilder -> {
+            if (itemName != null && !itemName.isEmpty()) {
+                boolQueryBuilder.must(QueryBuilder -> QueryBuilder.match(matchQueryBuilder -> matchQueryBuilder
                         .field("itemName")
-                        .query(itemName)))
-                .should(colors!=null && !colors.isEmpty() ?
-                        colors.stream().map(color ->
-                                QueryBuilders.term(t->t.field("color").value(color))
-                        ).toList()
-                        :List.of()
-                ).minimumShouldMatch("1")
-        );
+                        .query(itemName)));
+            }
+
+            if (colors != null && !colors.isEmpty()) {
+                List<Query> colorQueries = colors.stream()
+                        .map(color -> QueryBuilders.term(termQueryBuilder -> termQueryBuilder
+                                .field("color")
+                                .value(color)))
+                        .toList();
+                boolQueryBuilder.should(colorQueries);
+            }
+
+            boolQueryBuilder.minimumShouldMatch("1");
+
+            return boolQueryBuilder;
+        });
 
         NativeQuery nativeQuery = NativeQuery.builder()
                 .withQuery(boolQuery)
