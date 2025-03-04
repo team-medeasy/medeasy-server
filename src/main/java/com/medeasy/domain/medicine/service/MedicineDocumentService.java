@@ -2,10 +2,7 @@ package com.medeasy.domain.medicine.service;
 
 import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.exception.ApiException;
-import com.medeasy.domain.medicine.db.MedicineDocument;
-import com.medeasy.domain.medicine.db.MedicineEntity;
-import com.medeasy.domain.medicine.db.MedicineRepository;
-import com.medeasy.domain.medicine.db.MedicineSearchRepository;
+import com.medeasy.domain.medicine.db.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -23,6 +20,8 @@ public class MedicineDocumentService {
     private static final Logger log = LoggerFactory.getLogger(MedicineDocumentService.class);
     private final MedicineSearchRepository medicineSearchRepository;
     private final MedicineRepository medicineRepository; // 기존 JPA Repository
+
+    private final MedicineSearchCustomRepository medicineSearchCustomRepository;
 
     // 애플리케이션 실행시 elasticsearch repository, repo 동기화 작업
 //    @PostConstruct
@@ -66,6 +65,16 @@ public class MedicineDocumentService {
                 .findAny()
                 .orElseThrow(()-> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE, "해당하는 약이 존재하지 않습니다. "+medicineName))
                 ;
+        return medicineDocuments;
+    }
+
+    public List<MedicineDocument> searchMedicineContainingNameWithColor(String medicineName, List<String> colors, List<String> shape, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+        List<MedicineDocument> medicineDocuments=medicineSearchCustomRepository.findMedicineBySearching(medicineName, colors, shape, pageable);
+        medicineDocuments.stream()
+                .findAny()
+                .orElseThrow(()-> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE, "해당하는 약이 존재하지 않습니다. "+medicineName))
+        ;
         return medicineDocuments;
     }
 }

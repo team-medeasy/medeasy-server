@@ -3,9 +3,7 @@ package com.medeasy.domain.medicine.business;
 import com.medeasy.common.annotation.Business;
 import com.medeasy.common.logging.SaveLogToTxt;
 import com.medeasy.domain.medicine.converter.MedicineConverter;
-import com.medeasy.domain.medicine.db.MedicineDocument;
-import com.medeasy.domain.medicine.db.MedicineEntity;
-import com.medeasy.domain.medicine.db.MedicineRepository;
+import com.medeasy.domain.medicine.db.*;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import com.medeasy.domain.medicine.dto.MedicineUpdateRequest;
@@ -15,7 +13,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 
 @Slf4j
@@ -86,5 +88,17 @@ public class MedicineBusiness {
         }
 
         return color;
+    }
+
+    public List<MedicineResponse> searchMedicinesWithColor(String medicineName, List<MedicineColor> enumColors, List<MedicineShape> enumShapes, int size) {
+        List<String> colors= (enumColors != null && !enumColors.isEmpty()) ? enumColors.stream().map(MedicineColor::getColor).toList() : null;
+        log.info("medicine business color 변환: {}", colors);
+
+        List<String> shapes= (enumShapes != null && !enumShapes.isEmpty()) ? enumShapes.stream().map(MedicineShape::getShape).toList() : null;
+        log.info("medicine business shape 변환: {}", shapes);
+
+        List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingNameWithColor(medicineName, colors, shapes, size);
+
+        return medicineDocuments.stream().map(medicineConverter::toResponseWithDocument).toList();
     }
 }

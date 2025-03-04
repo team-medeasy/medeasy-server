@@ -20,48 +20,48 @@ public class MedicineDocument {
     @Id
     private String id;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Keyword)
     private String itemCode;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "standard")
     private String entpName;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String itemName;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Keyword)
     private String shape;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Keyword)
     private String color;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String efficacy;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String useMethod;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String attention;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String interaction; // 상호작용
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String sideEffect; // 부작용
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String depositMethod; // 보관법
 
-    @Field(type = FieldType.Date)
+    @Field(type = FieldType.Date, format = {}, pattern = "yyyy-MM-dd")
     private LocalDate openAt; // 공개일자
 
-    @Field(type = FieldType.Date)
+    @Field(type = FieldType.Date, format = {}, pattern = "yyyy-MM-dd")
     private LocalDate updateAt; // 수정일자
 
     @Field(type = FieldType.Text)
     private String imageUrl; // 이미지 URL
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Keyword)
     private String bizrno;
 }

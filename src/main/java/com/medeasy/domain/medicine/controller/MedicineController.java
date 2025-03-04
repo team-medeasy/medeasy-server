@@ -2,6 +2,8 @@ package com.medeasy.domain.medicine.controller;
 
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.medicine.business.MedicineBusiness;
+import com.medeasy.domain.medicine.db.MedicineColor;
+import com.medeasy.domain.medicine.db.MedicineShape;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import com.medeasy.domain.medicine.dto.MedicineUpdateRequest;
@@ -44,21 +46,58 @@ public class MedicineController {
                 .toString();
     }
 
-    // 약 검색 API
+//    // 약 검색 API
+//    @GetMapping("/search")
+//    @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
+//    public Api<List<MedicineResponse>> searchMedicines(
+//            @RequestParam("medicine_name")
+//            @Parameter(description = "약 이름 키워드", required = true)
+//            String medicineName,
+//            @RequestParam(value = "size", defaultValue = "10")
+//            @Parameter(description = "불러올 데이터 개수", required = false)
+//            int size
+//    ) {
+//        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName, size);
+//
+//        return Api.OK(medicineResponses);
+//    }
+
+    // 약 검색 색상 필터링
     @GetMapping("/search")
-    @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
-    public Api<List<MedicineResponse>> searchMedicines(
-            @RequestParam("medicine_name")
-            @Parameter(description = "약 이름 키워드", required = true)
-            String medicineName,
-            @RequestParam(value = "size", defaultValue = "10")
-            @Parameter(description = "불러올 데이터 개수", required = false)
+    @Operation(summary = "약 검색 API v2", description =
+            """
+            약 검색 API:
+            
+            약 이름, 색상, 모양 조건 선택하여 검색 
+                
+            약 색상, 모양 여러개 조건 선택시 ex) 빨강, 노랑 
+            
+            빨간약, 노랸약, 빨간노란약 출력 
+            
+            이외의 조건은 지속적으로 추가 예정 
+            """)
+    public Api<List<MedicineResponse>> searchMedicinesWithColor(
+            @RequestParam(value = "name", required = false)
+            @Parameter(description = "약 이름 키워드 (nullable)", required = false)
+            String name,
+
+            @RequestParam(value = "colors", required = false)
+            @Parameter(description = "약 색상 필터링 (nullable)", required = false)
+            List<MedicineColor> colors,
+
+            @RequestParam(value = "shape", required = false)
+            @Parameter(description = "약 모양 필터링 (nullable)", required = false)
+            List<MedicineShape> shapes,
+
+            @RequestParam(value = "size", defaultValue = "10", required = false)
+            @Parameter(description = "불러올 데이터 개수 (default: 10)", required = false)
             int size
     ) {
-        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName, size);
+        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(name, colors, shapes, size);
 
         return Api.OK(medicineResponses);
     }
+
 
     // 약 데이터 추가 컬럼
     @PostMapping("/update")
