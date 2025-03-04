@@ -3,6 +3,7 @@ package com.medeasy.domain.medicine.business;
 import com.medeasy.common.annotation.Business;
 import com.medeasy.common.logging.SaveLogToTxt;
 import com.medeasy.domain.medicine.converter.MedicineConverter;
+import com.medeasy.domain.medicine.db.MedicineColor;
 import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.db.MedicineEntity;
 import com.medeasy.domain.medicine.db.MedicineRepository;
@@ -15,7 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 
 @Slf4j
@@ -88,7 +93,10 @@ public class MedicineBusiness {
         return color;
     }
 
-    public List<MedicineResponse> searchMedicinesWithColor(String medicineName, List<String> colors, String shape, int size) {
+    public List<MedicineResponse> searchMedicinesWithColor(String medicineName, List<MedicineColor> enumColors, String shape, int size) {
+        List<String> colors= (enumColors != null && !enumColors.isEmpty()) ? enumColors.stream().map(MedicineColor::getColor).toList() : null;
+        log.info("medicine business color 변환: {}", colors);
+
         List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingNameWithColor(medicineName, colors, shape, size);
 
         return medicineDocuments.stream()
