@@ -3,8 +3,7 @@ package com.medeasy.domain.medicine.db;
 import lombok.Getter;
 
 /**
- * 갈색 분홍 초록 주황 연두 파랑
- *
+ * 약 색상 enum 타입
  * */
 @Getter
 public enum MedicineColor {
@@ -17,11 +16,18 @@ public enum MedicineColor {
     GREEN("초록"),
     ORANGE("주황"),
     LIGHT_GREEN("연두"),
-    BLUE("파랑");
+    BLUE("파랑"),
+    PURPLE("보라"),
+    GRAY("회색"),
+    CYAN("청록"),
+    NAVY("남색"),
+    MAGENTA("자주"),
+    BLACK("검정"),
+    TRANSPARENT("투명");
 
-    private String color;
+    private final String color;
 
-    private MedicineColor(String color) {
+    MedicineColor(String color) {
         this.color = color;
     }
 }
