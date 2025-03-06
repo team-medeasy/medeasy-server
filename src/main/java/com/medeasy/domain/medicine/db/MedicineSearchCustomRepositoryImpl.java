@@ -1,6 +1,5 @@
 package com.medeasy.domain.medicine.db;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import lombok.AllArgsConstructor;
@@ -57,6 +56,8 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
      *   },
      *   "size": 10
      * }
+     *
+     * TODO 제약 회사 이름으로도 검색 추가 itemName -> searchString
      *
      * */
     @Override
