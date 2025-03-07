@@ -10,7 +10,31 @@ import java.util.List;
 public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
     List<RoutineEntity> findAllByTakeDateAndUserIdOrderByTakeTimeAsc(LocalDate takeDate, Long userId);
 
-    // json 객체의 속성 이름 : 데이터베이스 컬럼 값
+    /**
+     * 사용자의 특정 날짜 루틴들을
+     * take_time으로 그룹화하여
+     * json 배열로 리턴
+     *
+     * response:
+     * [{
+     *     "take_time" : "08:00",
+     *     "routines": [
+     *          {
+     *             "routine_id" : 1,
+     *             "medicine_id" : 101,
+     *             "nickname" : 비타민
+     *          }
+     *      ]
+     *      "take_time" : "12:00",
+     *      "routines" : [
+     *          {
+     *              "routine_id" : 2,
+     *              "medicine_id" : 102,
+     *              "nickname" : 비타민 C
+     *          }
+     *      ]
+     * }]
+     * */
     @Query(value = "SELECT take_time, " +
             "       ARRAY_TO_JSON(ARRAY_AGG(jsonb_build_object(" +
             "           'routine_id', id, " +
@@ -40,4 +64,6 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             "AND r.isTaken = false")
     int countDistinctMedicineByUserIdAndIsTakenIsFalse(@Param("user_id") Long userId);
 
+
+    List<Long> findDistinctMedicineIdByUserIdAndIsTakenIsFalse(@Param("user_id") Long userId);
 }
