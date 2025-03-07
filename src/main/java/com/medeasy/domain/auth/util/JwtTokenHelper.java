@@ -10,6 +10,8 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -24,10 +26,15 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class JwtTokenHelper implements TokenHelperIfs{
 
-    private final StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisJwtTemplate;
+
+    // 명시적으로 @Autowired를 사용하고 @Qualifier를 적용
+    @Autowired
+    public JwtTokenHelper(@Qualifier("redisTemplateForJwt") StringRedisTemplate redisJwtTemplate) {
+        this.redisJwtTemplate = redisJwtTemplate;
+    }
 
     @Value("${token.secret.key}")
     private String secretKey;
@@ -71,7 +78,7 @@ public class JwtTokenHelper implements TokenHelperIfs{
 
         // Redis에 (refreshToken -> userId) 저장 + TTL 설정(시간 단위 HOUR)
         // refreshToken이 만료되면 자동으로 레디스에서 제거되도록
-        redisTemplate.opsForValue().set(
+        redisJwtTemplate.opsForValue().set(
                 userId,
                 jwtToken,
                 refreshTokenPlusHour,
@@ -105,7 +112,7 @@ public class JwtTokenHelper implements TokenHelperIfs{
                 throw new ApiException(TokenErrorCode.INVALID_TOKEN, "토큰 내 user 정보가 없습니다.");
             }
 
-            String storedRefreshToken = redisTemplate.opsForValue().get(userIdFromToken);
+            String storedRefreshToken = redisJwtTemplate.opsForValue().get(userIdFromToken);
             if (storedRefreshToken == null) {
                 // Redis에 토큰이 없다면 이미 만료되었거나, 로그아웃되었을 수 있음
                 throw new ApiException(TokenErrorCode.INVALID_TOKEN, "Redis에 저장된 Refresh Token이 없습니다.");

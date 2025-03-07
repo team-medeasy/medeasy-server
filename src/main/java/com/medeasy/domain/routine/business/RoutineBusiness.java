@@ -23,12 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Business
@@ -43,40 +41,36 @@ public class RoutineBusiness {
     private final OcrServiceByMultipart ocrService;
     private final AiService aiService;
     private final MedicineConverter medicineConverter;
-
+    /**
+     * 약 루틴 저장
+     * spring sequrity의 usercontext에서 사용자 정보를 가져오고
+     * 약 정보, 별명, 1회 복용량, 총 개수 저장
+     *
+     * 스케줄 저장
+     * 1. 일단 사용자 개인의 커스텀 시간을 가져온다.
+     * 2. 요청으로 들어온 date의 개수 * 시간의 개수만큼 RoutineSchedule entity를 생성한다.
+     * 3. 리스트로 만들어 한번에 저장
+     * 1. 오늘 날짜 가져오기
+     * 2. 하루에 몇번 먹는지 한번에 몇개의 약을 먹는지
+     *
+     * 예를 들어 total_quantity=29
+     * 하루에 약을 3번 한번에 2개 먹는다고 가정
+     * 그러면 29/6 = 4
+     * 총 4일동안 먹고 5개가 남는다.
+     * 즉 마지막 날에 2번 더 먹을 수 있음.
+     * 따라서 4+1로 올림 처리를 해야함.
+     *
+     * 월~일 -> 1~7
+     * 예를들어 월 수 금
+     * requiredDays가 5일
+     *
+     * 오늘이
+     *
+     * 월요일, 수요일, 금요일, 월요일, 수요일 -> 날짜로 표현
+     * 2/24, 2/26, 2/28, 3/3, 3/5
+     * */
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
 
-        /*
-        약 루틴 저장
-        spring sequrity의 usercontext에서 사용자 정보를 가져오고
-        약 정보, 별명, 1회 복용량, 총 개수 저장
-
-        스케줄 저장
-        * 1. 일단 사용자 개인의 커스텀 시간을 가져온다.
-        * 2. 요청으로 들어온 date의 개수 * 시간의 개수만큼 RoutineSchedule entity를 생성한다.
-        * 3. 리스트로 만들어 한번에 저장
-        * */
-
-        /*
-        * 1. 오늘 날짜 가져오기
-        * 2. 하루에 몇번 먹는지 한번에 몇개의 약을 먹는지
-        *
-        * 예를 들어 total_quantity=29
-        * 하루에 약을 3번 한번에 2개 먹는다고 가정
-        * 그러면 29/6 = 4
-        * 총 4일동안 먹고 5개가 남는다.
-        * 즉 마지막 날에 2번 더 먹을 수 있음.
-        * 따라서 4+1로 올림 처리를 해야함.
-        *
-        * 월~일 -> 1~7
-        * 예를들어 월 수 금
-        * requiredDays가 5일
-        *
-        * 오늘이
-        *
-        * 월요일, 수요일, 금요일, 월요일, 수요일 -> 날짜로 표현
-        * 2/24, 2/26, 2/28, 3/3, 3/5
-        * */
         // Entity 값 가져오기
         UserEntity userEntity = userService.getUserById(userId);
         MedicineEntity medicineEntity = medicineService.getMedicineById(routineRegisterRequest.getMedicineId());
@@ -118,14 +112,13 @@ public class RoutineBusiness {
 
         }
 
-        //TODO 내일 부터 계산
-        // 하루에 몇 개 먹는지
+        // 내일 날짜부터 루틴 저장
         int dailyDose=types.size()*routineRegisterRequest.getDose();
         int totalQuantity=routineRegisterRequest.getTotalQuantity()-quantity;
         int requiredDays=(int) Math.ceil((double) totalQuantity/dailyDose); // 반올림
         LocalDate nextDate = LocalDate.now().plusDays(1);
 
-        // 약을 복용하는 날짜
+        // 선택한 요일을 기반으로 약을 복용하는 날짜 구하기
         List<LocalDate> dates = new ArrayList<>();
 
         while(dates.size() < requiredDays) {
@@ -138,7 +131,7 @@ public class RoutineBusiness {
             nextDate = nextDate.plusDays(1);
         }
 
-        quantity=0;
+        quantity=0; // 약 복용 count
         for(int i=0; i<dates.size(); i++){
             for(int j=0; j<routineRegisterRequest.getTypes().size(); j++){
                 quantity+=routineRegisterRequest.getDose();
@@ -268,6 +261,9 @@ public class RoutineBusiness {
                 ;
     }
 
+    /**
+     * 처방전 루틴 등록 메서드
+     * */
     public void registerRoutineByPrescription(Long userId, MultipartFile file) {
         var userEntity = userService.getUserById(userId);
 
@@ -308,7 +304,12 @@ public class RoutineBusiness {
 
     }
 
-    // TODO type 임시 배치
+    /**
+     * 약을 먹는 시기 구하는 메서드
+     * 사용자가 하루에 약을 먹는 횟수에 따라서 아침, 점심, 저녁, 자기전 중 언제 먹을지 설정
+     *
+     * TODO 루틴 등록시에는 약을 먹는 시기를 명시하지만, 처방전 등록시에는 자동으로 설정하던, 미리 설정 값을 입력받는 쪽으로 구현
+     * */
     private List<String> convertTypeCountToTypes(int typeCount) {
 
         if(typeCount==1){
@@ -330,6 +331,9 @@ public class RoutineBusiness {
         throw new ApiException(ErrorCode.BAD_REQEUST, "잘못된 type count 입력");
     }
 
+    /**
+     * 루틴 제거 메서드
+     * */
     public void deleteRoutine(Long userId, Long routineId) {
         // routine 존재 여부 파악
         RoutineEntity routineEntity=routineService.getRoutineById(routineId);

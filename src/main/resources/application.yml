@@ -32,6 +32,15 @@ token:
   refresh-token:
     plus-hour: ${REFRESH_TOKEN_HOUR}
 
+redis:
+  jwt:
+    host: ${REDIS_JWT_HOST}
+    port: ${REDIS_JWT_PORT}
+
+  alarm:
+    host: ${REDIS_ALARM_HOST}
+    port: ${REDIS_ALARM_PORT}
+
 ocr:
   api:
     url: ${OCR_API_URL}
