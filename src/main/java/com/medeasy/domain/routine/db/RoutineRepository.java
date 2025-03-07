@@ -6,7 +6,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
     List<RoutineEntity> findAllByTakeDateAndUserIdOrderByTakeTimeAsc(LocalDate takeDate, Long userId);
@@ -32,4 +31,14 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             @Param("user_id") Long userId
     );
 
+    /**
+     * 사용자가 복용 중인 약 개수 반환
+     * */
+    @Query("SELECT COUNT(DISTINCT r.medicine) " +
+            "FROM RoutineEntity r " +
+            "WHERE r.user.id = :user_id " +
+            "AND r.isTaken = false")
+    int countDistinctMedicineByUserIdAndIsTakenIsFalse(@Param("user_id") Long userId);
+
+    \
 }

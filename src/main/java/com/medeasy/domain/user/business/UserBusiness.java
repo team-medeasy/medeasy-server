@@ -1,6 +1,8 @@
 package com.medeasy.domain.user.business;
 
 import com.medeasy.common.annotation.Business;
+import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.dto.RoutineScheduleRequest;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.dto.UserScheduleResponse;
@@ -15,6 +17,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -23,6 +26,7 @@ import java.util.Optional;
 public class UserBusiness {
 
     private final UserService userService;
+    private final RoutineService routineService;
 
     /**
      * request의 null이 아닌 수정사항만 사용자의 정보에서 업데이트
@@ -87,5 +91,24 @@ public class UserBusiness {
                 .usageDays(serviceDays)
                 .build()
                 ;
+    }
+
+    /**
+     * 복용하고 있는 약의 개수를 구하려면
+     * 현재 입장에서는 사용자 루틴 리스트를 불러오고
+     * 순차로 돌면서 중복되지 않는 약들을 가져와야한다...
+     *
+     * 수시로 가져오는 간단한 값인데 계산 과정이 너무 복잡
+     * 1. user 테이블에 반정규화
+     * 2. routine 위에 User medicine 테이블 추가
+     *
+     * 1번의 경우 루틴을 등록할 때마다 카운트, 루틴이 만료될 때 디스카운트 해야하는데
+     *
+     * */
+    public Object getUserMedicinesCount(Long userId) {
+        UserEntity userEntity=userService.getUserById(userId);
+        int countDistinctMedicines = routineService.getRoutinesByUserId(userId);
+
+        return countDistinctMedicines;
     }
 }

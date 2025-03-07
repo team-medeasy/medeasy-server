@@ -87,4 +87,21 @@ public class UserController {
 
         return Api.OK(response);
     }
+
+    @Operation(summary = "사용자 복용하고 있는 약 개수 반환", description =
+            """
+            사용자 복용하고 있는 약 개수 반환 API:
+            
+            사용자 총 복용 약품 수 반환 
+            """
+    )
+    @GetMapping("/medicine/count")
+    public Api<Object> getUserMedicinesCount(
+            @Parameter(hidden = true)
+            @UserSession Long userId
+    ) {
+        var response=userBusiness.getUserMedicinesCount(userId);
+
+        return Api.OK(response);
+    }
 }
