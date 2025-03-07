@@ -64,6 +64,9 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             "AND r.isTaken = false")
     int countDistinctMedicineByUserIdAndIsTakenIsFalse(@Param("user_id") Long userId);
 
-
+    @Query("SELECT DISTINCT r.medicine.id " +
+            "FROM RoutineEntity r " +
+            "WHERE r.user.id = :user_id " +
+            "AND r.isTaken = false")
     List<Long> findDistinctMedicineIdByUserIdAndIsTakenIsFalse(@Param("user_id") Long userId);
 }

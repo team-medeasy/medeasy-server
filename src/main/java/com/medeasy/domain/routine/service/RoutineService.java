@@ -67,7 +67,7 @@ public class RoutineService {
         routineRepository.deleteById(routineId);
     }
 
-    public int getRoutinesByUserId(Long userId) {
-        return routineRepository.countDistinctMedicineByUserIdAndIsTakenIsFalse(userId);
+    public List<Long> getRoutinesByUserId(Long userId) {
+        return routineRepository.findDistinctMedicineIdByUserIdAndIsTakenIsFalse(userId);
     }
 }

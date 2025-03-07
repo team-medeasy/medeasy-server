@@ -5,6 +5,7 @@ import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.dto.RoutineScheduleRequest;
 import com.medeasy.domain.user.db.UserEntity;
+import com.medeasy.domain.user.dto.UserMedicinesResponse;
 import com.medeasy.domain.user.dto.UserScheduleResponse;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import com.medeasy.domain.user.service.UserService;
@@ -105,10 +106,14 @@ public class UserBusiness {
      * 1번의 경우 루틴을 등록할 때마다 카운트, 루틴이 만료될 때 디스카운트 해야하는데
      *
      * */
-    public Object getUserMedicinesCount(Long userId) {
+    public UserMedicinesResponse getUserMedicinesCount(Long userId) {
         UserEntity userEntity=userService.getUserById(userId);
-        int countDistinctMedicines = routineService.getRoutinesByUserId(userId);
+        List<Long> userMedicinesIds = routineService.getRoutinesByUserId(userId);
 
-        return countDistinctMedicines;
+        return UserMedicinesResponse.builder()
+                .medicineCount(userMedicinesIds.size())
+                .medicineIds(userMedicinesIds)
+                .build()
+                ;
     }
 }

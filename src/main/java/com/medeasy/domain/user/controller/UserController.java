@@ -10,13 +10,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("user")
 public class UserController {
 
     private final UserBusiness userBusiness;
@@ -92,7 +90,7 @@ public class UserController {
             """
             사용자 복용하고 있는 약 개수 반환 API:
             
-            사용자 총 복용 약품 수 반환 
+            사용자 총 복용 약품 수, 복용 중인 약 id 리스트 반환
             """
     )
     @GetMapping("/medicine/count")
