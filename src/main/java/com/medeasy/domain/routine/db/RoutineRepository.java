@@ -40,5 +40,4 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             "AND r.isTaken = false")
     int countDistinctMedicineByUserIdAndIsTakenIsFalse(@Param("user_id") Long userId);
 
-    \
 }
