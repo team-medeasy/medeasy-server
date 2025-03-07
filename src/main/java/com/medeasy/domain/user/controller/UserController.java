@@ -5,17 +5,16 @@ import com.medeasy.common.api.Api;
 import com.medeasy.domain.user.dto.RoutineScheduleRequest;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.UserScheduleResponse;
+import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("user")
 public class UserController {
 
     private final UserBusiness userBusiness;
@@ -64,6 +63,42 @@ public class UserController {
             @UserSession Long userId
     ) {
         UserScheduleResponse response=userBusiness.getRoutineSchedule(userId);
+
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "서비스 이용 날짜 반환", description =
+            """
+            서비스 이용 날짜 반환 API:
+            
+            내 정보에 표시되는 서비스 이용 날짜 반환
+            
+            가입날짜로부터 오늘날짜를 빼서 계산 
+            """
+    )
+    @GetMapping("/usage-days")
+    public Api<Object> getServiceUsageDays(
+            @Parameter(hidden = true)
+            @UserSession Long userId
+    ) {
+        UserUsageDaysResponse response=userBusiness.getServiceUsageDays(userId);
+
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "사용자 복용하고 있는 약 개수 반환", description =
+            """
+            사용자 복용하고 있는 약 개수 반환 API:
+            
+            사용자 총 복용 약품 수, 복용 중인 약 id 리스트 반환
+            """
+    )
+    @GetMapping("/medicine/count")
+    public Api<Object> getUserMedicinesCount(
+            @Parameter(hidden = true)
+            @UserSession Long userId
+    ) {
+        var response=userBusiness.getUserMedicinesCount(userId);
 
         return Api.OK(response);
     }
