@@ -4,12 +4,20 @@ import com.medeasy.common.annotation.Business;
 import com.medeasy.domain.user.dto.RoutineScheduleRequest;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.dto.UserScheduleResponse;
+import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import com.medeasy.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Optional;
 
+@Slf4j
 @Business
 @RequiredArgsConstructor
 public class UserBusiness {
@@ -17,7 +25,7 @@ public class UserBusiness {
     private final UserService userService;
 
     /**
-     * request의 null이 아닌 수정사항만 사용자의 정보에서 업데잋트
+     * request의 null이 아닌 수정사항만 사용자의 정보에서 업데이트
      * */
     @Transactional
     public UserScheduleResponse updateRoutineSchedule(Long userId, RoutineScheduleRequest request) {
@@ -54,6 +62,29 @@ public class UserBusiness {
                 .lunch(userEntity.getLunch())
                 .dinner(userEntity.getDinner())
                 .bedTime(userEntity.getBedTime())
+                .build()
+                ;
+    }
+
+    public UserUsageDaysResponse getServiceUsageDays(Long userId) {
+
+        UserEntity userEntity=userService.getUserById(userId);
+
+        log.info("user registered days: {}", userEntity.getRegisteredAt());
+
+        Date registeredAt=userEntity.getRegisteredAt();
+
+        LocalDate registeredDate = Instant.ofEpochMilli(registeredAt.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        LocalDate now = LocalDate.now();
+
+        long serviceDays = ChronoUnit.DAYS.between(registeredDate, now)+1L;
+
+        return UserUsageDaysResponse.builder()
+                .userId(userId)
+                .usageDays(serviceDays)
                 .build()
                 ;
     }

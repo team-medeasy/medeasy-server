@@ -5,6 +5,7 @@ import com.medeasy.common.api.Api;
 import com.medeasy.domain.user.dto.RoutineScheduleRequest;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.UserScheduleResponse;
+import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
@@ -64,6 +65,25 @@ public class UserController {
             @UserSession Long userId
     ) {
         UserScheduleResponse response=userBusiness.getRoutineSchedule(userId);
+
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "서비스 이용 날짜 반환", description =
+            """
+            서비스 이용 날짜 반환 API:
+            
+            내 정보에 표시되는 서비스 이용 날짜 반환
+            
+            가입날짜로부터 오늘날짜를 빼서 계산 
+            """
+    )
+    @GetMapping("/usage-days")
+    public Api<Object> getServiceUsageDays(
+            @Parameter(hidden = true)
+            @UserSession Long userId
+    ) {
+        UserUsageDaysResponse response=userBusiness.getServiceUsageDays(userId);
 
         return Api.OK(response);
     }
