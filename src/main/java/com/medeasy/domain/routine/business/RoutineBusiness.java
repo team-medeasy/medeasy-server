@@ -1,5 +1,6 @@
 package com.medeasy.domain.routine.business;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.annotation.Business;
 import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.exception.ApiException;
@@ -18,21 +19,24 @@ import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Business
-@RequiredArgsConstructor
 public class RoutineBusiness {
-
     private final RoutineService routineService;
     private final UserService userService;
     private final MedicineService medicineService;
@@ -41,6 +45,33 @@ public class RoutineBusiness {
     private final OcrServiceByMultipart ocrService;
     private final AiService aiService;
     private final MedicineConverter medicineConverter;
+    private final StringRedisTemplate redisAlarmTemplate;
+    private final ObjectMapper objectMapper;
+
+    // 생성자 주입 + @Qualifier 적용
+    public RoutineBusiness(
+            RoutineService routineService,
+            UserService userService,
+            MedicineService medicineService,
+            MedicineDocumentService medicineDocumentService,
+            RoutineConverter routineConverter,
+            OcrServiceByMultipart ocrService,
+            AiService aiService,
+            MedicineConverter medicineConverter,
+            @Qualifier("redisTemplateForAlarm") StringRedisTemplate redisAlarmTemplate, // @Qualifier 적용
+            ObjectMapper objectMapper
+    ) {
+        this.routineService = routineService;
+        this.userService = userService;
+        this.medicineService = medicineService;
+        this.medicineDocumentService = medicineDocumentService;
+        this.routineConverter = routineConverter;
+        this.ocrService = ocrService;
+        this.aiService = aiService;
+        this.medicineConverter = medicineConverter;
+        this.redisAlarmTemplate = redisAlarmTemplate;
+        this.objectMapper = objectMapper;
+    }
     /**
      * 약 루틴 저장
      * spring sequrity의 usercontext에서 사용자 정보를 가져오고
@@ -86,8 +117,8 @@ public class RoutineBusiness {
         int quantity=0;
 
         // 오늘 날짜의 복용 루틴 저장
-        LocalDate currnetDate = LocalDate.now();
-        int currentDayValue = currnetDate.getDayOfWeek().getValue();
+        LocalDate currentDate = LocalDate.now();
+        int currentDayValue = currentDate.getDayOfWeek().getValue();
 
         if(routineRegisterRequest.getDayOfWeeks().contains(currentDayValue)) {
             LocalTime currentTime = LocalTime.now();
@@ -97,7 +128,7 @@ public class RoutineBusiness {
                     RoutineEntity routineEntity=RoutineEntity.builder()
                             .nickname(nickname)
                             .isTaken(false)
-                            .takeDate(currnetDate)
+                            .takeDate(currentDate)
                             .takeTime(times.get(i))
                             .dose(routineRegisterRequest.getDose())
                             .type(types.get(i))
@@ -106,6 +137,12 @@ public class RoutineBusiness {
                             .build()
                             ;
                     routineEntities.add(routineEntity);
+
+                    LocalDateTime dateTime=LocalDateTime.of(currentDate, times.get(i));
+                    String value=convertToJson(userId.toString(), nickname, dateTime);
+                    long score=dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                    redisAlarmTemplate.opsForZSet().add("alarm_list", value, score);
+
                     quantity+=dose;
                 }
             }
@@ -132,28 +169,33 @@ public class RoutineBusiness {
         }
 
         quantity=0; // 약 복용 count
-        for(int i=0; i<dates.size(); i++){
-            for(int j=0; j<routineRegisterRequest.getTypes().size(); j++){
-                quantity+=routineRegisterRequest.getDose();
-                if(quantity>totalQuantity) break;
+        for (LocalDate localDate : dates) {
+            for (int j = 0; j < routineRegisterRequest.getTypes().size(); j++) {
+                quantity += routineRegisterRequest.getDose();
+                if (quantity > totalQuantity) break;
 
                 // 사용자 시간 변환
                 LocalTime time = convertTypeToLocalTime(routineRegisterRequest.getTypes().get(j), userEntity);
-                LocalDate date = dates.get(i);
 
-                RoutineEntity routineEntity=RoutineEntity.builder()
+                RoutineEntity routineEntity = RoutineEntity.builder()
                         .nickname(nickname)
                         .isTaken(false)
-                        .takeDate(date)
+                        .takeDate(localDate)
                         .takeTime(time)
                         .dose(routineRegisterRequest.getDose())
                         .type(routineRegisterRequest.getTypes().get(j))
                         .medicine(medicineEntity)
                         .user(userEntity)
-                        .build()
-                        ;
+                        .build();
 
                 routineEntities.add(routineEntity);
+
+                LocalDateTime dateTime=LocalDateTime.of(localDate, time);
+                String value=convertToJson(userId.toString(), nickname, dateTime);
+                long score=dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                redisAlarmTemplate.opsForZSet().add("alarm_list", value, score);
+
+                log.info("redis 저장 value: {}, score: {}", value, score);
             }
         }
         routineService.saveAll(routineEntities);
@@ -246,6 +288,9 @@ public class RoutineBusiness {
         routineService.saveAll(entities);
     }
 
+    /**
+     * 루틴 복용 체크 메서드
+     * */
     @Transactional()
     public RoutineCheckResponse checkRoutine(Long routineId, Boolean isTaken) {
 
@@ -340,4 +385,18 @@ public class RoutineBusiness {
 
         routineService.deleteRoutine(routineId);
     }
+
+    public String convertToJson(String clientId, String medicineName, LocalDateTime dateTime) {
+        Map<String, Object> alarmData= new HashMap<>();
+        alarmData.put("client_id", clientId);
+        alarmData.put("medicine_name", medicineName);
+        alarmData.put("date_time", dateTime.toString());
+
+        try {
+            return objectMapper.writeValueAsString(alarmData);
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.SERVER_ERROR, "rouitne json 변환 중 오류");
+        }
+    }
+
 }
