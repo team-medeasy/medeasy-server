@@ -113,4 +113,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
 
     }
 
+    public void saveSearchHistory(SearchHistoryDocument searchHistoryDocument){
+        elasticsearchOperations.save(searchHistoryDocument);
+    }
 }

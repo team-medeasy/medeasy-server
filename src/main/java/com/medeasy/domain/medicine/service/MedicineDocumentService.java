@@ -1,9 +1,6 @@
 package com.medeasy.domain.medicine.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
-import co.elastic.clients.elasticsearch.core.IndexResponse;
-import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.db.*;
@@ -17,9 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +25,7 @@ public class MedicineDocumentService {
     private final MedicineRepository medicineRepository; // 기존 JPA Repository
 
     private final MedicineSearchCustomRepository medicineSearchCustomRepository;
+    private final SearchHistoryRepository searchHistoryRepository;
 
     private final ElasticsearchClient elasticsearchClient;
 
@@ -62,7 +58,13 @@ public class MedicineDocumentService {
                         .build()
                 ).toList();
 
-        medicineSearchRepository.saveAll(medicineDocuments);
+        int batchSize = 100; // ✅ 배치 크기 조절 (500개씩 처리)
+        for(int i=0; i<medicineDocuments.size(); i+=batchSize) {
+            List<MedicineDocument> batch = medicineDocuments.subList(i, Math.min(i+batchSize, medicineDocuments.size()));
+            medicineSearchRepository.saveAll(batch);
+
+            log.info(" {}번째 배치 성공", i+1);
+        }
     }
 
     // TODO 검색한 약이 존재하지 않을 경우 크롤링 고려
@@ -89,22 +91,13 @@ public class MedicineDocumentService {
     }
 
     public void saveSearchKeyword(String userId, String keyword) {
-        Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put("user_id", userId);
-        jsonMap.put("keyword", keyword);
-        jsonMap.put("search_time", Instant.now());
+        SearchHistoryDocument searchHistoryDocument = SearchHistoryDocument.builder()
+                .userId(userId)
+                .keyword(keyword)
+                .searchTime(Instant.now())
+                .build()
+                ;
 
-        // IndexRequest를 빌더 패턴으로 생성
-        IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i
-                .index("search_history") // 인덱스명
-                .document(jsonMap)       // 문서 데이터
-        );
-
-        try{
-            IndexResponse response = elasticsearchClient.index(request);
-        }catch (Exception e){
-            throw new ApiException(ErrorCode.SERVER_ERROR, "검색 내역 기록 중 오류 발생");
-        }
-
+        searchHistoryRepository.save(searchHistoryDocument);
     }
 }

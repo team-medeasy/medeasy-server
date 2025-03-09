@@ -1,5 +1,6 @@
 package com.medeasy.domain.medicine.controller;
 
+import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.medicine.db.MedicineColor;
@@ -77,6 +78,7 @@ public class MedicineController {
             이외의 조건은 지속적으로 추가 예정 
             """)
     public Api<List<MedicineResponse>> searchMedicinesWithColor(
+            @Parameter(hidden = true) @UserSession Long userId,
             @RequestParam(value = "name", required = false)
             @Parameter(description = "약 이름 키워드 (nullable)", required = false)
             String name,
@@ -93,7 +95,7 @@ public class MedicineController {
             @Parameter(description = "불러올 데이터 개수 (default: 10)", required = false)
             int size
     ) {
-        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(name, colors, shapes, size);
+        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(userId, name, colors, shapes, size);
 
         return Api.OK(medicineResponses);
     }
