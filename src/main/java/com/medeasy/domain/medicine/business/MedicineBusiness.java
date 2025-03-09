@@ -102,10 +102,6 @@ public class MedicineBusiness {
 
         List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingNameWithColor(medicineName, colors, shapes, size);
 
-        if (medicineName != null){
-            medicineDocumentService.saveSearchKeyword(userId.toString(), medicineName);
-        }
-
         return medicineDocuments.stream().map(medicineConverter::toResponseWithDocument).toList();
     }
 
