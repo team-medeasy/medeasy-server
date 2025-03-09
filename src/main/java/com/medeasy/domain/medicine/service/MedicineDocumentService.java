@@ -4,7 +4,6 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.db.*;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,9 +23,7 @@ public class MedicineDocumentService {
     private final MedicineRepository medicineRepository; // 기존 JPA Repository
 
     private final MedicineSearchCustomRepository medicineSearchCustomRepository;
-    private final SearchHistoryRepository searchHistoryRepository;
 
-    private final ElasticsearchClient elasticsearchClient;
 
     // 애플리케이션 실행시 elasticsearch repository, repo 동기화 작업
 //    @PostConstruct
@@ -90,14 +86,4 @@ public class MedicineDocumentService {
         return medicineDocuments;
     }
 
-    public void saveSearchKeyword(String userId, String keyword) {
-        SearchHistoryDocument searchHistoryDocument = SearchHistoryDocument.builder()
-                .userId(userId)
-                .keyword(keyword)
-                .searchTime(Instant.now())
-                .build()
-                ;
-
-        searchHistoryRepository.save(searchHistoryDocument);
-    }
 }
