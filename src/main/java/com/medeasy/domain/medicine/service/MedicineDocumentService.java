@@ -1,5 +1,9 @@
 package com.medeasy.domain.medicine.service;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.db.*;
@@ -11,7 +15,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +30,8 @@ public class MedicineDocumentService {
     private final MedicineRepository medicineRepository; // 기존 JPA Repository
 
     private final MedicineSearchCustomRepository medicineSearchCustomRepository;
+
+    private final ElasticsearchClient elasticsearchClient;
 
     // 애플리케이션 실행시 elasticsearch repository, repo 동기화 작업
 //    @PostConstruct
@@ -76,5 +86,25 @@ public class MedicineDocumentService {
                 .orElseThrow(()-> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE, "해당하는 약이 존재하지 않습니다. "+medicineName))
         ;
         return medicineDocuments;
+    }
+
+    public void saveSearchKeyword(String userId, String keyword) {
+        Map<String, Object> jsonMap = new HashMap<>();
+        jsonMap.put("user_id", userId);
+        jsonMap.put("keyword", keyword);
+        jsonMap.put("search_time", Instant.now());
+
+        // IndexRequest를 빌더 패턴으로 생성
+        IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i
+                .index("search_history") // 인덱스명
+                .document(jsonMap)       // 문서 데이터
+        );
+
+        try{
+            IndexResponse response = elasticsearchClient.index(request);
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.SERVER_ERROR, "검색 내역 기록 중 오류 발생");
+        }
+
     }
 }

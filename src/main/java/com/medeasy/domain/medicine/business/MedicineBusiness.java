@@ -99,6 +99,10 @@ public class MedicineBusiness {
 
         List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingNameWithColor(medicineName, colors, shapes, size);
 
+        if (medicineName != null){
+
+        }
+
         return medicineDocuments.stream().map(medicineConverter::toResponseWithDocument).toList();
     }
 }
