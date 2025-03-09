@@ -45,8 +45,8 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.4'
 
-	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
-	implementation 'co.elastic.clients:elasticsearch-java:8.10.0' // 최신 Elasticsearch 클라이언트
+	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch:3.4.2'
+	implementation 'co.elastic.clients:elasticsearch-java:8.15.0' // 최신 Elasticsearch 클라이언트
 }
 
 tasks.named('test') {
