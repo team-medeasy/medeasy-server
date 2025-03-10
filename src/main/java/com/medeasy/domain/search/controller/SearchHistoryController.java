@@ -3,6 +3,7 @@ package com.medeasy.domain.search.controller;
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
+import com.medeasy.domain.search.dto.SearchHistoryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,20 @@ public class SearchHistoryController {
             @Parameter(description = "불러올 최근 검색어 개수 (default: 10)", required = false)
             int size
     ) {
-        List<String> response=searchHistoryBusiness.getUserSearchHistories(userId, size);
+        List<SearchHistoryResponse> response=searchHistoryBusiness.getUserSearchHistories(userId, size);
+
+        return Api.OK(response);
+    }
+
+    @DeleteMapping("")
+    @Operation(summary = "사용자 최근 검색어 삭제 api", description = "사용자 최근 검색어 삭제 api")
+    public Object deleteUserSearchHistory(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @RequestParam(value = "size", defaultValue = "10", required = false)
+            @Parameter(description = "불러올 최근 검색어 개수 (default: 10)", required = false)
+            int size
+    ) {
+        List<SearchHistoryResponse> response=searchHistoryBusiness.getUserSearchHistories(userId, size);
 
         return Api.OK(response);
     }

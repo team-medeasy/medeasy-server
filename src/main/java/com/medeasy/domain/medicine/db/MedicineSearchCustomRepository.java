@@ -1,5 +1,6 @@
 package com.medeasy.domain.medicine.db;
 
+import com.medeasy.domain.search.db.SearchHistoryDocument;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;

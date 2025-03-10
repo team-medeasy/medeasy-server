@@ -1,8 +1,8 @@
 package com.medeasy.domain.search.business;
 
 import com.medeasy.common.annotation.Business;
-import com.medeasy.domain.medicine.db.SearchHistoryDocument;
-import com.medeasy.domain.medicine.service.MedicineDocumentService;
+import com.medeasy.domain.search.db.SearchHistoryDocument;
+import com.medeasy.domain.search.dto.SearchHistoryResponse;
 import com.medeasy.domain.search.service.SearchHistoryService;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
@@ -17,9 +17,14 @@ public class SearchHistoryBusiness {
         searchHistoryService.saveSearchKeyword(userId, medicineName);
     }
 
-    public List<String> getUserSearchHistories(Long userId, int size) {
+    public List<SearchHistoryResponse> getUserSearchHistories(Long userId, int size) {
         List<SearchHistoryDocument> histories = searchHistoryService.getUserSearchHistories(userId, size);
 
-        return histories.stream().map(SearchHistoryDocument::getKeyword).toList();
+        return histories.stream().map(searchHistoryDocument -> {
+            return SearchHistoryResponse.builder()
+                    .id(searchHistoryDocument.getId())
+                    .keyword(searchHistoryDocument.getKeyword())
+                    .build();
+        }).toList();
     }
 }
