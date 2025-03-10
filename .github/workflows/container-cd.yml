@@ -20,6 +20,9 @@ jobs:
       ACCESS_TOKEN_HOUR: ${{secrets.ACCESS_TOKEN_HOUR}}
       REFRESH_TOKEN_HOUR: ${{secrets.REFRESH_TOKEN_HOUR}}
 
+      REDIS_HOST: ${{secrets.REDIS_HOST}}
+      REDIS_PORT: ${{secrets.REDIS_PORT}}
+
       REDIS_JWT_HOST: ${{secrets.REDIS_JWT_HOST}}
       REDIS_JWT_PORT: ${{secrets.REDIS_JWT_PORT}}
 

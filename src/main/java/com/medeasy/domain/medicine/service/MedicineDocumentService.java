@@ -1,9 +1,9 @@
 package com.medeasy.domain.medicine.service;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.db.*;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
