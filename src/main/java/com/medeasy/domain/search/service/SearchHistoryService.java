@@ -5,6 +5,8 @@ import co.elastic.clients.elasticsearch._types.SortOptionsBuilders;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.search.db.SearchHistoryDocument;
 import com.medeasy.domain.search.db.SearchHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -59,5 +61,12 @@ public class SearchHistoryService {
                 .stream()
                 .map(SearchHit::getContent)
                 .collect(Collectors.toList());
+    }
+
+    public void deleteSearchHistory(Long userId, String searchHistoryId) {
+        SearchHistoryDocument searchHistoryDocument = searchHistoryRepository.findById(searchHistoryId)
+                .orElseThrow(() -> new ApiException(ErrorCode.BAD_REQEUST, "해당하는 검색 기록이 없습니다."));
+
+        searchHistoryRepository.delete(searchHistoryDocument);
     }
 }

@@ -27,4 +27,8 @@ public class SearchHistoryBusiness {
                     .build();
         }).toList();
     }
+
+    public void deleteUserSearchHistory(Long userId, String searchHistoryId) {
+        searchHistoryService.deleteSearchHistory(userId, searchHistoryId);
+    }
 }

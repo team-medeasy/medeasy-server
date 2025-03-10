@@ -7,7 +7,6 @@ import com.medeasy.domain.search.dto.SearchHistoryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,12 +35,12 @@ public class SearchHistoryController {
     @Operation(summary = "사용자 최근 검색어 삭제 api", description = "사용자 최근 검색어 삭제 api")
     public Object deleteUserSearchHistory(
             @Parameter(hidden = true) @UserSession Long userId,
-            @RequestParam(value = "size", defaultValue = "10", required = false)
-            @Parameter(description = "불러올 최근 검색어 개수 (default: 10)", required = false)
-            int size
+            @RequestParam(value = "search_history_id", required = true)
+            @Parameter(description = "검색 기록 id (문자열)", required = true)
+            String searchHistoryId
     ) {
-        List<SearchHistoryResponse> response=searchHistoryBusiness.getUserSearchHistories(userId, size);
+        searchHistoryBusiness.deleteUserSearchHistory(userId, searchHistoryId);
 
-        return Api.OK(response);
+        return Api.OK(null);
     }
 }
