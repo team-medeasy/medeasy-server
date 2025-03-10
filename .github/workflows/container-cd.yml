@@ -19,11 +19,13 @@ jobs:
       TOKEN_SECRET_KEY: ${{secrets.TOKEN_SECRET_KEY}}
       ACCESS_TOKEN_HOUR: ${{secrets.ACCESS_TOKEN_HOUR}}
       REFRESH_TOKEN_HOUR: ${{secrets.REFRESH_TOKEN_HOUR}}
+
       REDIS_JWT_HOST: ${{secrets.REDIS_JWT_HOST}}
       REDIS_JWT_PORT: ${{secrets.REDIS_JWT_PORT}}
 
-      REDIS_ALARM_HOST: ${{sercrets.REDIS_ALARM_HOST}}
-      REDIS_ALARM_PORT: ${{sercrets.REDIS_ALARM_PORT}}
+      REDIS_ALARM_HOST: ${{secrets.REDIS_ALARM_HOST}}
+      REDIS_ALARM_PORT: ${{secrets.REDIS_ALARM_PORT}}
+
       OCR_API_URL: ${{secrets.OCR_API_URL}}
       OCR_SECRET: ${{secrets.OCR_SECRET}}
       GEMINI_API_URL: ${{secrets.GEMINI_API_URL}}
