@@ -1,9 +1,9 @@
 package com.medeasy.domain.medicine.service;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.db.*;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -22,6 +23,7 @@ public class MedicineDocumentService {
     private final MedicineRepository medicineRepository; // 기존 JPA Repository
 
     private final MedicineSearchCustomRepository medicineSearchCustomRepository;
+
 
     // 애플리케이션 실행시 elasticsearch repository, repo 동기화 작업
 //    @PostConstruct
@@ -52,7 +54,13 @@ public class MedicineDocumentService {
                         .build()
                 ).toList();
 
-        medicineSearchRepository.saveAll(medicineDocuments);
+        int batchSize = 100; // ✅ 배치 크기 조절 (500개씩 처리)
+        for(int i=0; i<medicineDocuments.size(); i+=batchSize) {
+            List<MedicineDocument> batch = medicineDocuments.subList(i, Math.min(i+batchSize, medicineDocuments.size()));
+            medicineSearchRepository.saveAll(batch);
+
+            log.info(" {}번째 배치 성공", i+1);
+        }
     }
 
     // TODO 검색한 약이 존재하지 않을 경우 크롤링 고려
@@ -77,4 +85,5 @@ public class MedicineDocumentService {
         ;
         return medicineDocuments;
     }
+
 }

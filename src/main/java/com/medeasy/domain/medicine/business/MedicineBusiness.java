@@ -90,7 +90,10 @@ public class MedicineBusiness {
         return color;
     }
 
-    public List<MedicineResponse> searchMedicinesWithColor(String medicineName, List<MedicineColor> enumColors, List<MedicineShape> enumShapes, int size) {
+    /**
+     * 메인 검색 로직
+     * */
+    public List<MedicineResponse> searchMedicinesWithColor(Long userId, String medicineName, List<MedicineColor> enumColors, List<MedicineShape> enumShapes, int size) {
         List<String> colors= (enumColors != null && !enumColors.isEmpty()) ? enumColors.stream().map(MedicineColor::getColor).toList() : null;
         log.info("medicine business color 변환: {}", colors);
 
@@ -101,4 +104,5 @@ public class MedicineBusiness {
 
         return medicineDocuments.stream().map(medicineConverter::toResponseWithDocument).toList();
     }
+
 }

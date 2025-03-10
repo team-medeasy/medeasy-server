@@ -1,5 +1,6 @@
 package com.medeasy.domain.routine.business;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.annotation.Business;
 import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.exception.ApiException;
@@ -18,23 +19,24 @@ import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @Slf4j
 @Business
-@RequiredArgsConstructor
 public class RoutineBusiness {
-
     private final RoutineService routineService;
     private final UserService userService;
     private final MedicineService medicineService;
@@ -43,40 +45,63 @@ public class RoutineBusiness {
     private final OcrServiceByMultipart ocrService;
     private final AiService aiService;
     private final MedicineConverter medicineConverter;
+    private final StringRedisTemplate redisAlarmTemplate;
+    private final ObjectMapper objectMapper;
 
+    // 생성자 주입 + @Qualifier 적용
+    public RoutineBusiness(
+            RoutineService routineService,
+            UserService userService,
+            MedicineService medicineService,
+            MedicineDocumentService medicineDocumentService,
+            RoutineConverter routineConverter,
+            OcrServiceByMultipart ocrService,
+            AiService aiService,
+            MedicineConverter medicineConverter,
+            @Qualifier("redisTemplateForAlarm") StringRedisTemplate redisAlarmTemplate, // @Qualifier 적용
+            ObjectMapper objectMapper
+    ) {
+        this.routineService = routineService;
+        this.userService = userService;
+        this.medicineService = medicineService;
+        this.medicineDocumentService = medicineDocumentService;
+        this.routineConverter = routineConverter;
+        this.ocrService = ocrService;
+        this.aiService = aiService;
+        this.medicineConverter = medicineConverter;
+        this.redisAlarmTemplate = redisAlarmTemplate;
+        this.objectMapper = objectMapper;
+    }
+    /**
+     * 약 루틴 저장
+     * spring sequrity의 usercontext에서 사용자 정보를 가져오고
+     * 약 정보, 별명, 1회 복용량, 총 개수 저장
+     *
+     * 스케줄 저장
+     * 1. 일단 사용자 개인의 커스텀 시간을 가져온다.
+     * 2. 요청으로 들어온 date의 개수 * 시간의 개수만큼 RoutineSchedule entity를 생성한다.
+     * 3. 리스트로 만들어 한번에 저장
+     * 1. 오늘 날짜 가져오기
+     * 2. 하루에 몇번 먹는지 한번에 몇개의 약을 먹는지
+     *
+     * 예를 들어 total_quantity=29
+     * 하루에 약을 3번 한번에 2개 먹는다고 가정
+     * 그러면 29/6 = 4
+     * 총 4일동안 먹고 5개가 남는다.
+     * 즉 마지막 날에 2번 더 먹을 수 있음.
+     * 따라서 4+1로 올림 처리를 해야함.
+     *
+     * 월~일 -> 1~7
+     * 예를들어 월 수 금
+     * requiredDays가 5일
+     *
+     * 오늘이
+     *
+     * 월요일, 수요일, 금요일, 월요일, 수요일 -> 날짜로 표현
+     * 2/24, 2/26, 2/28, 3/3, 3/5
+     * */
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
 
-        /*
-        약 루틴 저장
-        spring sequrity의 usercontext에서 사용자 정보를 가져오고
-        약 정보, 별명, 1회 복용량, 총 개수 저장
-
-        스케줄 저장
-        * 1. 일단 사용자 개인의 커스텀 시간을 가져온다.
-        * 2. 요청으로 들어온 date의 개수 * 시간의 개수만큼 RoutineSchedule entity를 생성한다.
-        * 3. 리스트로 만들어 한번에 저장
-        * */
-
-        /*
-        * 1. 오늘 날짜 가져오기
-        * 2. 하루에 몇번 먹는지 한번에 몇개의 약을 먹는지
-        *
-        * 예를 들어 total_quantity=29
-        * 하루에 약을 3번 한번에 2개 먹는다고 가정
-        * 그러면 29/6 = 4
-        * 총 4일동안 먹고 5개가 남는다.
-        * 즉 마지막 날에 2번 더 먹을 수 있음.
-        * 따라서 4+1로 올림 처리를 해야함.
-        *
-        * 월~일 -> 1~7
-        * 예를들어 월 수 금
-        * requiredDays가 5일
-        *
-        * 오늘이
-        *
-        * 월요일, 수요일, 금요일, 월요일, 수요일 -> 날짜로 표현
-        * 2/24, 2/26, 2/28, 3/3, 3/5
-        * */
         // Entity 값 가져오기
         UserEntity userEntity = userService.getUserById(userId);
         MedicineEntity medicineEntity = medicineService.getMedicineById(routineRegisterRequest.getMedicineId());
@@ -92,8 +117,8 @@ public class RoutineBusiness {
         int quantity=0;
 
         // 오늘 날짜의 복용 루틴 저장
-        LocalDate currnetDate = LocalDate.now();
-        int currentDayValue = currnetDate.getDayOfWeek().getValue();
+        LocalDate currentDate = LocalDate.now();
+        int currentDayValue = currentDate.getDayOfWeek().getValue();
 
         if(routineRegisterRequest.getDayOfWeeks().contains(currentDayValue)) {
             LocalTime currentTime = LocalTime.now();
@@ -103,7 +128,7 @@ public class RoutineBusiness {
                     RoutineEntity routineEntity=RoutineEntity.builder()
                             .nickname(nickname)
                             .isTaken(false)
-                            .takeDate(currnetDate)
+                            .takeDate(currentDate)
                             .takeTime(times.get(i))
                             .dose(routineRegisterRequest.getDose())
                             .type(types.get(i))
@@ -112,20 +137,25 @@ public class RoutineBusiness {
                             .build()
                             ;
                     routineEntities.add(routineEntity);
+
+                    LocalDateTime dateTime=LocalDateTime.of(currentDate, times.get(i));
+                    String value=convertToJson(userId.toString(), nickname, dateTime);
+                    long score=dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                    redisAlarmTemplate.opsForZSet().add("alarm_list", value, score);
+
                     quantity+=dose;
                 }
             }
 
         }
 
-        //TODO 내일 부터 계산
-        // 하루에 몇 개 먹는지
+        // 내일 날짜부터 루틴 저장
         int dailyDose=types.size()*routineRegisterRequest.getDose();
         int totalQuantity=routineRegisterRequest.getTotalQuantity()-quantity;
         int requiredDays=(int) Math.ceil((double) totalQuantity/dailyDose); // 반올림
         LocalDate nextDate = LocalDate.now().plusDays(1);
 
-        // 약을 복용하는 날짜
+        // 선택한 요일을 기반으로 약을 복용하는 날짜 구하기
         List<LocalDate> dates = new ArrayList<>();
 
         while(dates.size() < requiredDays) {
@@ -138,29 +168,34 @@ public class RoutineBusiness {
             nextDate = nextDate.plusDays(1);
         }
 
-        quantity=0;
-        for(int i=0; i<dates.size(); i++){
-            for(int j=0; j<routineRegisterRequest.getTypes().size(); j++){
-                quantity+=routineRegisterRequest.getDose();
-                if(quantity>totalQuantity) break;
+        quantity=0; // 약 복용 count
+        for (LocalDate localDate : dates) {
+            for (int j = 0; j < routineRegisterRequest.getTypes().size(); j++) {
+                quantity += routineRegisterRequest.getDose();
+                if (quantity > totalQuantity) break;
 
                 // 사용자 시간 변환
                 LocalTime time = convertTypeToLocalTime(routineRegisterRequest.getTypes().get(j), userEntity);
-                LocalDate date = dates.get(i);
 
-                RoutineEntity routineEntity=RoutineEntity.builder()
+                RoutineEntity routineEntity = RoutineEntity.builder()
                         .nickname(nickname)
                         .isTaken(false)
-                        .takeDate(date)
+                        .takeDate(localDate)
                         .takeTime(time)
                         .dose(routineRegisterRequest.getDose())
                         .type(routineRegisterRequest.getTypes().get(j))
                         .medicine(medicineEntity)
                         .user(userEntity)
-                        .build()
-                        ;
+                        .build();
 
                 routineEntities.add(routineEntity);
+
+                LocalDateTime dateTime=LocalDateTime.of(localDate, time);
+                String value=convertToJson(userId.toString(), nickname, dateTime);
+                long score=dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                redisAlarmTemplate.opsForZSet().add("alarm_list", value, score);
+
+                log.info("redis 저장 value: {}, score: {}", value, score);
             }
         }
         routineService.saveAll(routineEntities);
@@ -253,6 +288,9 @@ public class RoutineBusiness {
         routineService.saveAll(entities);
     }
 
+    /**
+     * 루틴 복용 체크 메서드
+     * */
     @Transactional()
     public RoutineCheckResponse checkRoutine(Long routineId, Boolean isTaken) {
 
@@ -268,6 +306,9 @@ public class RoutineBusiness {
                 ;
     }
 
+    /**
+     * 처방전 루틴 등록 메서드
+     * */
     public void registerRoutineByPrescription(Long userId, MultipartFile file) {
         var userEntity = userService.getUserById(userId);
 
@@ -308,7 +349,12 @@ public class RoutineBusiness {
 
     }
 
-    // TODO type 임시 배치
+    /**
+     * 약을 먹는 시기 구하는 메서드
+     * 사용자가 하루에 약을 먹는 횟수에 따라서 아침, 점심, 저녁, 자기전 중 언제 먹을지 설정
+     *
+     * TODO 루틴 등록시에는 약을 먹는 시기를 명시하지만, 처방전 등록시에는 자동으로 설정하던, 미리 설정 값을 입력받는 쪽으로 구현
+     * */
     private List<String> convertTypeCountToTypes(int typeCount) {
 
         if(typeCount==1){
@@ -330,10 +376,27 @@ public class RoutineBusiness {
         throw new ApiException(ErrorCode.BAD_REQEUST, "잘못된 type count 입력");
     }
 
+    /**
+     * 루틴 제거 메서드
+     * */
     public void deleteRoutine(Long userId, Long routineId) {
         // routine 존재 여부 파악
         RoutineEntity routineEntity=routineService.getRoutineById(routineId);
 
         routineService.deleteRoutine(routineId);
     }
+
+    public String convertToJson(String clientId, String medicineName, LocalDateTime dateTime) {
+        Map<String, Object> alarmData= new HashMap<>();
+        alarmData.put("client_id", clientId);
+        alarmData.put("medicine_name", medicineName);
+        alarmData.put("date_time", dateTime.toString());
+
+        try {
+            return objectMapper.writeValueAsString(alarmData);
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.SERVER_ERROR, "rouitne json 변환 중 오류");
+        }
+    }
+
 }
