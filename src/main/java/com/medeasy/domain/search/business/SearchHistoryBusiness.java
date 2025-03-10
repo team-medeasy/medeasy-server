@@ -17,6 +17,6 @@ public class SearchHistoryBusiness {
     }
 
     public List<String> getUserSearchHistories(Long userId) {
-
+        return null;
     }
 }
