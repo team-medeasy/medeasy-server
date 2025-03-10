@@ -1,6 +1,7 @@
 package com.medeasy.domain.search.controller;
 
 import com.medeasy.common.annotation.UserSession;
+import com.medeasy.common.api.Api;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,10 +26,8 @@ public class SearchHistoryController {
             @Parameter(description = "불러올 최근 검색어 개수 (default: 10)", required = false)
             int size
     ) {
-        List<String> response=searchHistoryBusiness.getUserSearchHistories(userId);
+        List<String> response=searchHistoryBusiness.getUserSearchHistories(userId, size);
 
-        return ResponseEntity.ok()
-                .body("save successful")
-                .toString();
+        return Api.OK(response);
     }
 }
