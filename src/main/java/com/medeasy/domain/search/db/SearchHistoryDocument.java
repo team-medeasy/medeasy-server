@@ -1,4 +1,4 @@
-package com.medeasy.domain.medicine.db;
+package com.medeasy.domain.search.db;
 
 import jakarta.persistence.Id;
 import lombok.*;
