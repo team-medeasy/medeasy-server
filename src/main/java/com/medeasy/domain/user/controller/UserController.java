@@ -107,7 +107,9 @@ public class UserController {
             """
             사용자 회원 탈퇴 API:
             
+            사용자 비밀번호를 추가로 입력받아
             
+            인증이 완료되면 사용자 삭제 
             """
     )
     @DeleteMapping("")
