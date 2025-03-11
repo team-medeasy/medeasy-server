@@ -102,4 +102,21 @@ public class UserController {
 
         return Api.OK(response);
     }
+
+    @Operation(summary = "회원 탈퇴", description =
+            """
+            사용자 회원 탈퇴 API:
+            
+            
+            """
+    )
+    @DeleteMapping("")
+    public Api<Object> deleteUser(
+            @Parameter(hidden = true)
+            @UserSession Long userId
+    ) {
+        userBusiness.unregisterUser(userId);
+
+        return Api.OK(null);
+    }
 }

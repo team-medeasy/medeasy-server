@@ -42,4 +42,8 @@ public class UserService {
     public UserEntity getUserById(Long id) {
         return userRepository.findById(id).orElseThrow(()-> new ApiException(UserErrorCode.USER_NOT_FOUNT));
     }
+
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
+    }
 }

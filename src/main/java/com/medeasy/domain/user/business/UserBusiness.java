@@ -116,4 +116,8 @@ public class UserBusiness {
                 .build()
                 ;
     }
+
+    public void unregisterUser(Long userId) {
+        userService.deleteUser(userId);
+    }
 }

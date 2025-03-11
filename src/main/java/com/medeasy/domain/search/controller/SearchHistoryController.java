@@ -63,4 +63,27 @@ public class SearchHistoryController {
 
         return Api.OK(null);
     }
+
+
+    @GetMapping("/popular")
+    @Operation(summary = "인기 검색어 api", description =
+            """
+            인기 검색어 조회 api
+            
+            최근에 많이 검색된 순으로 정렬
+            
+            입력한 size만큼 인기 검색어 키워드 반환 
+            
+            """
+    )
+    public Object getPopularSearchHistory(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @RequestParam(value = "search_history_id", required = true)
+            @Parameter(description = "검색 기록 id (문자열)", required = true)
+            String searchHistoryId
+    ) {
+        searchHistoryBusiness.deleteUserSearchHistory(userId, searchHistoryId);
+
+        return Api.OK(null);
+    }
 }
