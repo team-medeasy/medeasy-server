@@ -102,4 +102,42 @@ public class UserController {
 
         return Api.OK(response);
     }
+
+    @Operation(summary = "회원 탈퇴 API", description =
+            """
+            사용자 회원 탈퇴 API:
+            
+            사용자 비밀번호를 추가로 입력받아
+            
+            인증이 완료되면 사용자 삭제 
+            """
+    )
+    @DeleteMapping("")
+    public Api<Object> deleteUser(
+            @Parameter(hidden = true)
+            @UserSession Long userId,
+            @RequestParam(value = "password", required = true)
+            @Parameter(description = "사용자 비밀번호", required = true) String password
+    ) {
+        userBusiness.unregisterUser(userId, password);
+
+        return Api.OK(null);
+    }
+
+    @Operation(summary = "회원 정보 조회 API", description =
+            """
+            사용자 회원 조회 API:
+            
+            사용자 기본 정보 반환하는 API
+            """
+    )
+    @GetMapping("")
+    public Api<Object> getUser(
+            @Parameter(hidden = true)
+            @UserSession Long userId
+    ) {
+        var response=userBusiness.getUserInfo(userId);
+
+        return Api.OK(response);
+    }
 }
