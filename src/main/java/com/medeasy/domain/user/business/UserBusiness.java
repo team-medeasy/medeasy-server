@@ -124,9 +124,8 @@ public class UserBusiness {
 
     public void unregisterUser(Long userId, String password) {
         UserEntity userEntity=userService.getUserById(userId);
-        var encodePassword=passwordEncoder.encode(password);
 
-        if(!userEntity.getPassword().equals(encodePassword)) {
+        if (!passwordEncoder.matches(password, userEntity.getPassword())) {
             throw new ApiException(UserErrorCode.INVALID_PASSWORD);
         }
 

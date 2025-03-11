@@ -39,7 +39,7 @@ public class AuthBusiness {
     public UserDto validateUser(LoginRequest request) {
         UserEntity user = userService.getUserByEmail(request.getEmail());
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw  new ApiException(UserErrorCode.USER_NOT_FOUNT);
+            throw new ApiException(UserErrorCode.USER_NOT_FOUNT);
         }
         return userConverter.toDto(user);
     }

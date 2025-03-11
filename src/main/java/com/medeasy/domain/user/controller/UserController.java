@@ -4,12 +4,14 @@ import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.user.dto.RoutineScheduleRequest;
 import com.medeasy.domain.user.business.UserBusiness;
+import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserScheduleResponse;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -112,14 +114,13 @@ public class UserController {
             인증이 완료되면 사용자 삭제 
             """
     )
-    @DeleteMapping("")
+    @PostMapping("")
     public Api<Object> deleteUser(
             @Parameter(hidden = true)
             @UserSession Long userId,
-            @RequestParam(value = "password", required = true)
-            @Parameter(description = "사용자 비밀번호", required = true) String password
+            @Valid@RequestBody UserDeleteRequest request
     ) {
-        userBusiness.unregisterUser(userId, password);
+        userBusiness.unregisterUser(userId, request.getPassword());
 
         return Api.OK(null);
     }

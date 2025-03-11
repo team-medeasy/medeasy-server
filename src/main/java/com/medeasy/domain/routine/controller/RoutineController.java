@@ -2,7 +2,6 @@ package com.medeasy.domain.routine.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
-import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.routine.business.RoutineBusiness;
 import com.medeasy.domain.routine.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +22,6 @@ import java.util.List;
 public class RoutineController {
 
     private final RoutineBusiness routineBusiness;
-    private final MedicineBusiness medicineBusiness;
 
     @Operation(summary = "루틴 등록", description =
             """
@@ -126,7 +124,7 @@ public class RoutineController {
     )
     @PostMapping(
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            path = "/ocr"
+            path = "/prescription"
     )
     public Api<Object> registerRoutineByPrescription(
             @Parameter(hidden = true) @UserSession Long userId,
