@@ -2,7 +2,6 @@ package com.medeasy.domain.routine.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
-import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.routine.business.RoutineBusiness;
 import com.medeasy.domain.routine.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
