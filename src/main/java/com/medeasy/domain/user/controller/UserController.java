@@ -113,9 +113,11 @@ public class UserController {
     @DeleteMapping("")
     public Api<Object> deleteUser(
             @Parameter(hidden = true)
-            @UserSession Long userId
+            @UserSession Long userId,
+            @RequestParam(value = "password", required = true)
+            @Parameter(description = "사용자 비밀번호", required = true) String password
     ) {
-        userBusiness.unregisterUser(userId);
+        userBusiness.unregisterUser(userId, password);
 
         return Api.OK(null);
     }

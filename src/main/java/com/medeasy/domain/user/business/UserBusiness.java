@@ -1,6 +1,10 @@
 package com.medeasy.domain.user.business;
 
 import com.medeasy.common.annotation.Business;
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.UserErrorCode;
+import com.medeasy.common.exception.ApiException;
+import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.dto.RoutineScheduleRequest;
@@ -11,6 +15,7 @@ import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import com.medeasy.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -28,6 +33,7 @@ public class UserBusiness {
 
     private final UserService userService;
     private final RoutineService routineService;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * request의 null이 아닌 수정사항만 사용자의 정보에서 업데이트
@@ -117,7 +123,14 @@ public class UserBusiness {
                 ;
     }
 
-    public void unregisterUser(Long userId) {
+    public void unregisterUser(Long userId, String password) {
+        UserEntity userEntity=userService.getUserById(userId);
+        var encodePassword=passwordEncoder.encode(password);
+
+        if(!userEntity.getPassword().equals(encodePassword)) {
+            throw new ApiException(UserErrorCode.INVALID_PASSWORD);
+        }
+
         userService.deleteUser(userId);
     }
 }
