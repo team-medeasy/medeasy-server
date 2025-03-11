@@ -23,7 +23,6 @@ import java.util.List;
 public class RoutineController {
 
     private final RoutineBusiness routineBusiness;
-    private final MedicineBusiness medicineBusiness;
 
     @Operation(summary = "루틴 등록", description =
             """
@@ -126,7 +125,7 @@ public class RoutineController {
     )
     @PostMapping(
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            path = "/ocr"
+            path = "/prescription"
     )
     public Api<Object> registerRoutineByPrescription(
             @Parameter(hidden = true) @UserSession Long userId,
