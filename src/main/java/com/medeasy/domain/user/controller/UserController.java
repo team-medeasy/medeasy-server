@@ -103,7 +103,7 @@ public class UserController {
         return Api.OK(response);
     }
 
-    @Operation(summary = "회원 탈퇴", description =
+    @Operation(summary = "회원 탈퇴 API", description =
             """
             사용자 회원 탈퇴 API:
             
@@ -122,5 +122,22 @@ public class UserController {
         userBusiness.unregisterUser(userId, password);
 
         return Api.OK(null);
+    }
+
+    @Operation(summary = "회원 정보 조회 API", description =
+            """
+            사용자 회원 조회 API:
+            
+            사용자 기본 정보 반환하는 API
+            """
+    )
+    @GetMapping("")
+    public Api<Object> getUser(
+            @Parameter(hidden = true)
+            @UserSession Long userId
+    ) {
+        var response=userBusiness.getUserInfo(userId);
+
+        return Api.OK(response);
     }
 }
