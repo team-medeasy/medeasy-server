@@ -1,8 +1,13 @@
 package com.medeasy.domain.search.service;
 
+import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOptionsBuilders;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.aggregations.AggregationBuilders;
+import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import com.medeasy.common.error.ErrorCode;
@@ -10,8 +15,12 @@ import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.search.db.SearchHistoryDocument;
 import com.medeasy.domain.search.db.SearchHistoryRepository;
 import com.medeasy.domain.search.db.SearchPopularDocument;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregation;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -22,6 +31,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SearchHistoryService {
@@ -71,7 +81,35 @@ public class SearchHistoryService {
         searchHistoryRepository.delete(searchHistoryDocument);
     }
 
-    public List<SearchPopularDocument> getSearchPopularHistoriesList() {
+    /**
+     * 랭킹 조회 메서드
+     * */
+    public List<SearchPopularDocument> getLatestPopularUpdatedTime() {
+        Aggregation latestSearchTimeAggregation = AggregationBuilders.max(maxAggregationBuilder -> {
+            return maxAggregationBuilder.field("updatedAt");
+        });
+
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withAggregation("latest_updatedAt", latestSearchTimeAggregation)
+                .withPageable(PageRequest.of(0, 100))
+                .build()
+                ;
+        SearchHits<SearchPopularDocument> searchHits=elasticsearchOperations.search(nativeQuery, SearchPopularDocument.class);
+
+        ElasticsearchAggregations aggregations = (ElasticsearchAggregations) searchHits.getAggregations();
+        ElasticsearchAggregation aggregation = aggregations.aggregationsAsMap().get("latest_updatedAt");
+
+        String latestUpdatedAtAsString = aggregation.aggregation().getAggregate().max().valueAsString();
+
+        Instant instant = Instant.parse(latestUpdatedAtAsString);
+
+        log.info("랭킹 조회할 최신 시간대: {}", latestUpdatedAtAsString);
         return null;
+    }
+
+    public List<SearchPopularDocument> getSearchPopularByDate(Instant updatedAt) {
+        Query searchQuery = QueryBuilders.term(termQueryBuilder->{
+            return termQueryBuilder.field("updatedAt").value(FieldValue.of(updatedAt));
+        });
     }
 }

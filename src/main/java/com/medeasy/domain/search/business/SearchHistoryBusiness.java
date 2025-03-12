@@ -33,6 +33,10 @@ public class SearchHistoryBusiness {
     }
 
     public void getSearchPopularHistoriesList() {
-        searchHistoryService.getSearchPopularHistoriesList();
+//        searchHistoryService.getSearchPopularHistoriesList();
+
+        searchHistoryService.getLatestPopularUpdatedTime();
+
+
     }
 }
