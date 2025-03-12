@@ -33,55 +33,9 @@ public class SearchPopularScheduler {
     private final ObjectMapper objectMapper;
     private final SearchPopularRepository searchPopularRepository;
 
-    /**
-     *  scale로 감쇠 속도 지정 가능
-     *  scale 36000000 -> 10시간 기준
-     * */
-    private static final String queryJson = "{\n" +
-            "  \"size\": 0,\n" +
-            "  \"aggs\": {\n" +
-            "    \"recent_popular_keywords\": {\n" +
-            "      \"scripted_metric\": {\n" +
-            "        \"init_script\": \"state.docs = []; state.now = System.currentTimeMillis(); state.scale = 36000000.0;\",\n" +
-            "        \"map_script\": \"long docTime = doc['searchTime'].value.toInstant().toEpochMilli(); String kw = doc['keyword'].value; state.docs.add(['time': docTime, 'keyword': kw]);\",\n" +
-            "        \"combine_script\": \"return state.docs;\",\n" +
-            "        \"reduce_script\": \"def allDocs = new ArrayList(); for (s in states) { allDocs.addAll(s); }\\n" +
-            "          long now = System.currentTimeMillis();\\n" +
-            "          double scale = 36000000.0;\\n" +
-            "          allDocs.sort((a,b) -> {\\n" +
-            "            long tA = (long)a.time;\\n" +
-            "            long tB = (long)b.time;\\n" +
-            "            if (tB > tA) { return 1; } else if (tB < tA) { return -1; } else { return 0; }\\n" +
-            "          });\\n" +
-            "          if (allDocs.size() > 1000) {\\n" +
-            "            allDocs = allDocs.subList(0, 1000);\\n" +
-            "          }\\n" +
-            "          def keywordScores = [:];\\n" +
-            "          for (doc in allDocs) {\\n" +
-            "            long docTime = (long) doc.time;\\n" +
-            "            String keyword = (String) doc.keyword;\\n" +
-            "            long diff = now - docTime;\\n" +
-            "            double decay = Math.exp(- diff / scale);\\n" +
-            "            double oldVal = keywordScores.containsKey(keyword) ? keywordScores[keyword] : 0.0;\\n" +
-            "            keywordScores[keyword] = oldVal + decay;\\n" +
-            "          }\\n" +
-            "          def resultList = [];\\n" +
-            "          for (entry in keywordScores.entrySet()) {\\n" +
-            "            resultList.add(['keyword': entry.getKey(), 'score': entry.getValue()]);\\n" +
-            "          }\\n" +
-            "          resultList.sort((a,b) -> {\\n" +
-            "            double vA = (double)a.score;\\n" +
-            "            double vB = (double)b.score;\\n" +
-            "            if (vB > vA) { return 1; } else if (vB < vA) { return -1; } else { return 0; }\\n" +
-            "          });\\n" +
-            "          if (resultList.size() > 10) {\\n" +
-            "            resultList = resultList.subList(0, 10);\\n" +
-            "          }\\n" +
-            "          return ['topKeywords': resultList];\"\n" +
-            "      }\n" +
-            "    }\n" +
-            "  }\n" +
-            "}";
+    public void getQueryJson() {
+
+    }
     /**
      * 최근 1000개 문서를 대상으로 각 검색어의 시간 감쇠(decay) 합산 점수를 계산하여,
      * 상위 10개의 인기 검색어를 조회하는 쿼리를 실행.
@@ -89,11 +43,87 @@ public class SearchPopularScheduler {
     @Transactional
     @Scheduled(fixedRate = 60000) // 60000 밀리초 1분
     public void executeRecentPopularKeywordsQuery() {
-        List<SearchPopularResponse> searchPopularResponses=null;
+        long now = Instant.now().toEpochMilli();
+        long oneHourAgo=now-3600000;
+        log.info("현재 밀리세컨드: {}", now);
 
-        // 인기 검색어 쿼리
+        List<SearchPopularResponse> nowSearchPopularResponse=getPopularKeywordsByMilliSeconds(now);
+        List<SearchPopularResponse> oneHourAgoSearchPopularResponse=getPopularKeywordsByMilliSeconds(oneHourAgo);
+
+        // 엘라스틱 서치에 다시 저장하는 코드
         try {
+            log.info("인기 검색어 객체 결과: {}", nowSearchPopularResponse);
+            Instant instantNow = Instant.now();
+
+            List<SearchPopularDocument> documents = IntStream.range(0, nowSearchPopularResponse.size())
+                    .mapToObj(index -> SearchPopularDocument.builder()
+                            .rank(index + 1) // 리스트 순서대로 rank 지정 (1부터 시작)
+                            .keyword(nowSearchPopularResponse.get(index).getKeyword()) // 검색어 삽입
+                            .updatedAt(instantNow) // 현재 시간 삽입
+                            .build())
+                    .toList();
+
+            // Elasticsearch 저장 로직 추가
+            searchPopularRepository.saveAll(documents);
+            log.info("인기 검색어 저장 완료 1등 검색어: {}", documents.getFirst().getKeyword());
+        } catch (Exception e) {
+            throw new ApiException(SchedulerError.SERVER_ERROR, "인기 검색어 저장 중 오류");
+        }
+    }
+
+    public List<SearchPopularResponse> getPopularKeywordsByMilliSeconds(long milliSeconds) {
+        try {
+            /**
+             *  scale로 감쇠 속도 지정 가능
+             *  scale 36000000 -> 10시간 기준
+             * */
+            String queryJson = "{\n" +
+                    "  \"size\": 0,\n" +
+                    "  \"aggs\": {\n" +
+                    "    \"recent_popular_keywords\": {\n" +
+                    "      \"scripted_metric\": {\n" +
+                    "        \"init_script\": \"state.docs = [];\",\n" +
+                    "        \"map_script\": \"long docTime = doc['searchTime'].value.toInstant().toEpochMilli(); String kw = doc['keyword'].value; state.docs.add(['time': docTime, 'keyword': kw]);\",\n" +
+                    "        \"combine_script\": \"return state.docs;\",\n" +
+                    "        \"reduce_script\": \"def allDocs = new ArrayList(); for (s in states) { allDocs.addAll(s); }\\n" +
+                    "          long now = "+milliSeconds+"L;\\n" +
+                    "          double scale = 36000000.0;\\n" +
+                    "          allDocs.sort((a,b) -> {\\n" +
+                    "            long tA = (long)a.time;\\n" +
+                    "            long tB = (long)b.time;\\n" +
+                    "            if (tB > tA) { return 1; } else if (tB < tA) { return -1; } else { return 0; }\\n" +
+                    "          });\\n" +
+                    "          if (allDocs.size() > 1000) {\\n" +
+                    "            allDocs = allDocs.subList(0, 1000);\\n" +
+                    "          }\\n" +
+                    "          def keywordScores = [:];\\n" +
+                    "          for (doc in allDocs) {\\n" +
+                    "            long docTime = (long) doc.time;\\n" +
+                    "            String keyword = (String) doc.keyword;\\n" +
+                    "            long diff = now - docTime;\\n" +
+                    "            double decay = Math.exp(- diff / scale);\\n" +
+                    "            double oldVal = keywordScores.containsKey(keyword) ? keywordScores[keyword] : 0.0;\\n" +
+                    "            keywordScores[keyword] = oldVal + decay;\\n" +
+                    "          }\\n" +
+                    "          def resultList = [];\\n" +
+                    "          for (entry in keywordScores.entrySet()) {\\n" +
+                    "            resultList.add(['keyword': entry.getKey(), 'score': entry.getValue()]);\\n" +
+                    "          }\\n" +
+                    "          resultList.sort((a,b) -> {\\n" +
+                    "            double vA = (double)a.score;\\n" +
+                    "            double vB = (double)b.score;\\n" +
+                    "            if (vB > vA) { return 1; } else if (vB < vA) { return -1; } else { return 0; }\\n" +
+                    "          });\\n" +
+                    "          if (resultList.size() > 10) {\\n" +
+                    "            resultList = resultList.subList(0, 10);\\n" +
+                    "          }\\n" +
+                    "          return ['topKeywords': resultList];\"\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}";
             Request request = new Request("GET", "/search_history/_search");
+
             request.setJsonEntity(queryJson);
             Response response = restClient.performRequest(request);
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
@@ -106,32 +136,9 @@ public class SearchPopularScheduler {
 
             log.info("파싱 부분: {}", topKeywords);
 
-            searchPopularResponses = objectMapper.readValue(topKeywords.toString(), new TypeReference<List<SearchPopularResponse>>() {});
-
-        } catch (IOException e) {
-            throw new ApiException(SchedulerError.SERVER_ERROR, "서버 스케줄러 인기 검색어 오류");
-        }
-
-        // 엘라스틱 서치에 다시 저장하는 코드
-        try {
-            log.info("인기 검색어 객체 결과: {}", searchPopularResponses);
-            Instant now = Instant.now();
-
-            List<SearchPopularResponse> finalSearchPopularResponses = searchPopularResponses;
-
-            List<SearchPopularDocument> documents = IntStream.range(0, searchPopularResponses.size())
-                    .mapToObj(index -> SearchPopularDocument.builder()
-                            .rank(index + 1) // 리스트 순서대로 rank 지정 (1부터 시작)
-                            .keyword(finalSearchPopularResponses.get(index).getKeyword()) // 검색어 삽입
-                            .updatedAt(now) // 현재 시간 삽입
-                            .build())
-                    .toList();
-
-            // Elasticsearch 저장 로직 추가
-            searchPopularRepository.saveAll(documents);
-            log.info("인기 검색어 저장 완료 1등 검색어: {}", documents.getFirst().getKeyword());
-        } catch (Exception e) {
-            throw new ApiException(SchedulerError.SERVER_ERROR, "인기 검색어 저장 중 오류");
+            return objectMapper.readValue(topKeywords.toString(), new TypeReference<List<SearchPopularResponse>>() {});
+        }catch (Exception e){
+            throw new ApiException(SchedulerError.SERVER_ERROR, "인기 검색어 조회 중 오류");
         }
     }
 }

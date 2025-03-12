@@ -9,6 +9,7 @@ import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.search.db.SearchHistoryDocument;
 import com.medeasy.domain.search.db.SearchHistoryRepository;
+import com.medeasy.domain.search.db.SearchPopularDocument;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
@@ -68,5 +69,9 @@ public class SearchHistoryService {
                 .orElseThrow(() -> new ApiException(ErrorCode.BAD_REQEUST, "해당하는 검색 기록이 없습니다."));
 
         searchHistoryRepository.delete(searchHistoryDocument);
+    }
+
+    public List<SearchPopularDocument> getSearchPopularHistoriesList() {
+        return null;
     }
 }
