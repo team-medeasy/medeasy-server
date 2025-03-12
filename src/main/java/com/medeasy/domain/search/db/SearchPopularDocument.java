@@ -26,4 +26,10 @@ public class SearchPopularDocument {
 
     @Field(type=FieldType.Date)
     private Instant updatedAt;
+
+    @Field(type=FieldType.Integer)
+    private Integer rankChange;
+
+    @Field(type=FieldType.Boolean)
+    private Boolean isNewKeyword;
 }

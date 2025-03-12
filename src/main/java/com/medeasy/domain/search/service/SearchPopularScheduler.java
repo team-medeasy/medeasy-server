@@ -18,10 +18,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -33,9 +34,6 @@ public class SearchPopularScheduler {
     private final ObjectMapper objectMapper;
     private final SearchPopularRepository searchPopularRepository;
 
-    public void getQueryJson() {
-
-    }
     /**
      * 최근 1000개 문서를 대상으로 각 검색어의 시간 감쇠(decay) 합산 점수를 계산하여,
      * 상위 10개의 인기 검색어를 조회하는 쿼리를 실행.
@@ -50,17 +48,48 @@ public class SearchPopularScheduler {
         List<SearchPopularResponse> nowSearchPopularResponse=getPopularKeywordsByMilliSeconds(now);
         List<SearchPopularResponse> oneHourAgoSearchPopularResponse=getPopularKeywordsByMilliSeconds(oneHourAgo);
 
+        Map<String, Integer> pastPopularMap = IntStream.range(0, oneHourAgoSearchPopularResponse.size())
+                .boxed()
+                .collect(Collectors.toMap(
+                        index -> oneHourAgoSearchPopularResponse.get(index).getKeyword(),
+                        index -> index + 1
+                ));
+        /**
+         *
+         * 1. 순위 비교 -> 한시간 전 인기 검색어 리스트 List -> Map 형태로 변환 비교 O(n^2) -> O(n)
+         * 2. 저장
+         * 3. 조회 -> 가장 최근 데이터 가져오도록 범위로 설정하기엔 스케줄러가 여러번 실행될 시 중복 데이터 발생 가능
+         *
+         *
+         * 리스트와 맵을 비교하여 변화된 rank를 계산
+         * 이전에 랭킹에 존재하지 않았던 새로운 키워드의 경우 isNewKeyword 필드를 통해 구별
+         * */
+
         // 엘라스틱 서치에 다시 저장하는 코드
         try {
             log.info("인기 검색어 객체 결과: {}", nowSearchPopularResponse);
             Instant instantNow = Instant.now();
 
             List<SearchPopularDocument> documents = IntStream.range(0, nowSearchPopularResponse.size())
-                    .mapToObj(index -> SearchPopularDocument.builder()
-                            .rank(index + 1) // 리스트 순서대로 rank 지정 (1부터 시작)
-                            .keyword(nowSearchPopularResponse.get(index).getKeyword()) // 검색어 삽입
-                            .updatedAt(instantNow) // 현재 시간 삽입
-                            .build())
+                    .mapToObj(index -> {
+                        String keyword = nowSearchPopularResponse.get(index).getKeyword();
+                        int currentRank = index + 1;
+
+                        // 과거에 없는 경우 new
+                        int pastRank = pastPopularMap.getOrDefault(keyword, -1);
+                        boolean isNewKeyword = pastRank == -1;
+
+                        int changeRank =  pastRank-currentRank; // 양수: 순위 상승 음수: 순위 하락
+
+                        return SearchPopularDocument.builder()
+                            .rank(index + 1)
+                            .keyword(nowSearchPopularResponse.get(index).getKeyword())
+                            .updatedAt(instantNow)
+                            .rankChange(changeRank)
+                            .isNewKeyword(isNewKeyword)
+                            .build()
+                            ;
+                    })
                     .toList();
 
             // Elasticsearch 저장 로직 추가
