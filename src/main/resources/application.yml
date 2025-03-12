@@ -4,6 +4,9 @@ spring:
       repositories:
         enabled: true
       url: ${ES_HOST}:${ES_PORT}
+      host: ${ES_HOST}
+      port: ${ES_PORT}
+
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
