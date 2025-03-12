@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.exception.ApiException;
+import com.medeasy.domain.search.db.SearchPopularDocument;
+import com.medeasy.domain.search.db.SearchPopularRepository;
 import com.medeasy.domain.search.dto.SearchPopularResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +16,13 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -26,18 +31,23 @@ public class SearchPopularScheduler {
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
+    private final SearchPopularRepository searchPopularRepository;
 
+    /**
+     *  scale로 감쇠 속도 지정 가능
+     *  scale 36000000 -> 10시간 기준
+     * */
     private static final String queryJson = "{\n" +
             "  \"size\": 0,\n" +
             "  \"aggs\": {\n" +
             "    \"recent_popular_keywords\": {\n" +
             "      \"scripted_metric\": {\n" +
-            "        \"init_script\": \"state.docs = []; state.now = System.currentTimeMillis(); state.scale = 3600000.0;\",\n" +
+            "        \"init_script\": \"state.docs = []; state.now = System.currentTimeMillis(); state.scale = 36000000.0;\",\n" +
             "        \"map_script\": \"long docTime = doc['searchTime'].value.toInstant().toEpochMilli(); String kw = doc['keyword'].value; state.docs.add(['time': docTime, 'keyword': kw]);\",\n" +
             "        \"combine_script\": \"return state.docs;\",\n" +
             "        \"reduce_script\": \"def allDocs = new ArrayList(); for (s in states) { allDocs.addAll(s); }\\n" +
             "          long now = System.currentTimeMillis();\\n" +
-            "          double scale = 3600000.0;\\n" +
+            "          double scale = 36000000.0;\\n" +
             "          allDocs.sort((a,b) -> {\\n" +
             "            long tA = (long)a.time;\\n" +
             "            long tB = (long)b.time;\\n" +
@@ -76,6 +86,7 @@ public class SearchPopularScheduler {
      * 최근 1000개 문서를 대상으로 각 검색어의 시간 감쇠(decay) 합산 점수를 계산하여,
      * 상위 10개의 인기 검색어를 조회하는 쿼리를 실행.
      */
+    @Transactional
     @Scheduled(fixedRate = 60000) // 60000 밀리초 1분
     public void executeRecentPopularKeywordsQuery() {
         List<SearchPopularResponse> searchPopularResponses=null;
@@ -104,6 +115,21 @@ public class SearchPopularScheduler {
         // 엘라스틱 서치에 다시 저장하는 코드
         try {
             log.info("인기 검색어 객체 결과: {}", searchPopularResponses);
+            Instant now = Instant.now();
+
+            List<SearchPopularResponse> finalSearchPopularResponses = searchPopularResponses;
+
+            List<SearchPopularDocument> documents = IntStream.range(0, searchPopularResponses.size())
+                    .mapToObj(index -> SearchPopularDocument.builder()
+                            .rank(index + 1) // 리스트 순서대로 rank 지정 (1부터 시작)
+                            .keyword(finalSearchPopularResponses.get(index).getKeyword()) // 검색어 삽입
+                            .updatedAt(now) // 현재 시간 삽입
+                            .build())
+                    .toList();
+
+            // Elasticsearch 저장 로직 추가
+            searchPopularRepository.saveAll(documents);
+            log.info("인기 검색어 저장 완료 1등 검색어: {}", documents.getFirst().getKeyword());
         } catch (Exception e) {
             throw new ApiException(SchedulerError.SERVER_ERROR, "인기 검색어 저장 중 오류");
         }
