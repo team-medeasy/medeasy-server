@@ -80,13 +80,13 @@ public class SearchPopularScheduler {
 
                         int changeRank =  pastRank-currentRank; // 양수: 순위 상승 음수: 순위 하락
 
-                        log.info("{}: 과거 랭킹: {}, 현재 랭킹: {}, 랭킹 차이: {}", keyword, pastRank, currentRank, changeRank);
+                        log.info("{}: 과거 랭킹: {}, 현재 랭킹: {}, 랭킹 차이: {}", keyword, pastRank, currentRank, isNewKeyword ? pastRank : changeRank);
 
                         return SearchPopularDocument.builder()
                             .rank(index + 1)
                             .keyword(nowSearchPopularResponse.get(index).getKeyword())
                             .updatedAt(instantNow)
-                            .rankChange(isNewKeyword ? changeRank : pastRank)
+                            .rankChange(isNewKeyword ? pastRank : changeRank)
                             .isNewKeyword(isNewKeyword)
                             .build()
                             ;
