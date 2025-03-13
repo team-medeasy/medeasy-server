@@ -1,7 +1,6 @@
 package com.medeasy.domain.search.business;
 
 import com.medeasy.common.annotation.Business;
-import com.medeasy.domain.search.db.SearchHistoryDocument;
 import com.medeasy.domain.search.db.SearchPopularDocument;
 import com.medeasy.domain.search.db.UserSearchHistoryDocument;
 import com.medeasy.domain.search.dto.SearchHistoryResponse;
