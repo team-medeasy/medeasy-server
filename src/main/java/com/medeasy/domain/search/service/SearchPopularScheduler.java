@@ -171,8 +171,6 @@ public class SearchPopularScheduler {
                     .path("value")
                     .path("topKeywords");
 
-            log.info("파싱 부분: {}", topKeywords);
-
             return objectMapper.readValue(topKeywords.toString(), new TypeReference<List<SearchPopularDto>>() {});
         }catch (Exception e){
             throw new ApiException(SchedulerError.SERVER_ERROR, "인기 검색어 조회 중 오류");
