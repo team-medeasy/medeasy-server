@@ -75,8 +75,8 @@ public class SearchPopularScheduler {
                         int currentRank = index + 1;
 
                         // 과거에 없는 경우 new
-                        int pastRank = pastPopularMap.getOrDefault(keyword, -1);
-                        boolean isNewKeyword = pastRank == -1;
+                        int pastRank = pastPopularMap.getOrDefault(keyword, 0);
+                        boolean isNewKeyword = pastRank == 0;
 
                         int changeRank =  pastRank-currentRank; // 양수: 순위 상승 음수: 순위 하락
 
@@ -86,7 +86,7 @@ public class SearchPopularScheduler {
                             .rank(index + 1)
                             .keyword(nowSearchPopularResponse.get(index).getKeyword())
                             .updatedAt(instantNow)
-                            .rankChange(changeRank)
+                            .rankChange(isNewKeyword ? changeRank : pastRank)
                             .isNewKeyword(isNewKeyword)
                             .build()
                             ;
