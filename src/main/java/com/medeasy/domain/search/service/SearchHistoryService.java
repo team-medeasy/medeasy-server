@@ -52,6 +52,9 @@ public class SearchHistoryService {
         searchHistoryRepository.save(searchHistoryDocument);
     }
 
+    /**
+     * 사용자의 검색 기록 조회 메서드
+     * */
     public List<SearchHistoryDocument> getUserSearchHistories(Long userId, int size) {
         Query searchQuery = QueryBuilders.term(termQueryBuilder -> {
             return termQueryBuilder.field("userId").value(userId);
@@ -84,7 +87,7 @@ public class SearchHistoryService {
     }
 
     /**
-     * 랭킹 조회 메서드
+     * 인기 검색어 가장 마지막 업데이트 시간 반환 메서드
      * */
     public String getLatestPopularUpdatedTime() {
         Aggregation latestSearchTimeAggregation = AggregationBuilders.max(maxAggregationBuilder -> {
@@ -112,6 +115,9 @@ public class SearchHistoryService {
         }
     }
 
+    /**
+     * 문자열 UTC 날짜, 시간을 가지고 인기 검색어 리스트 문서를 반환하는 메서드
+     * */
     public List<SearchPopularDocument> getSearchPopularByDate(String updatedAt) {
         Query searchQuery = QueryBuilders.term(termQueryBuilder->{
             return termQueryBuilder.field("updatedAt").value(updatedAt);
