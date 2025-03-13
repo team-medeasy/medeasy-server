@@ -84,7 +84,7 @@ public class SearchHistoryService {
     /**
      * 랭킹 조회 메서드
      * */
-    public List<SearchPopularDocument> getLatestPopularUpdatedTime() {
+    public String getLatestPopularUpdatedTime() {
         Aggregation latestSearchTimeAggregation = AggregationBuilders.max(maxAggregationBuilder -> {
             return maxAggregationBuilder.field("updatedAt");
         });
@@ -101,15 +101,33 @@ public class SearchHistoryService {
 
         String latestUpdatedAtAsString = aggregation.aggregation().getAggregate().max().valueAsString();
 
-        Instant instant = Instant.parse(latestUpdatedAtAsString);
+//        Instant instant = Instant.parse(latestUpdatedAtAsString);
 
         log.info("랭킹 조회할 최신 시간대: {}", latestUpdatedAtAsString);
-        return null;
+        return latestUpdatedAtAsString;
     }
 
-    public List<SearchPopularDocument> getSearchPopularByDate(Instant updatedAt) {
+    public List<SearchPopularDocument> getSearchPopularByDate(String updatedAt) {
         Query searchQuery = QueryBuilders.term(termQueryBuilder->{
-            return termQueryBuilder.field("updatedAt").value(FieldValue.of(updatedAt));
+            return termQueryBuilder.field("updatedAt").value(updatedAt);
         });
+
+        SortOptions sortOptions = SortOptionsBuilders.field(fieldSortBuilder -> {
+            return fieldSortBuilder.field("rank").order(SortOrder.Asc);
+        });
+
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(searchQuery)
+                .withSort(sortOptions)
+                .withPageable(PageRequest.of(0, 10))
+                .build()
+                ;
+
+            SearchHits<SearchPopularDocument> searchHits = elasticsearchOperations.search(nativeQuery, SearchPopularDocument.class);
+
+        return searchHits.getSearchHits()
+                .stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
     }
 }

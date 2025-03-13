@@ -2,9 +2,13 @@ package com.medeasy.domain.search.business;
 
 import com.medeasy.common.annotation.Business;
 import com.medeasy.domain.search.db.SearchHistoryDocument;
+import com.medeasy.domain.search.db.SearchPopularDocument;
 import com.medeasy.domain.search.dto.SearchHistoryResponse;
+import com.medeasy.domain.search.dto.SearchPopularResponse;
 import com.medeasy.domain.search.service.SearchHistoryService;
 import lombok.RequiredArgsConstructor;
+
+import java.time.Instant;
 import java.util.List;
 
 @Business
@@ -32,11 +36,19 @@ public class SearchHistoryBusiness {
         searchHistoryService.deleteSearchHistory(userId, searchHistoryId);
     }
 
-    public void getSearchPopularHistoriesList() {
-//        searchHistoryService.getSearchPopularHistoriesList();
+    public List<SearchPopularResponse> getSearchPopularHistoriesList() {
+        String latestUpdatedAt=searchHistoryService.getLatestPopularUpdatedTime();
+        List<SearchPopularDocument> searchPopularDocuments = searchHistoryService.getSearchPopularByDate(latestUpdatedAt);
 
-        searchHistoryService.getLatestPopularUpdatedTime();
-
-
+        return searchPopularDocuments.stream().map(searchPopularDocument -> {
+            return SearchPopularResponse.builder()
+                    .id(searchPopularDocument.getId())
+                    .rank(searchPopularDocument.getRank())
+                    .keyword(searchPopularDocument.getKeyword())
+                    .isNewKeyword(searchPopularDocument.getIsNewKeyword())
+                    .updatedAt(searchPopularDocument.getUpdatedAt())
+                    .build()
+                    ;
+        }).toList();
     }
 }

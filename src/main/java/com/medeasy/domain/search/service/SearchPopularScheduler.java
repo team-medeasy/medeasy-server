@@ -7,7 +7,7 @@ import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.search.db.SearchPopularDocument;
 import com.medeasy.domain.search.db.SearchPopularRepository;
-import com.medeasy.domain.search.dto.SearchPopularResponse;
+import com.medeasy.domain.search.dto.SearchPopularDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.EntityUtils;
@@ -45,8 +45,10 @@ public class SearchPopularScheduler {
         long oneHourAgo=now-3600000;
         log.info("현재 밀리세컨드: {}", now);
 
-        List<SearchPopularResponse> nowSearchPopularResponse=getPopularKeywordsByMilliSeconds(now);
-        List<SearchPopularResponse> oneHourAgoSearchPopularResponse=getPopularKeywordsByMilliSeconds(oneHourAgo);
+        List<SearchPopularDto> nowSearchPopularResponse=getPopularKeywordsByMilliSeconds(now);
+        List<SearchPopularDto> oneHourAgoSearchPopularResponse=getPopularKeywordsByMilliSeconds(oneHourAgo);
+
+        log.info("한시간전 랭킹 결과 ");
 
         Map<String, Integer> pastPopularMap = IntStream.range(0, oneHourAgoSearchPopularResponse.size())
                 .boxed()
@@ -54,6 +56,7 @@ public class SearchPopularScheduler {
                         index -> oneHourAgoSearchPopularResponse.get(index).getKeyword(),
                         index -> index + 1
                 ));
+
         /**
          *
          * 1. 순위 비교 -> 한시간 전 인기 검색어 리스트 List -> Map 형태로 변환 비교 O(n^2) -> O(n)
@@ -67,7 +70,6 @@ public class SearchPopularScheduler {
 
         // 엘라스틱 서치에 다시 저장하는 코드
         try {
-            log.info("인기 검색어 객체 결과: {}", nowSearchPopularResponse);
             Instant instantNow = Instant.now();
 
             List<SearchPopularDocument> documents = IntStream.range(0, nowSearchPopularResponse.size())
@@ -100,7 +102,7 @@ public class SearchPopularScheduler {
         }
     }
 
-    public List<SearchPopularResponse> getPopularKeywordsByMilliSeconds(long milliSeconds) {
+    public List<SearchPopularDto> getPopularKeywordsByMilliSeconds(long milliSeconds) {
         try {
             /**
              *  scale로 감쇠 속도 지정 가능
@@ -165,7 +167,7 @@ public class SearchPopularScheduler {
 
             log.info("파싱 부분: {}", topKeywords);
 
-            return objectMapper.readValue(topKeywords.toString(), new TypeReference<List<SearchPopularResponse>>() {});
+            return objectMapper.readValue(topKeywords.toString(), new TypeReference<List<SearchPopularDto>>() {});
         }catch (Exception e){
             throw new ApiException(SchedulerError.SERVER_ERROR, "인기 검색어 조회 중 오류");
         }

@@ -1,5 +1,6 @@
 package com.medeasy.domain.search.db;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Id;
 import lombok.*;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -18,6 +19,7 @@ public class SearchPopularDocument {
     @Id
     private String id;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
     @Field(type=FieldType.Integer)
     private Integer rank;
 

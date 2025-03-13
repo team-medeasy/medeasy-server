@@ -82,8 +82,8 @@ public class SearchHistoryController {
     )
     public Object getPopularSearchHistory(
     ) {
-        searchHistoryBusiness.getSearchPopularHistoriesList();
+        var response=searchHistoryBusiness.getSearchPopularHistoriesList();
 
-        return Api.OK(null);
+        return Api.OK(response);
     }
 }
