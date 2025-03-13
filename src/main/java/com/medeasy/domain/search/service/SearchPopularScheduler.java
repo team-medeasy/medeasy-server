@@ -118,8 +118,8 @@ public class SearchPopularScheduler {
                     "        \"init_script\": \"state.docs = [];\",\n" +
                     "        \"map_script\": \"long docTime = doc['searchTime'].value.toInstant().toEpochMilli(); " +
                     "                           String kw = doc['keyword'].value; " +
-                    "                           long threshold = "+milliSeconds+"L; " +  // 한 시간 전 밀리초 기준
-                    "                            if (docTime <= threshold) { " + // 한 시간 이후 데이터 제외
+                    "                           long threshold = "+milliSeconds+"L; " + // 시간 조회 기준 추가
+                    "                            if (docTime <= threshold) { " +
                     "                               state.docs.add(['time': docTime, 'keyword': kw]); " +
                     "                            }\",\n" +
                     "        \"combine_script\": \"return state.docs;\",\n" +

@@ -7,9 +7,11 @@ import com.medeasy.domain.search.dto.SearchHistoryResponse;
 import com.medeasy.domain.search.dto.SearchPopularResponse;
 import com.medeasy.domain.search.service.SearchHistoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 @Business
 @RequiredArgsConstructor
 public class SearchHistoryBusiness {
@@ -50,5 +52,11 @@ public class SearchHistoryBusiness {
                     .build()
                     ;
         }).toList();
+    }
+
+    public void deleteAllUserSearchHistory(Long userId) {
+        searchHistoryService.deleteAllUserSearchHistory(userId);
+
+        log.info("사용자 검색 기록 전체 삭제 완료 userId: {}", userId);
     }
 }

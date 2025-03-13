@@ -44,7 +44,7 @@ public class SearchHistoryController {
         return Api.OK(response);
     }
 
-    @DeleteMapping("")
+    @DeleteMapping("/{search_history_id}")
     @Operation(summary = "사용자 최근 검색어 삭제 api", description =
             """
             사용자 최근 검색어 삭제 api
@@ -56,7 +56,7 @@ public class SearchHistoryController {
     )
     public Object deleteUserSearchHistory(
             @Parameter(hidden = true) @UserSession Long userId,
-            @RequestParam(value = "search_history_id", required = true)
+            @PathVariable(name = "search_history_id")
             @Parameter(description = "검색 기록 id (문자열)", required = true)
             String searchHistoryId
     ) {
@@ -65,6 +65,19 @@ public class SearchHistoryController {
         return Api.OK(null);
     }
 
+    @DeleteMapping("/all")
+    @Operation(summary = "사용자 최근 검색어 전체 삭제 api", description =
+            """
+            사용자 최근 검색어 전체 삭제 api
+            """
+    )
+    public Object deleteUserSearchHistory(
+            @Parameter(hidden = true) @UserSession Long userId
+    ) {
+        searchHistoryBusiness.deleteAllUserSearchHistory(userId);
+
+        return Api.OK(null);
+    }
 
     @GetMapping("/popular")
     @Operation(summary = "인기 검색어 조회 api", description =

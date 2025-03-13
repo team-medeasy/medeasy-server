@@ -1,23 +1,18 @@
 package com.medeasy.domain.search.service;
 
-import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOptionsBuilders;
 import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.aggregations.AggregationBuilders;
-import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import com.medeasy.common.error.ErrorCode;
-import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.error.SearchHistoryError;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.search.db.SearchHistoryDocument;
 import com.medeasy.domain.search.db.SearchHistoryRepository;
 import com.medeasy.domain.search.db.SearchPopularDocument;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -82,10 +77,21 @@ public class SearchHistoryService {
     public void deleteSearchHistory(Long userId, String searchHistoryId) {
         SearchHistoryDocument searchHistoryDocument = searchHistoryRepository.findById(searchHistoryId)
                 .orElseThrow(() -> new ApiException(ErrorCode.BAD_REQEUST, "해당하는 검색 기록이 없습니다."));
-
-        searchHistoryRepository.delete(searchHistoryDocument);
+        try {
+            searchHistoryRepository.delete(searchHistoryDocument);
+        }catch (Exception e) {
+            throw new ApiException(SearchHistoryError.SERVER_ERROR, "사용자 검색 기록 삭제 중 오류 발생");
+        }
     }
 
+
+    public void deleteAllUserSearchHistory(Long userId) {
+        try {
+            searchHistoryRepository.deleteAllByUserId(userId.toString());
+        }catch (Exception e){
+            throw new ApiException(SearchHistoryError.SERVER_ERROR, "사용자 검색 기록 삭제 중 오류 발생");
+        }
+    }
     /**
      * 인기 검색어 가장 마지막 업데이트 시간 반환 메서드
      * */
@@ -145,4 +151,5 @@ public class SearchHistoryService {
             throw new ApiException(SearchHistoryError.SERVER_ERROR, "인기 검색어 조회 중 오류 발생");
         }
     }
+
 }
