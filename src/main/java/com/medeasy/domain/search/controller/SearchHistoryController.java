@@ -90,6 +90,8 @@ public class SearchHistoryController {
             
             ex) 검색한지 10시간이 지난 검색 기록들은 인기 검색어에 적게 반영된다.
             
+            중요: is_new_keyword가 true인 경우는 rank_change가 음수여도 랭킹이 상승한 것이다.
+            
             응답 필드 설명:
             
             id: 인기 검색어 문서 ID
@@ -100,7 +102,7 @@ public class SearchHistoryController {
                     
             updated_at: 업데이트 시간 
                     
-            rank_change: 1시간 전과 비교하여 랭킹 변화량
+            rank_change: 1시간 전과 비교하여 랭킹 변화량 (양수인 경우 순위 상승 ex)3등->1등 음수인 경우 순위 하락 ex)1등->5등)
                     
             is_new_keyword: 랭킹에 새로 등장한 키워드 여부
             

@@ -75,18 +75,18 @@ public class SearchPopularScheduler {
                         int currentRank = index + 1;
 
                         // 과거에 없는 경우 new
-                        int pastRank = pastPopularMap.getOrDefault(keyword, -1);
-                        boolean isNewKeyword = pastRank == -1;
+                        int pastRank = pastPopularMap.getOrDefault(keyword, 0);
+                        boolean isNewKeyword = pastRank == 0;
 
                         int changeRank =  pastRank-currentRank; // 양수: 순위 상승 음수: 순위 하락
 
-                        log.info("{}: 과거 랭킹: {}, 현재 랭킹: {}, 랭킹 차이: {}", keyword, pastRank, currentRank, changeRank);
+                        log.info("{}: 과거 랭킹: {}, 현재 랭킹: {}, 랭킹 차이: {}", keyword, pastRank, currentRank, isNewKeyword ? pastRank : changeRank);
 
                         return SearchPopularDocument.builder()
                             .rank(index + 1)
                             .keyword(nowSearchPopularResponse.get(index).getKeyword())
                             .updatedAt(instantNow)
-                            .rankChange(changeRank)
+                            .rankChange(isNewKeyword ? pastRank : changeRank)
                             .isNewKeyword(isNewKeyword)
                             .build()
                             ;
@@ -170,8 +170,6 @@ public class SearchPopularScheduler {
                     .path("recent_popular_keywords")
                     .path("value")
                     .path("topKeywords");
-
-            log.info("파싱 부분: {}", topKeywords);
 
             return objectMapper.readValue(topKeywords.toString(), new TypeReference<List<SearchPopularDto>>() {});
         }catch (Exception e){
