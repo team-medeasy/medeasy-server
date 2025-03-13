@@ -4,6 +4,7 @@ import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
 import com.medeasy.domain.search.dto.SearchHistoryResponse;
+import com.medeasy.domain.search.dto.SearchPopularResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,7 @@ public class SearchHistoryController {
         return Api.OK(response);
     }
 
-    @DeleteMapping("")
+    @DeleteMapping("/{search_history_id}")
     @Operation(summary = "사용자 최근 검색어 삭제 api", description =
             """
             사용자 최근 검색어 삭제 api
@@ -55,7 +56,7 @@ public class SearchHistoryController {
     )
     public Object deleteUserSearchHistory(
             @Parameter(hidden = true) @UserSession Long userId,
-            @RequestParam(value = "search_history_id", required = true)
+            @PathVariable(name = "search_history_id")
             @Parameter(description = "검색 기록 id (문자열)", required = true)
             String searchHistoryId
     ) {
@@ -64,9 +65,22 @@ public class SearchHistoryController {
         return Api.OK(null);
     }
 
+    @DeleteMapping("/all")
+    @Operation(summary = "사용자 최근 검색어 전체 삭제 api", description =
+            """
+            사용자 최근 검색어 전체 삭제 api
+            """
+    )
+    public Object deleteUserSearchHistory(
+            @Parameter(hidden = true) @UserSession Long userId
+    ) {
+        searchHistoryBusiness.deleteAllUserSearchHistory(userId);
+
+        return Api.OK(null);
+    }
 
     @GetMapping("/popular")
-    @Operation(summary = "인기 검색어 api", description =
+    @Operation(summary = "인기 검색어 조회 api", description =
             """
             인기 검색어 조회 api
             
@@ -76,11 +90,23 @@ public class SearchHistoryController {
             
             ex) 검색한지 10시간이 지난 검색 기록들은 인기 검색어에 적게 반영된다.
             
-            지수감쇠 값과 불러올 순위 값을 설정할 필요가 생길시 확장 예정  
+            응답 필드 설명:
+            
+            id: 인기 검색어 문서 ID
+                    
+            rank: 현재 랭킹 
+                    
+            keyword: 검색 키워드
+                    
+            updated_at: 업데이트 시간 
+                    
+            rank_change: 1시간 전과 비교하여 랭킹 변화량
+                    
+            is_new_keyword: 랭킹에 새로 등장한 키워드 여부
             
             """
     )
-    public Object getPopularSearchHistory(
+    public Api<List<SearchPopularResponse>> getPopularSearchHistory(
     ) {
         var response=searchHistoryBusiness.getSearchPopularHistoriesList();
 

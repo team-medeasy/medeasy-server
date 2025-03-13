@@ -43,12 +43,9 @@ public class SearchPopularScheduler {
     public void executeRecentPopularKeywordsQuery() {
         long now = Instant.now().toEpochMilli();
         long oneHourAgo=now-3600000;
-        log.info("현재 밀리세컨드: {}", now);
 
         List<SearchPopularDto> nowSearchPopularResponse=getPopularKeywordsByMilliSeconds(now);
         List<SearchPopularDto> oneHourAgoSearchPopularResponse=getPopularKeywordsByMilliSeconds(oneHourAgo);
-
-        log.info("한시간전 랭킹 결과 {}", oneHourAgoSearchPopularResponse.size());
 
         Map<String, Integer> pastPopularMap = IntStream.range(0, oneHourAgoSearchPopularResponse.size())
                 .boxed()
@@ -83,7 +80,7 @@ public class SearchPopularScheduler {
 
                         int changeRank =  pastRank-currentRank; // 양수: 순위 상승 음수: 순위 하락
 
-                        log.info("과거 랭킹: {}, 현재 랭킹: {}, 랭킹 차이: {}", pastRank, currentRank, changeRank);
+                        log.info("{}: 과거 랭킹: {}, 현재 랭킹: {}, 랭킹 차이: {}", keyword, pastRank, currentRank, changeRank);
 
                         return SearchPopularDocument.builder()
                             .rank(index + 1)
@@ -98,7 +95,6 @@ public class SearchPopularScheduler {
 
             // Elasticsearch 저장 로직 추가
             searchPopularRepository.saveAll(documents);
-            log.info("인기 검색어 저장 완료 1등 검색어: {}", documents.getFirst().getKeyword());
         } catch (Exception e) {
             throw new ApiException(SchedulerError.SERVER_ERROR, "인기 검색어 저장 중 오류");
         }
@@ -118,8 +114,8 @@ public class SearchPopularScheduler {
                     "        \"init_script\": \"state.docs = [];\",\n" +
                     "        \"map_script\": \"long docTime = doc['searchTime'].value.toInstant().toEpochMilli(); " +
                     "                           String kw = doc['keyword'].value; " +
-                    "                           long threshold = "+milliSeconds+"L; " +  // 한 시간 전 밀리초 기준
-                    "                            if (docTime <= threshold) { " + // 한 시간 이후 데이터 제외
+                    "                           long threshold = "+milliSeconds+"L; " + // 시간 조회 기준 추가
+                    "                            if (docTime <= threshold) { " +
                     "                               state.docs.add(['time': docTime, 'keyword': kw]); " +
                     "                            }\",\n" +
                     "        \"combine_script\": \"return state.docs;\",\n" +

@@ -28,6 +28,7 @@ public class MedicineController {
     private final MedicineBusiness medicineBusiness;
     private final SearchHistoryBusiness searchHistoryBusiness;
 
+
     @GetMapping("")
     public Api<Page<MedicineResponse>> getMedicine(Pageable pageable) {
 
@@ -48,22 +49,6 @@ public class MedicineController {
                 .body("save successful")
                 .toString();
     }
-
-//    // 약 검색 API
-//    @GetMapping("/search")
-//    @Operation(summary = "약 검색 API", description = "검색엔진 기반으로 약 이름 검색시 유사한 약 리스트 출력")
-//    public Api<List<MedicineResponse>> searchMedicines(
-//            @RequestParam("medicine_name")
-//            @Parameter(description = "약 이름 키워드", required = true)
-//            String medicineName,
-//            @RequestParam(value = "size", defaultValue = "10")
-//            @Parameter(description = "불러올 데이터 개수", required = false)
-//            int size
-//    ) {
-//        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicines(medicineName, size);
-//
-//        return Api.OK(medicineResponses);
-//    }
 
     // 약 검색 색상 필터링
     @GetMapping("/search")
