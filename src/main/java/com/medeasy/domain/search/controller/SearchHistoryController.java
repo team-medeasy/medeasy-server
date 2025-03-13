@@ -70,20 +70,20 @@ public class SearchHistoryController {
             """
             인기 검색어 조회 api
             
-            최근에 많이 검색된 순으로 정렬
+            인기 검색어를 순위 오름차순 기준으로 10개 조회 
             
-            입력한 size만큼 인기 검색어 키워드 반환 
+            지수감쇠 함수를 통하여 검색 시간에 따라 순위 점수 차등 부여 (현재는 10시간 기준으로 급격히 점수 감소)
+            
+            ex) 검색한지 10시간이 지난 검색 기록들은 인기 검색어에 적게 반영된다.
+            
+            지수감쇠 값과 불러올 순위 값을 설정할 필요가 생길시 확장 예정  
             
             """
     )
     public Object getPopularSearchHistory(
-            @Parameter(hidden = true) @UserSession Long userId,
-            @RequestParam(value = "search_history_id", required = true)
-            @Parameter(description = "검색 기록 id (문자열)", required = true)
-            String searchHistoryId
     ) {
-        searchHistoryBusiness.deleteUserSearchHistory(userId, searchHistoryId);
+        var response=searchHistoryBusiness.getSearchPopularHistoriesList();
 
-        return Api.OK(null);
+        return Api.OK(response);
     }
 }
