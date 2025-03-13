@@ -11,6 +11,8 @@ import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.SchedulerError;
+import com.medeasy.common.error.SearchHistoryError;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.search.db.SearchHistoryDocument;
 import com.medeasy.domain.search.db.SearchHistoryRepository;
@@ -94,17 +96,20 @@ public class SearchHistoryService {
                 .withPageable(PageRequest.of(0, 100))
                 .build()
                 ;
-        SearchHits<SearchPopularDocument> searchHits=elasticsearchOperations.search(nativeQuery, SearchPopularDocument.class);
 
-        ElasticsearchAggregations aggregations = (ElasticsearchAggregations) searchHits.getAggregations();
-        ElasticsearchAggregation aggregation = aggregations.aggregationsAsMap().get("latest_updatedAt");
+        try {
+            SearchHits<SearchPopularDocument> searchHits=elasticsearchOperations.search(nativeQuery, SearchPopularDocument.class);
 
-        String latestUpdatedAtAsString = aggregation.aggregation().getAggregate().max().valueAsString();
+            ElasticsearchAggregations aggregations = (ElasticsearchAggregations) searchHits.getAggregations();
+            ElasticsearchAggregation aggregation = aggregations.aggregationsAsMap().get("latest_updatedAt");
 
-//        Instant instant = Instant.parse(latestUpdatedAtAsString);
+            String latestUpdatedAtAsString = aggregation.aggregation().getAggregate().max().valueAsString();
 
-        log.info("랭킹 조회할 최신 시간대: {}", latestUpdatedAtAsString);
-        return latestUpdatedAtAsString;
+            log.info("랭킹 조회할 최신 시간대: {}", latestUpdatedAtAsString);
+            return latestUpdatedAtAsString;
+        }catch (Exception e){
+            throw new ApiException(SearchHistoryError.SERVER_ERROR, "인기 검색어 마지막 업데이트 시간 조회 오류");
+        }
     }
 
     public List<SearchPopularDocument> getSearchPopularByDate(String updatedAt) {
@@ -123,11 +128,15 @@ public class SearchHistoryService {
                 .build()
                 ;
 
+        try {
             SearchHits<SearchPopularDocument> searchHits = elasticsearchOperations.search(nativeQuery, SearchPopularDocument.class);
 
-        return searchHits.getSearchHits()
-                .stream()
-                .map(SearchHit::getContent)
-                .collect(Collectors.toList());
+            return searchHits.getSearchHits()
+                    .stream()
+                    .map(SearchHit::getContent)
+                    .collect(Collectors.toList());
+        }catch (Exception e){
+            throw new ApiException(SearchHistoryError.SERVER_ERROR, "인기 검색어 조회 중 오류 발생");
+        }
     }
 }
