@@ -48,7 +48,7 @@ public class SearchPopularScheduler {
         List<SearchPopularDto> nowSearchPopularResponse=getPopularKeywordsByMilliSeconds(now);
         List<SearchPopularDto> oneHourAgoSearchPopularResponse=getPopularKeywordsByMilliSeconds(oneHourAgo);
 
-        log.info("한시간전 랭킹 결과 ");
+        log.info("한시간전 랭킹 결과 {}", oneHourAgoSearchPopularResponse.size());
 
         Map<String, Integer> pastPopularMap = IntStream.range(0, oneHourAgoSearchPopularResponse.size())
                 .boxed()
@@ -83,6 +83,8 @@ public class SearchPopularScheduler {
 
                         int changeRank =  pastRank-currentRank; // 양수: 순위 상승 음수: 순위 하락
 
+                        log.info("과거 랭킹: {}, 현재 랭킹: {}, 랭킹 차이: {}", pastRank, currentRank, changeRank);
+
                         return SearchPopularDocument.builder()
                             .rank(index + 1)
                             .keyword(nowSearchPopularResponse.get(index).getKeyword())
@@ -114,11 +116,19 @@ public class SearchPopularScheduler {
                     "    \"recent_popular_keywords\": {\n" +
                     "      \"scripted_metric\": {\n" +
                     "        \"init_script\": \"state.docs = [];\",\n" +
-                    "        \"map_script\": \"long docTime = doc['searchTime'].value.toInstant().toEpochMilli(); String kw = doc['keyword'].value; state.docs.add(['time': docTime, 'keyword': kw]);\",\n" +
+                    "        \"map_script\": \"long docTime = doc['searchTime'].value.toInstant().toEpochMilli(); " +
+                    "                           String kw = doc['keyword'].value; " +
+                    "                           long threshold = "+milliSeconds+"L; " +  // 한 시간 전 밀리초 기준
+                    "                            if (docTime <= threshold) { " + // 한 시간 이후 데이터 제외
+                    "                               state.docs.add(['time': docTime, 'keyword': kw]); " +
+                    "                            }\",\n" +
                     "        \"combine_script\": \"return state.docs;\",\n" +
                     "        \"reduce_script\": \"def allDocs = new ArrayList(); for (s in states) { allDocs.addAll(s); }\\n" +
                     "          long now = "+milliSeconds+"L;\\n" +
                     "          double scale = 36000000.0;\\n" +
+                    "          allDocs = allDocs.stream()" +
+                    "               .filter(doc -> (long)doc.time <= now)\\n" + // 한 시간 이후 데이터 제외
+                    "               .collect(Collectors.toList());\\n" +
                     "          allDocs.sort((a,b) -> {\\n" +
                     "            long tA = (long)a.time;\\n" +
                     "            long tB = (long)b.time;\\n" +

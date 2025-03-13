@@ -8,7 +8,6 @@ import com.medeasy.domain.search.dto.SearchPopularResponse;
 import com.medeasy.domain.search.service.SearchHistoryService;
 import lombok.RequiredArgsConstructor;
 
-import java.time.Instant;
 import java.util.List;
 
 @Business
@@ -47,6 +46,7 @@ public class SearchHistoryBusiness {
                     .keyword(searchPopularDocument.getKeyword())
                     .isNewKeyword(searchPopularDocument.getIsNewKeyword())
                     .updatedAt(searchPopularDocument.getUpdatedAt())
+                    .rankChange(searchPopularDocument.getRankChange())
                     .build()
                     ;
         }).toList();
