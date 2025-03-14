@@ -15,6 +15,7 @@ import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,11 +29,20 @@ public class AuthBusiness {
     private final UserConverter userConverter;
     private final TokenHelperIfs jwtTokenHelper; ;
 
+
+
     // 사용자 등록 비밀번호 해싱
+    @Transactional
     public UserResponse registerUser(UserRegisterRequest userRegisterRequest) {
 
         userRegisterRequest.setPassword(passwordEncoder.encode(userRegisterRequest.getPassword()));
-        return userService.registerUser(userRegisterRequest);
+        UserEntity userEntity =userConverter.toEntity(userRegisterRequest);
+
+        UserEntity newUserEntity=userService.registerUser(userEntity);
+
+
+
+        return userConverter.toResponse(newUserEntity);
     }
 
     // 사용자 비밀번호 검증
