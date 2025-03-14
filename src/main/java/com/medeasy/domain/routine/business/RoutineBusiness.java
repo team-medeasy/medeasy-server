@@ -203,16 +203,17 @@ public class RoutineBusiness {
 
 
     private LocalTime convertTypeToLocalTime(String type, UserEntity userEntity) {
-        log.info(String.valueOf(userEntity.getMorning()));
-        log.info(String.valueOf(userEntity.getLunch()));
-
-        return switch (type) {
-            case "MORNING" -> userEntity.getMorning();
-            case "LUNCH" -> userEntity.getLunch();
-            case "DINNER" -> userEntity.getDinner();
-            case "BEDTIME" -> userEntity.getBedTime();
-            default -> throw new ApiException(ErrorCode.BAD_REQEUST, "아침, 점심, 저녁, 자기전 외의 시간 입력 오류");
-        };
+//        log.info(String.valueOf(userEntity.getMorning()));
+//        log.info(String.valueOf(userEntity.getLunch()));
+//
+//        return switch (type) {
+//            case "MORNING" -> userEntity.getMorning();
+//            case "LUNCH" -> userEntity.getLunch();
+//            case "DINNER" -> userEntity.getDinner();
+//            case "BEDTIME" -> userEntity.getBedTime();
+//            default -> throw new ApiException(ErrorCode.BAD_REQEUST, "아침, 점심, 저녁, 자기전 외의 시간 입력 오류");
+//        };
+        return null;
     }
 
     private List<LocalDate> convertDayOfWeeksToDates(List<String> dayOfWeeks){
@@ -229,27 +230,28 @@ public class RoutineBusiness {
     * MORNING, LUNCH, DINNER 리스트를 사용자 정의 시간 리스트로 변경
     * */
     private List<LocalTime> convertTypesToTimes(List<String> types, UserEntity userEntity){
-        List<LocalTime> times = new ArrayList<>();
-
-        for (String type : types) {
-            switch (type.toUpperCase()) {
-                case "MORNING":
-                    times.add(userEntity.getMorning());
-                    break;
-                case "LUNCH":
-                    times.add(userEntity.getLunch());
-                    break;
-                case "DINNER":
-                    times.add(userEntity.getDinner());
-                    break;
-                case "BEDTIME":
-                    times.add(userEntity.getBedTime());
-                    break;
-                default:
-                    throw new IllegalArgumentException("알 수 없는 타입: " + type);
-            }
-        }
-        return times;
+//        List<LocalTime> times = new ArrayList<>();
+//
+//        for (String type : types) {
+//            switch (type.toUpperCase()) {
+//                case "MORNING":
+//                    times.add(userEntity.getMorning());
+//                    break;
+//                case "LUNCH":
+//                    times.add(userEntity.getLunch());
+//                    break;
+//                case "DINNER":
+//                    times.add(userEntity.getDinner());
+//                    break;
+//                case "BEDTIME":
+//                    times.add(userEntity.getBedTime());
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("알 수 없는 타입: " + type);
+//            }
+//        }
+//        return times;
+        return null;
     }
 
     public List<RoutineGroupResponse> getRoutineListByDate(Long userId, LocalDate date) {

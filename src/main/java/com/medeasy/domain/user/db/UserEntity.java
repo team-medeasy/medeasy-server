@@ -1,6 +1,7 @@
 package com.medeasy.domain.user.db;
 
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,7 +38,7 @@ public class UserEntity {
     private Gender gender;
 
     @CreationTimestamp
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "registered_at")
     private Date registeredAt;
 
@@ -53,14 +54,6 @@ public class UserEntity {
     @JoinColumn(name = "nok_id")
     private UserEntity nok;
 
-    private LocalTime morning;
-
-    private LocalTime lunch;
-
-    private LocalTime dinner;
-
-    private LocalTime bedTime;
-
     @Builder.Default
     @OneToMany(mappedBy = "nok")
     private List<UserEntity> subUsers = new ArrayList<>();
@@ -68,4 +61,8 @@ public class UserEntity {
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     private List<RoutineEntity> routines= new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<UserScheduleEntity> userSchedules = new ArrayList<>();
 }

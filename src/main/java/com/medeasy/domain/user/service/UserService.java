@@ -16,17 +16,11 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserConverter userConverter;
 
-    public UserResponse registerUser(UserRegisterRequest userRegisterRequest) {
+    public UserEntity registerUser(UserEntity userEntity) {
 
         try{
-            UserEntity userEntity =userConverter.toEntity(userRegisterRequest);
-            UserEntity newUserEntity = userRepository.save(userEntity);
-
-            UserResponse userResponse=userConverter.toResponse(newUserEntity);
-
-            return userResponse;
+            return userRepository.save(userEntity);
         }catch (DataIntegrityViolationException e){
             throw new ApiException(ErrorCode.BAD_REQEUST, "중복된 이메일입니다.");
         }
