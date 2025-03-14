@@ -13,6 +13,7 @@ import com.medeasy.domain.auth.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
 import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
+import com.medeasy.domain.user_schedule.business.UserScheduleBusiness;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +29,7 @@ public class AuthBusiness {
     private final PasswordEncoder passwordEncoder;
     private final UserConverter userConverter;
     private final TokenHelperIfs jwtTokenHelper; ;
-
+    private final UserScheduleBusiness userScheduleBusiness;
 
 
     // 사용자 등록 비밀번호 해싱
@@ -37,10 +38,8 @@ public class AuthBusiness {
 
         userRegisterRequest.setPassword(passwordEncoder.encode(userRegisterRequest.getPassword()));
         UserEntity userEntity =userConverter.toEntity(userRegisterRequest);
-
         UserEntity newUserEntity=userService.registerUser(userEntity);
-
-
+        userScheduleBusiness.registerUserDefaultSchedule(userEntity);
 
         return userConverter.toResponse(newUserEntity);
     }
@@ -59,12 +58,12 @@ public class AuthBusiness {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userDto.getId());
 
-        TokenDto acessToken = jwtTokenHelper.issueAcessToken(claims);
+        TokenDto accessToken = jwtTokenHelper.issueAcessToken(claims);
         TokenDto refreshToken = jwtTokenHelper.issueRefreshToken(claims);
 
         return TokenResponse.builder()
-                .accessToken(acessToken.getToken())
-                .accessTokenExpiredAt(acessToken.getExpiredAt())
+                .accessToken(accessToken.getToken())
+                .accessTokenExpiredAt(accessToken.getExpiredAt())
                 .refreshToken(refreshToken.getToken())
                 .refreshTokenExpiredAt(refreshToken.getExpiredAt())
                 .build()
