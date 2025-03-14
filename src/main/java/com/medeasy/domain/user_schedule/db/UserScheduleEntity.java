@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -26,7 +27,7 @@ public class UserScheduleEntity {
     @Column(name = "name", length = 150)
     private String name;
 
-    @Column(name = "take_time", columnDefinition = "timestamp")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime takeTime;
+    @Column(name = "take_time")
+    @Temporal(TemporalType.TIME)
+    private LocalTime takeTime;
 }
