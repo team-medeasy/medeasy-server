@@ -1,6 +1,7 @@
 package com.medeasy.domain.user.db;
 
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -60,4 +61,8 @@ public class UserEntity {
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     private List<RoutineEntity> routines= new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<UserScheduleEntity> userSchedules = new ArrayList<>();
 }
