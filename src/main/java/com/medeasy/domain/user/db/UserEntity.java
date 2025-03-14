@@ -37,7 +37,7 @@ public class UserEntity {
     private Gender gender;
 
     @CreationTimestamp
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "registered_at")
     private Date registeredAt;
 
@@ -52,14 +52,6 @@ public class UserEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nok_id")
     private UserEntity nok;
-
-    private LocalTime morning;
-
-    private LocalTime lunch;
-
-    private LocalTime dinner;
-
-    private LocalTime bedTime;
 
     @Builder.Default
     @OneToMany(mappedBy = "nok")
