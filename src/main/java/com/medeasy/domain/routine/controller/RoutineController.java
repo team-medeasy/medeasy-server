@@ -38,6 +38,9 @@ public class RoutineController {
             day_of_weeks: 1(월요일)~7(일요일) 복용하고자 하는 숫자 배열 입력
              
             types: "MORNING", "LUNCH", "DINNER", "BEDTIME" 약을 복용하는 시기 입력
+            
+            
+            마지막 업데이트 3/16
              
             """
     )
@@ -52,22 +55,24 @@ public class RoutineController {
         return Api.OK(null);
     }
 
-    @Operation(summary = "특정 날짜 루틴 조회", description =
+    @Operation(summary = "특정 날짜 범위의 루틴 조회", description =
             """
             루틴 조회 API: 특정 날짜의 사용자 루틴 리스트 조회 
             
-            PathVariable을 통해 date 정보를 요청에 포함
+            RequestParam을 통해 조회 시작 날짜와 마지막 날짜를 입력 
             
             형식: 2025-02-25
              
+            마지막 업데이트 3/16
             """
     )
-    @GetMapping("/{date}")
-    public Api<List<RoutineGroupResponse>> getRoutineListByDate(
+    @GetMapping("")
+    public Api<List<RoutineGroupDto>> getRoutineListByDate(
             @Parameter(hidden = true) @UserSession Long userId,
-            @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @Parameter(example = "2025-03-16") @RequestParam(name = "start_date", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(example = "2025-03-20") @RequestParam(name = "end_date", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        var response=routineBusiness.getRoutineListByDate(userId, date);
+        var response=routineBusiness.getRoutineListByDate(userId, startDate, endDate);
 
         return Api.OK(response);
     }
