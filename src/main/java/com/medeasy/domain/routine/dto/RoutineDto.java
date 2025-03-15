@@ -1,26 +1,32 @@
 package com.medeasy.domain.routine.dto;
 
+import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
+import com.medeasy.domain.user.db.UserEntity;
+import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-/*
-* 그룹형 쿼리 튜플 변환을 위한 dto
-* */
+/**
+ * 하나의 날짜에 대한 루틴
+ * */
 public class RoutineDto {
-    private Long routineId;
-    private Long medicineId;
-    private String nickname;
-    private LocalTime takeTime;
-    private String type;
-    private Boolean isTaken;
+    private Long id;
+
     private LocalDate takeDate;
+
+    private UserEntity user;
+
+    private UserScheduleEntity userSchedule;
+
+    private List<RoutineMedicineEntity> routineMedicines = new ArrayList<>();
 }
