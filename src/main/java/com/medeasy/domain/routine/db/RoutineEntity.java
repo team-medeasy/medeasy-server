@@ -1,13 +1,11 @@
 package com.medeasy.domain.routine.db;
 
-import com.medeasy.domain.medicine.db.MedicineEntity;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 
 @Entity

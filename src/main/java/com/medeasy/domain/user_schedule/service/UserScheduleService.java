@@ -27,4 +27,8 @@ public class UserScheduleService {
     public List<UserScheduleEntity> saveAll(List<UserScheduleEntity> userScheduleEntities) {
         return userScheduleRepository.saveAll(userScheduleEntities);
     }
+
+    public UserScheduleEntity findById(Long id) {
+        return userScheduleRepository.findById(id).orElseThrow(()->new ApiException(ErrorCode.BAD_REQEUST, "사용자 스케줄을 찾을 수 없습니다."));
+    }
 }

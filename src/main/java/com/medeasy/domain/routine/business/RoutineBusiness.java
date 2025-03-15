@@ -19,6 +19,8 @@ import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
+import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
+import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -48,6 +50,8 @@ public class RoutineBusiness {
     private final StringRedisTemplate redisAlarmTemplate;
     private final ObjectMapper objectMapper;
 
+    private final UserScheduleService userScheduleService;
+
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
             RoutineService routineService,
@@ -59,7 +63,8 @@ public class RoutineBusiness {
             AiService aiService,
             MedicineConverter medicineConverter,
             @Qualifier("redisTemplateForAlarm") StringRedisTemplate redisAlarmTemplate, // @Qualifier 적용
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            UserScheduleService userScheduleService
     ) {
         this.routineService = routineService;
         this.userService = userService;
@@ -71,6 +76,7 @@ public class RoutineBusiness {
         this.medicineConverter = medicineConverter;
         this.redisAlarmTemplate = redisAlarmTemplate;
         this.objectMapper = objectMapper;
+        this.userScheduleService = userScheduleService;
     }
     /**
      * 약 루틴 저장
@@ -106,9 +112,17 @@ public class RoutineBusiness {
         UserEntity userEntity = userService.getUserById(userId);
         MedicineEntity medicineEntity = medicineService.getMedicineById(routineRegisterRequest.getMedicineId());
 
-        // 요청 값 변환
-        List<String> types = routineRegisterRequest.getTypes();
-        List<LocalTime> times = convertTypesToTimes(types, userEntity);
+        // 복용 루틴 스케줄 조회
+        List<UserScheduleEntity> userScheduleEntities=routineRegisterRequest.getUserScheduleIds().stream()
+                .map(userScheduleService::findById)
+                .toList();
+
+        // 사용자 스케줄 시간만 추출하여 정렬
+        List<LocalTime> sortedTakeTimes = userScheduleEntities.stream()
+                .map(UserScheduleEntity::getTakeTime) // 복용 시간만 추출
+                .sorted() // 시간 순 정렬
+                .toList();
+
         String nickname=routineRegisterRequest.getNickname() == null ? medicineEntity.getItemName() : routineRegisterRequest.getNickname();
         int dose = routineRegisterRequest.getDose();
 
@@ -123,28 +137,27 @@ public class RoutineBusiness {
         if(routineRegisterRequest.getDayOfWeeks().contains(currentDayValue)) {
             LocalTime currentTime = LocalTime.now();
 
-            for(int i=0; i<types.size(); i++) {
-                if(currentTime.isBefore(times.get(i))){
-                    RoutineEntity routineEntity=RoutineEntity.builder()
+            for (LocalTime sortedTakeTime : sortedTakeTimes) {
+                if (currentTime.isBefore(sortedTakeTime)) {
+                    RoutineEntity routineEntity = RoutineEntity.builder()
                             .takeDate(currentDate)
                             .user(userEntity)
-                            .build()
-                            ;
+                            .build();
                     routineEntities.add(routineEntity);
 
-                    LocalDateTime dateTime=LocalDateTime.of(currentDate, times.get(i));
-                    String value=convertToJson(userId.toString(), nickname, dateTime);
-                    long score=dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                    LocalDateTime dateTime = LocalDateTime.of(currentDate, sortedTakeTime);
+                    String value = convertToJson(userId.toString(), nickname, dateTime);
+                    long score = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                     redisAlarmTemplate.opsForZSet().add("alarm_list", value, score);
 
-                    quantity+=dose;
+                    quantity += dose;
                 }
             }
 
         }
 
         // 내일 날짜부터 루틴 저장
-        int dailyDose=types.size()*routineRegisterRequest.getDose();
+        int dailyDose=sortedTakeTimes.size()*routineRegisterRequest.getDose();
         int totalQuantity=routineRegisterRequest.getTotalQuantity()-quantity;
         int requiredDays=(int) Math.ceil((double) totalQuantity/dailyDose); // 반올림
         LocalDate nextDate = LocalDate.now().plusDays(1);
@@ -164,12 +177,9 @@ public class RoutineBusiness {
 
         quantity=0; // 약 복용 count
         for (LocalDate localDate : dates) {
-            for (int j = 0; j < routineRegisterRequest.getTypes().size(); j++) {
+            for (LocalTime sortedTakeTime : sortedTakeTimes) {
                 quantity += routineRegisterRequest.getDose();
                 if (quantity > totalQuantity) break;
-
-                // 사용자 시간 변환
-                LocalTime time = convertTypeToLocalTime(routineRegisterRequest.getTypes().get(j), userEntity);
 
                 RoutineEntity routineEntity = RoutineEntity.builder()
                         .takeDate(localDate)
@@ -178,9 +188,9 @@ public class RoutineBusiness {
 
                 routineEntities.add(routineEntity);
 
-                LocalDateTime dateTime=LocalDateTime.of(localDate, time);
-                String value=convertToJson(userId.toString(), nickname, dateTime);
-                long score=dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                LocalDateTime dateTime = LocalDateTime.of(localDate, sortedTakeTime);
+                String value = convertToJson(userId.toString(), nickname, dateTime);
+                long score = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                 redisAlarmTemplate.opsForZSet().add("alarm_list", value, score);
 
                 log.info("redis 저장 value: {}, score: {}", value, score);
@@ -189,20 +199,6 @@ public class RoutineBusiness {
         routineService.saveAll(routineEntities);
     }
 
-
-    private LocalTime convertTypeToLocalTime(String type, UserEntity userEntity) {
-//        log.info(String.valueOf(userEntity.getMorning()));
-//        log.info(String.valueOf(userEntity.getLunch()));
-//
-//        return switch (type) {
-//            case "MORNING" -> userEntity.getMorning();
-//            case "LUNCH" -> userEntity.getLunch();
-//            case "DINNER" -> userEntity.getDinner();
-//            case "BEDTIME" -> userEntity.getBedTime();
-//            default -> throw new ApiException(ErrorCode.BAD_REQEUST, "아침, 점심, 저녁, 자기전 외의 시간 입력 오류");
-//        };
-        return null;
-    }
 
     private List<LocalDate> convertDayOfWeeksToDates(List<String> dayOfWeeks){
         List<LocalDate> dates = new ArrayList<>();
@@ -213,34 +209,6 @@ public class RoutineBusiness {
         return null;
     }
 
-
-    /*
-    * MORNING, LUNCH, DINNER 리스트를 사용자 정의 시간 리스트로 변경
-    * */
-    private List<LocalTime> convertTypesToTimes(List<String> types, UserEntity userEntity){
-//        List<LocalTime> times = new ArrayList<>();
-//
-//        for (String type : types) {
-//            switch (type.toUpperCase()) {
-//                case "MORNING":
-//                    times.add(userEntity.getMorning());
-//                    break;
-//                case "LUNCH":
-//                    times.add(userEntity.getLunch());
-//                    break;
-//                case "DINNER":
-//                    times.add(userEntity.getDinner());
-//                    break;
-//                case "BEDTIME":
-//                    times.add(userEntity.getBedTime());
-//                    break;
-//                default:
-//                    throw new IllegalArgumentException("알 수 없는 타입: " + type);
-//            }
-//        }
-//        return times;
-        return null;
-    }
 
     public List<RoutineGroupResponse> getRoutineListByDate(Long userId, LocalDate date) {
         List<RoutineGroupDto> routineGroupDtos=routineService.getRoutineGroups(date, userId);
@@ -317,7 +285,7 @@ public class RoutineBusiness {
             RoutineRegisterRequest registerRequest = RoutineRegisterRequest.builder()
                     .nickname(medicineDocument.getItemName())
                     .dose(doseDto.getDose())
-                    .types(types)
+//                    .types(types)
                     .dayOfWeeks(List.of(1, 2, 3, 4, 5, 6, 7))
                     .totalQuantity(totalQuantity)
                     .medicineId(Long.parseLong(medicineDocument.getId()))
