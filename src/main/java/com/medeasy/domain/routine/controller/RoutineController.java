@@ -72,16 +72,6 @@ public class RoutineController {
         return Api.OK(response);
     }
 
-    @GetMapping("test/{date}")
-    public String test(
-            @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    ) {
-        routineBusiness.test(date);
-
-        return "ok";
-    }
-
-
     @Operation(summary = "루틴 복용 여부 체크", description =
             """
             루틴 복용 여부 체크 API: 특정 routine의 복용 여부 체크

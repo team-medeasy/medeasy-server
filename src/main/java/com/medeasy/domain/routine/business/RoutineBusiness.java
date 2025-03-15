@@ -84,106 +84,57 @@ public class RoutineBusiness {
         this.routineMedicineService = routineMedicineService;
     }
     /**
-     * 약 루틴 저장
-     * spring sequrity의 usercontext에서 사용자 정보를 가져오고
-     * 약 정보, 별명, 1회 복용량, 총 개수 저장
+     * 단일 약 루틴 저장
      *
-     * 스케줄 저장
-     * 1. 일단 사용자 개인의 커스텀 시간을 가져온다.
-     * 2. 요청으로 들어온 date의 개수 * 시간의 개수만큼 RoutineSchedule entity를 생성한다.
-     * 3. 리스트로 만들어 한번에 저장
-     * 1. 오늘 날짜 가져오기
-     * 2. 하루에 몇번 먹는지 한번에 몇개의 약을 먹는지
-     *
-     * 예를 들어 total_quantity=29
-     * 하루에 약을 3번 한번에 2개 먹는다고 가정
-     * 그러면 29/6 = 4
-     * 총 4일동안 먹고 5개가 남는다.
-     * 즉 마지막 날에 2번 더 먹을 수 있음.
-     * 따라서 4+1로 올림 처리를 해야함.
-     *
-     * 월~일 -> 1~7
-     * 예를들어 월 수 금
-     * requiredDays가 5일
-     *
-     * 오늘이
-     *
-     * 월요일, 수요일, 금요일, 월요일, 수요일 -> 날짜로 표현
-     * 2/24, 2/26, 2/28, 3/3, 3/5
+     * 3/15 업데이트
      * */
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
 
         // Entity 값 가져오기
         UserEntity userEntity = userService.getUserById(userId);
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
-
-        // TODO  복용 루틴 스케줄 조회 시간 대별로 조회해서 가져와야함.
-        List<UserScheduleEntity> userScheduleEntities=routineRegisterRequest.getUserScheduleIds().stream()
-                .map(userScheduleService::findById)
-                .toList();
-
+        List<UserScheduleEntity> userScheduleEntities=userScheduleService.findAllByIdInOrderByTakeTimeAsc(routineRegisterRequest.getUserScheduleIds());
 
         String nickname=routineRegisterRequest.getNickname() == null ? medicineDocument.getItemName() : routineRegisterRequest.getNickname();
         int dose = routineRegisterRequest.getDose();
 
-        // 계산을 위한 변수
         List<RoutineMedicineEntity> routineMedicineEntities=new ArrayList<>();
         int quantity=0;
 
         // 오늘 날짜의 복용 루틴 저장
         LocalDate currentDate = LocalDate.now();
-        int currentDayValue = currentDate.getDayOfWeek().getValue();
+        List<LocalDate> routineDates=calculateRoutineDates(routineRegisterRequest);
 
-        if(routineRegisterRequest.getDayOfWeeks().contains(currentDayValue)) {
-            LocalTime currentTime = LocalTime.now();
-
+        if(routineDates.contains(currentDate)) {
             for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
-                if (currentTime.isBefore(userScheduleEntity.getTakeTime())) {
-
-                    // routine entity 가 존재한다면 가져오기 아니면 생성하기
-                    RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, currentDate);
-
-                    RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
-                            .nickname(nickname)
-                            .isTaken(false)
-                            .dose(dose)
-                            .routine(routineEntity)
-                            .medicineId(medicineDocument.getId())
-                            .build()
-                            ;
-
-                    routineMedicineEntities.add(routineMedicineEntity);
-
-                    quantity += dose;
+                if (LocalTime.now().isAfter(userScheduleEntity.getTakeTime())) {
+                    continue;
                 }
+                quantity += dose;
+
+                if (quantity > routineRegisterRequest.getTotalQuantity()) break;
+
+                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, currentDate);
+
+                RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
+                        .nickname(nickname)
+                        .isTaken(false)
+                        .dose(dose)
+                        .routine(routineEntity)
+                        .medicineId(medicineDocument.getId())
+                        .build()
+                        ;
+
+                routineMedicineEntities.add(routineMedicineEntity);
             }
 
+            routineDates.remove(currentDate);
         }
 
-        // 내일 날짜부터 루틴 저장
-        int dailyDose=userScheduleEntities.size()*routineRegisterRequest.getDose();
-        int totalQuantity=routineRegisterRequest.getTotalQuantity()-quantity;
-        int requiredDays=(int) Math.ceil((double) totalQuantity/dailyDose); // 반올림
-        LocalDate nextDate = LocalDate.now().plusDays(1);
-
-        // 선택한 요일을 기반으로 약을 복용하는 날짜 구하기
-        List<LocalDate> dates = new ArrayList<>();
-
-        while(dates.size() < requiredDays) {
-            int nextDayValue = nextDate.getDayOfWeek().getValue();
-
-            if(routineRegisterRequest.getDayOfWeeks().contains(nextDayValue)) {
-                dates.add(nextDate);
-            }
-
-            nextDate = nextDate.plusDays(1);
-        }
-
-        quantity=0; // 약 복용 count
-        for (LocalDate localDate : dates) {
+        for (LocalDate localDate : routineDates) {
             for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
-                quantity += routineRegisterRequest.getDose();
-                if (quantity > totalQuantity) break;
+                quantity += dose;
+                if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
                 // routine entity 가 존재한다면 가져오기 아니면 생성하기
                 RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, localDate);
@@ -203,14 +154,28 @@ public class RoutineBusiness {
         routineMedicineService.saveAll(routineMedicineEntities);
     }
 
+    /**
+     * 약을 복용할 날짜 구하기
+     * */
+    public List<LocalDate> calculateRoutineDates(RoutineRegisterRequest routineRegisterRequest) {
+        int dailyDose=routineRegisterRequest.getUserScheduleIds().size()*routineRegisterRequest.getDose();
 
-    private List<LocalDate> convertDayOfWeeksToDates(List<String> dayOfWeeks){
+        int requiredDays=(int) Math.ceil((double) routineRegisterRequest.getTotalQuantity()/dailyDose); // 반올림
+
         List<LocalDate> dates = new ArrayList<>();
+        LocalDate currentDate = LocalDate.now();
 
-        // 오늘 날짜를 가져온다.
+        while(dates.size() < requiredDays) {
+            int todayDayValue = currentDate.getDayOfWeek().getValue();
 
-        //
-        return null;
+            if(routineRegisterRequest.getDayOfWeeks().contains(todayDayValue)) {
+                dates.add(currentDate);
+            }
+
+            currentDate = currentDate.plusDays(1);
+        }
+
+        return dates;
     }
 
 
@@ -219,29 +184,6 @@ public class RoutineBusiness {
 
         return routineGroupDtos.stream()
                 .map(routineConverter::toGroupResponse).toList();
-    }
-
-    public void test(LocalDate date) {
-
-        UserEntity userEntity = userService.getUserById(7L);
-        MedicineEntity medicineEntity = medicineService.getMedicineById(3594L);
-
-        List<RoutineEntity> entities = new ArrayList<>();
-        for (int i = 0; i < 500; i++) {
-            date=date.plusDays(1);
-            for(int j = 0; j < 3; j++) {
-                LocalTime localTime = LocalTime.of(j*3, 0);
-
-                RoutineEntity routineEntity = RoutineEntity.builder()
-                        .takeDate(date)
-                        .user(userEntity)
-                        .build()
-                        ;
-
-                entities.add(routineEntity);
-            }
-        }
-        routineService.saveAll(entities);
     }
 
     /**
@@ -260,6 +202,8 @@ public class RoutineBusiness {
 
     /**
      * 처방전 루틴 등록 메서드
+     *
+     * 처방전 분석 데이터를 토대로 루틴 추가 여부 응답을 전송한다.
      * */
     public void registerRoutineByPrescription(Long userId, MultipartFile file) {
         var userEntity = userService.getUserById(userId);
@@ -275,28 +219,16 @@ public class RoutineBusiness {
         AiResponseDto aiResponseDto=aiService.parseGeminiResponse(analysis);
         log.info("추출 데이터 파싱 완료, api token 비용: {}", aiResponseDto.getTotalTokenCount());
 
+        /**
+         * 루틴 체크 메서드 작성
+         *
+         * 보여줄 내용
+         *
+         *
+         * */
         aiResponseDto.getDoseDtos().stream().forEach(doseDto -> {
-            // TODO 처방전 약 검색 로직 수정 필요, 임시로 하나의 약만 찾도록 작성
-            // 수정할 내용: name의 길이가 길어서 완전히 똑같은 약이 나오지 않을 수 있음. 따라서 형태소 분석 추가, 유사한 약이라도 검색 되게끔
-            // 현재 사이즈를 1로 설정하여 하나의 약만 검색하도록 하였지만, 나중에 요청사항 변경 시 처방전 스캔 약이 맞는지 확인하는 api, method 추가 필요성 있음.
-            MedicineDocument medicineDocument=medicineDocumentService.searchMedicineContainingName(doseDto.getName(), 1).getFirst();
-            MedicineEntity medicineEntity=medicineConverter.toEntity(medicineDocument);
 
-            int totalQuantity=doseDto.getTotalDays()*doseDto.getTypeCount()*doseDto.getDose();
-            List<String> types = convertTypeCountToTypes(doseDto.getTypeCount());
 
-            // TODO 하루 중 언제 먹을지 일주일 중 어느 요일에 먹을지
-            RoutineRegisterRequest registerRequest = RoutineRegisterRequest.builder()
-                    .nickname(medicineDocument.getItemName())
-                    .dose(doseDto.getDose())
-//                    .types(types)
-                    .dayOfWeeks(List.of(1, 2, 3, 4, 5, 6, 7))
-                    .totalQuantity(totalQuantity)
-                    .medicineId(medicineDocument.getId())
-                    .build()
-                    ;
-
-            registerRoutine(userId, registerRequest);
         });
 
     }

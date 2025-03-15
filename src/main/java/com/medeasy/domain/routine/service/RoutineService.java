@@ -76,6 +76,11 @@ public class RoutineService {
         return null;
     }
 
+    /**
+     * 사용자의 날짜, 시간대가 같은 루틴을 조회
+     * 있다면 routine을 반환하여 하나의 routine의 여러개의 routine medicine 등록
+     * 없다면 새로 등록.
+     * */
     public RoutineEntity getRoutineByUserScheduleAndTakeDate(UserEntity userEntity, UserScheduleEntity userScheduleEntity, LocalDate takeDate) {
         return routineRepository.findByUserScheduleIdAndTakeDate(userScheduleEntity.getId(), takeDate)
                 .orElseGet(() -> {

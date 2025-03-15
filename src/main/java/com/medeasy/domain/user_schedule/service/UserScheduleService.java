@@ -31,4 +31,8 @@ public class UserScheduleService {
     public UserScheduleEntity findById(Long id) {
         return userScheduleRepository.findById(id).orElseThrow(()->new ApiException(ErrorCode.BAD_REQEUST, "사용자 스케줄을 찾을 수 없습니다."));
     }
+
+    public List<UserScheduleEntity> findAllByIdInOrderByTakeTimeAsc(List<Long> ids) {
+        return userScheduleRepository.findAllByIdInOrderByTakeTimeAsc(ids);
+    }
 }
