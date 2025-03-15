@@ -1,11 +1,14 @@
 package com.medeasy.domain.routine.db;
 
+import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -36,6 +39,9 @@ public class RoutineEntity {
     @JoinColumn(name = "user_schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserScheduleEntity userSchedule;
+
+    @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<RoutineMedicineEntity> routineMedicines = new ArrayList<>();
 
     /*
     * CascadeType.ALL 부모 엔티티의 업데이트를 자식에서도 따라감.
