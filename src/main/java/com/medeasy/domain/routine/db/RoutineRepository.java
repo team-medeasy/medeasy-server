@@ -73,4 +73,18 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
 //    List<Long> findDistinctMedicineIdByUserIdAndIsTakenIsFalse(@Param("user_id") Long userId);
 
     Optional<RoutineEntity> findByUserScheduleIdAndTakeDate(Long userScheduleId, LocalDate takeDate);
+
+
+    @Query("SELECT r FROM RoutineEntity r " +
+            "JOIN FETCH r.userSchedule us " +
+            "LEFT JOIN FETCH r.routineMedicines rm " +
+            "WHERE r.user.id = :userId " +
+            "AND r.takeDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY r.takeDate ASC, us.takeTime ASC")
+    List<RoutineEntity> findGroupedRoutinesByDate(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
 }
