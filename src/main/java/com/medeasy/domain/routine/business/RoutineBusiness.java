@@ -112,16 +112,11 @@ public class RoutineBusiness {
         UserEntity userEntity = userService.getUserById(userId);
         MedicineEntity medicineEntity = medicineService.getMedicineById(routineRegisterRequest.getMedicineId());
 
-        // 복용 루틴 스케줄 조회
+        // TODO  복용 루틴 스케줄 조회 시간 대별로 조회해서 가져와야함.
         List<UserScheduleEntity> userScheduleEntities=routineRegisterRequest.getUserScheduleIds().stream()
                 .map(userScheduleService::findById)
                 .toList();
 
-        // 사용자 스케줄 시간만 추출하여 정렬
-        List<LocalTime> sortedTakeTimes = userScheduleEntities.stream()
-                .map(UserScheduleEntity::getTakeTime) // 복용 시간만 추출
-                .sorted() // 시간 순 정렬
-                .toList();
 
         String nickname=routineRegisterRequest.getNickname() == null ? medicineEntity.getItemName() : routineRegisterRequest.getNickname();
         int dose = routineRegisterRequest.getDose();
@@ -137,18 +132,13 @@ public class RoutineBusiness {
         if(routineRegisterRequest.getDayOfWeeks().contains(currentDayValue)) {
             LocalTime currentTime = LocalTime.now();
 
-            for (LocalTime sortedTakeTime : sortedTakeTimes) {
-                if (currentTime.isBefore(sortedTakeTime)) {
+            for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
+                if (currentTime.isBefore(userScheduleEntity.getTakeTime())) {
                     RoutineEntity routineEntity = RoutineEntity.builder()
                             .takeDate(currentDate)
                             .user(userEntity)
                             .build();
                     routineEntities.add(routineEntity);
-
-                    LocalDateTime dateTime = LocalDateTime.of(currentDate, sortedTakeTime);
-                    String value = convertToJson(userId.toString(), nickname, dateTime);
-                    long score = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    redisAlarmTemplate.opsForZSet().add("alarm_list", value, score);
 
                     quantity += dose;
                 }
@@ -157,7 +147,7 @@ public class RoutineBusiness {
         }
 
         // 내일 날짜부터 루틴 저장
-        int dailyDose=sortedTakeTimes.size()*routineRegisterRequest.getDose();
+        int dailyDose=userScheduleEntities.size()*routineRegisterRequest.getDose();
         int totalQuantity=routineRegisterRequest.getTotalQuantity()-quantity;
         int requiredDays=(int) Math.ceil((double) totalQuantity/dailyDose); // 반올림
         LocalDate nextDate = LocalDate.now().plusDays(1);
@@ -177,7 +167,7 @@ public class RoutineBusiness {
 
         quantity=0; // 약 복용 count
         for (LocalDate localDate : dates) {
-            for (LocalTime sortedTakeTime : sortedTakeTimes) {
+            for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
                 quantity += routineRegisterRequest.getDose();
                 if (quantity > totalQuantity) break;
 
@@ -187,13 +177,6 @@ public class RoutineBusiness {
                         .build();
 
                 routineEntities.add(routineEntity);
-
-                LocalDateTime dateTime = LocalDateTime.of(localDate, sortedTakeTime);
-                String value = convertToJson(userId.toString(), nickname, dateTime);
-                long score = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                redisAlarmTemplate.opsForZSet().add("alarm_list", value, score);
-
-                log.info("redis 저장 value: {}, score: {}", value, score);
             }
         }
         routineService.saveAll(routineEntities);
