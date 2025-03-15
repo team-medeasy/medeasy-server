@@ -276,11 +276,9 @@ public class RoutineBusiness {
     /**
      * 루틴 제거 메서드
      * */
-    public void deleteRoutine(Long userId, Long routineId) {
+    public void deleteRoutine(Long userId, Long routineMedicineId) {
         // routine 존재 여부 파악
-        RoutineEntity routineEntity=routineService.getRoutineById(routineId);
-
-        routineService.deleteRoutine(routineId);
+        routineService.deleteRoutine(routineMedicineId);
     }
 
     public String convertToJson(String clientId, String medicineName, LocalDateTime dateTime) {

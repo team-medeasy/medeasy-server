@@ -131,23 +131,23 @@ public class RoutineController {
         return Api.OK(null);
     }
 
-    @Operation(summary = "단일 루틴 삭제 api", description =
+    @Operation(summary = "단일 루틴 삭제 api v2", description =
             """
             단일 루틴 삭제 api 
             
             요청: 
             
-            PathVariable로 삭제하려는 routine_id값 지정 
+            PathVariable로 삭제하려는 routine_medicine_id값 지정 
             """
     )
-    @DeleteMapping("/{routine_id}")
+    @DeleteMapping("/{routine_medicine_id}")
     public Api<Object> deleteRoutine(
             @Parameter(hidden = true)
             @UserSession Long userId,
             @Parameter(description = "삭제 하려는 루틴 id", required = true)
-            @PathVariable("routine_id") Long routineId
+            @PathVariable("routine_medicine_id") Long routineMedicineId
     ) {
-        routineBusiness.deleteRoutine(userId, routineId);
+        routineBusiness.deleteRoutine(userId, routineMedicineId);
         return Api.OK(null);
     }
 }

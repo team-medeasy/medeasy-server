@@ -1,6 +1,7 @@
 package com.medeasy.domain.routine.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.RoutineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
@@ -13,6 +14,8 @@ import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,7 +80,13 @@ public class RoutineService {
 
     @Transactional
     public void deleteRoutine(Long routineId) {
-        routineRepository.deleteById(routineId);
+        try {
+            routineRepository.deleteById(routineId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE);
+        } catch (DataAccessException e) {
+            throw new ApiException(ErrorCode.SERVER_ERROR);
+        }
     }
 
     public List<Long> getRoutinesByUserId(Long userId) {
