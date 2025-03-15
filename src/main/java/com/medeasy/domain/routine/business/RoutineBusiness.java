@@ -183,12 +183,15 @@ public class RoutineBusiness {
         return dates;
     }
 
+    /**
+     * 시작 날짜와 끝나는 날짜 범위에 해당하는
+     * 루틴 스케줄을 조회
+     * */
+    public List<RoutineGroupDto> getRoutineListByDate(Long userId, LocalDate startDate, LocalDate endDate) {
+        UserEntity userEntity = userService.getUserById(userId);
+        List<RoutineGroupDto> routineGroupDtos=routineService.getRoutinesByDatesAndUserID(userId, startDate, endDate);
 
-    public List<RoutineGroupResponse> getRoutineListByDate(Long userId, LocalDate date) {
-        List<RoutineGroupDto> routineGroupDtos=routineService.getRoutineGroups(date, userId);
-
-        return routineGroupDtos.stream()
-                .map(routineConverter::toGroupResponse).toList();
+        return routineGroupDtos;
     }
 
     /**

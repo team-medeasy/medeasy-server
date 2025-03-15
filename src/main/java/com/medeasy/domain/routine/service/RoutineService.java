@@ -8,8 +8,13 @@ import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineDto;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
+import com.medeasy.domain.routine_medicine.converter.RoutineMedicineConverter;
+import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
+import com.medeasy.domain.routine_medicine.dto.RoutineMedicineDto;
 import com.medeasy.domain.user.db.UserEntity;
+import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
+import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +31,8 @@ public class RoutineService {
 
     private final RoutineRepository routineRepository;
     private final ObjectMapper objectMapper;
+    private final RoutineMedicineConverter routineMedicineConverter;
+    private final UserScheduleConverter userScheduleConverter;
 
     public RoutineEntity save(RoutineEntity routineEntity) {
         return routineRepository.save(routineEntity);
@@ -36,29 +42,38 @@ public class RoutineService {
         routineRepository.saveAll(routineEntities);
     }
 
-    public List<RoutineEntity> getRoutineListByDate(LocalDate date, Long userId) {
-//        return routineRepository.findAllByTakeDateAndUserIdOrderByTakeTimeAsc(date, userId);
-        return null;
-    }
+    public List<RoutineGroupDto> getRoutinesByDatesAndUserID(Long userId, LocalDate startDate, LocalDate endDate) {
+        List<RoutineEntity> routineEntities=routineRepository.findGroupedRoutinesByDate(userId, startDate, endDate);
+        Map<LocalDate, RoutineGroupDto> routineMap = new LinkedHashMap<>();
 
-    public List<RoutineGroupDto> getRoutineGroups(LocalDate date, Long userId) {
-//        return routineRepository.findRoutinesByTakeDateAndUserId(date, userId)
-//                .stream()
-//                .map(row -> {
-//                    LocalTime takeTime = ((Time) row[0]).toLocalTime();
-//                    String routinesJson = row[1].toString();
-//                    try {
-//                        List<RoutineDto> routineDtos = objectMapper.readValue(
-//                                routinesJson,
-//                                new TypeReference<List<RoutineDto>>() {}
-//                        );
-//                        return new RoutineGroupDto(takeTime, routineDtos);
-//                    } catch (Exception e) {
-//                        throw new RuntimeException("Error parsing JSON routines", e);
-//                    }
-//                })
-//                .collect(Collectors.toList());
-        return null;
+        for(RoutineEntity routineEntity: routineEntities) {
+            LocalDate takeDate=routineEntity.getTakeDate();
+            UserScheduleEntity userScheduleEntity = routineEntity.getUserSchedule();
+            List<RoutineMedicineEntity> routineMedicineEntities = routineEntity.getRoutineMedicines();
+
+            routineMap.putIfAbsent(takeDate, new RoutineGroupDto(takeDate, new ArrayList<>()));
+            RoutineGroupDto routineGroupDto = routineMap.get(takeDate);
+
+            // UserSchedule 찾기
+            Optional<UserScheduleDto> existingSchedule = routineGroupDto.getUserScheduleDtos().stream()
+                    .filter(s -> s.getId().equals(userScheduleEntity.getId()))
+                    .findFirst();
+
+            UserScheduleDto scheduleDTO;
+
+            if (existingSchedule.isPresent()) {
+                scheduleDTO = existingSchedule.get();
+            } else {
+                scheduleDTO = userScheduleConverter.toDto(userScheduleEntity);
+                routineGroupDto.getUserScheduleDtos().add(scheduleDTO);
+            }
+
+            routineMedicineEntities.forEach(entity->{
+                scheduleDTO.getRoutineMedicineDtos().add(routineMedicineConverter.toDto(entity));
+            });
+        }
+
+        return new ArrayList<>(routineMap.values());
     }
 
 
