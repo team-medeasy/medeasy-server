@@ -11,7 +11,7 @@ public class UserScheduleConverter {
 
     public UserScheduleDto toDto(UserScheduleEntity userScheduleEntity) {
         return UserScheduleDto.builder()
-                .id(userScheduleEntity.getId())
+                .userScheduleId(userScheduleEntity.getId())
                 .name(userScheduleEntity.getName())
                 .takeTime(userScheduleEntity.getTakeTime())
                 .routineMedicineDtos(new ArrayList<>())

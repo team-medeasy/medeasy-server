@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RoutineMedicineDto {
-    private Long id;
+    private Long routineMedicineId;
 
     private String nickname;
 

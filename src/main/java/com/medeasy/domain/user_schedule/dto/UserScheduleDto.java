@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 public class UserScheduleDto {
 
-    private Long id;
+    private Long userScheduleId;
 
     private String name;
 

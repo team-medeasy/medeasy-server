@@ -9,7 +9,7 @@ public class RoutineMedicineConverter {
 
     public RoutineMedicineDto toDto(RoutineMedicineEntity routineMedicineEntity) {
         return RoutineMedicineDto.builder()
-                .id(routineMedicineEntity.getId())
+                .routineMedicineId(routineMedicineEntity.getId())
                 .nickname(routineMedicineEntity.getNickname())
                 .medicineId(routineMedicineEntity.getMedicineId())
                 .dose(routineMedicineEntity.getDose())

@@ -50,7 +50,7 @@ public class RoutineService {
 
             // UserSchedule 찾기
             Optional<UserScheduleDto> existingSchedule = routineGroupDto.getUserScheduleDtos().stream()
-                    .filter(s -> s.getId().equals(userScheduleEntity.getId()))
+                    .filter(s -> s.getUserScheduleId().equals(userScheduleEntity.getId()))
                     .findFirst();
 
             UserScheduleDto scheduleDTO;
