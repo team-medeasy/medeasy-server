@@ -31,8 +31,11 @@ public class AuthBusiness {
     private final TokenHelperIfs jwtTokenHelper; ;
     private final UserScheduleBusiness userScheduleBusiness;
 
-
-    // 사용자 등록 비밀번호 해싱
+    /**
+     * 회원가입 메서드
+     * 1. 사용자 이메일 중복 검사 및 등록
+     * 2. 사용자 기본 루틴 스케줄 추가
+     * */
     @Transactional
     public UserResponse registerUser(UserRegisterRequest userRegisterRequest) {
 

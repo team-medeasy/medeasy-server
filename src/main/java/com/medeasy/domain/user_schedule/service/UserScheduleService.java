@@ -27,4 +27,18 @@ public class UserScheduleService {
     public List<UserScheduleEntity> saveAll(List<UserScheduleEntity> userScheduleEntities) {
         return userScheduleRepository.saveAll(userScheduleEntities);
     }
+
+    public UserScheduleEntity findById(Long id) {
+        return userScheduleRepository.findById(id).orElseThrow(()->new ApiException(ErrorCode.BAD_REQEUST, "사용자 스케줄을 찾을 수 없습니다."));
+    }
+
+    public List<UserScheduleEntity> findAllByIdInOrderByTakeTimeAsc(List<Long> ids) {
+        List<UserScheduleEntity> userScheduleEntities=userScheduleRepository.findAllByIdInOrderByTakeTimeAsc(ids);
+
+        if(userScheduleEntities==null || userScheduleEntities.isEmpty()){
+            throw new ApiException(ErrorCode.BAD_REQEUST, "사용자 스케줄이 존재하지 않습니다.");
+        }
+
+        return userScheduleEntities;
+    }
 }

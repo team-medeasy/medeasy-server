@@ -1,12 +1,14 @@
 package com.medeasy.domain.routine.db;
 
-import com.medeasy.domain.medicine.db.MedicineEntity;
+import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.user.db.UserEntity;
+import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -26,33 +28,20 @@ public class RoutineEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "routine_seq_generator")
     private Long id;
 
-    @Column(nullable = false, length = 150)
-    private String nickname;
-
     @Temporal(TemporalType.DATE)
     @Column(nullable = false)
     private LocalDate takeDate;
-
-    @Temporal(TemporalType.TIME)
-    @Column(nullable = false)
-    private LocalTime takeTime;
-
-    @Column(nullable = false, columnDefinition = "bool")
-    private Boolean isTaken;
-
-    @Column(nullable = false)
-    private String type;
-
-    @Column(nullable = false)
-    private Integer dose;
 
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity user;
 
-    @JoinColumn(name = "medicine_id")
+    @JoinColumn(name = "user_schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private MedicineEntity medicine;
+    private UserScheduleEntity userSchedule;
+
+    @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<RoutineMedicineEntity> routineMedicines = new ArrayList<>();
 
     /*
     * CascadeType.ALL 부모 엔티티의 업데이트를 자식에서도 따라감.

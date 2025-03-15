@@ -57,7 +57,6 @@ public class AuthController {
             @Valid
             @RequestBody RefreshRequest request
     ) {
-//        String refreshToken=request.getHeader("X-Refresh-Token");
         TokenResponse tokenResponse=authBusiness.recreateAccessToken(request.getRefreshToken());
 
         return Api.OK(tokenResponse);

@@ -4,7 +4,6 @@ import com.medeasy.domain.user.db.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
