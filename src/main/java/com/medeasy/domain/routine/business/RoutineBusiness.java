@@ -126,13 +126,7 @@ public class RoutineBusiness {
             for(int i=0; i<types.size(); i++) {
                 if(currentTime.isBefore(times.get(i))){
                     RoutineEntity routineEntity=RoutineEntity.builder()
-                            .nickname(nickname)
-                            .isTaken(false)
                             .takeDate(currentDate)
-                            .takeTime(times.get(i))
-                            .dose(routineRegisterRequest.getDose())
-                            .type(types.get(i))
-                            .medicine(medicineEntity)
                             .user(userEntity)
                             .build()
                             ;
@@ -178,13 +172,7 @@ public class RoutineBusiness {
                 LocalTime time = convertTypeToLocalTime(routineRegisterRequest.getTypes().get(j), userEntity);
 
                 RoutineEntity routineEntity = RoutineEntity.builder()
-                        .nickname(nickname)
-                        .isTaken(false)
                         .takeDate(localDate)
-                        .takeTime(time)
-                        .dose(routineRegisterRequest.getDose())
-                        .type(routineRegisterRequest.getTypes().get(j))
-                        .medicine(medicineEntity)
                         .user(userEntity)
                         .build();
 
@@ -273,13 +261,7 @@ public class RoutineBusiness {
                 LocalTime localTime = LocalTime.of(j*3, 0);
 
                 RoutineEntity routineEntity = RoutineEntity.builder()
-                        .nickname("test")
-                        .isTaken(false)
                         .takeDate(date)
-                        .takeTime(localTime)
-                        .dose(1)
-                        .type("테스트")
-                        .medicine(medicineEntity)
                         .user(userEntity)
                         .build()
                         ;
@@ -297,13 +279,9 @@ public class RoutineBusiness {
     public RoutineCheckResponse checkRoutine(Long routineId, Boolean isTaken) {
 
         RoutineEntity routineEntity=routineService.getRoutineById(routineId);
-        Boolean beforeIsTaken=routineEntity.getIsTaken();
-        routineEntity.setIsTaken(isTaken);
 
         return RoutineCheckResponse.builder()
                 .routineId(routineEntity.getId())
-                .beforeIsTaken(beforeIsTaken)
-                .afterIsTaken(routineEntity.getIsTaken())
                 .build()
                 ;
     }

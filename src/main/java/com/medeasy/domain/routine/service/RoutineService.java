@@ -35,26 +35,28 @@ public class RoutineService {
     }
 
     public List<RoutineEntity> getRoutineListByDate(LocalDate date, Long userId) {
-        return routineRepository.findAllByTakeDateAndUserIdOrderByTakeTimeAsc(date, userId);
+//        return routineRepository.findAllByTakeDateAndUserIdOrderByTakeTimeAsc(date, userId);
+        return null;
     }
 
     public List<RoutineGroupDto> getRoutineGroups(LocalDate date, Long userId) {
-        return routineRepository.findRoutinesByTakeDateAndUserId(date, userId)
-                .stream()
-                .map(row -> {
-                    LocalTime takeTime = ((Time) row[0]).toLocalTime();
-                    String routinesJson = row[1].toString();
-                    try {
-                        List<RoutineDto> routineDtos = objectMapper.readValue(
-                                routinesJson,
-                                new TypeReference<List<RoutineDto>>() {}
-                        );
-                        return new RoutineGroupDto(takeTime, routineDtos);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error parsing JSON routines", e);
-                    }
-                })
-                .collect(Collectors.toList());
+//        return routineRepository.findRoutinesByTakeDateAndUserId(date, userId)
+//                .stream()
+//                .map(row -> {
+//                    LocalTime takeTime = ((Time) row[0]).toLocalTime();
+//                    String routinesJson = row[1].toString();
+//                    try {
+//                        List<RoutineDto> routineDtos = objectMapper.readValue(
+//                                routinesJson,
+//                                new TypeReference<List<RoutineDto>>() {}
+//                        );
+//                        return new RoutineGroupDto(takeTime, routineDtos);
+//                    } catch (Exception e) {
+//                        throw new RuntimeException("Error parsing JSON routines", e);
+//                    }
+//                })
+//                .collect(Collectors.toList());
+        return null;
     }
 
 
@@ -68,6 +70,7 @@ public class RoutineService {
     }
 
     public List<Long> getRoutinesByUserId(Long userId) {
-        return routineRepository.findDistinctMedicineIdByUserIdAndIsTakenIsFalse(userId);
+//        return routineRepository.findDistinctMedicineIdByUserIdAndIsTakenIsFalse(userId);
+        return null;
     }
 }
