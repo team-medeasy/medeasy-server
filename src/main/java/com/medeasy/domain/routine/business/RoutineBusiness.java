@@ -278,7 +278,7 @@ public class RoutineBusiness {
      * */
     public void deleteRoutine(Long userId, Long routineMedicineId) {
         // routine 존재 여부 파악
-        routineService.deleteRoutine(routineMedicineId);
+        routineMedicineService.deleteRoutine(routineMedicineId);
     }
 
     public String convertToJson(String clientId, String medicineName, LocalDateTime dateTime) {

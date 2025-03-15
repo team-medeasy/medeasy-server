@@ -78,17 +78,6 @@ public class RoutineService {
         return routineRepository.findById(id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
     }
 
-    @Transactional
-    public void deleteRoutine(Long routineId) {
-        try {
-            routineRepository.deleteById(routineId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE);
-        } catch (DataAccessException e) {
-            throw new ApiException(ErrorCode.SERVER_ERROR);
-        }
-    }
-
     public List<Long> getRoutinesByUserId(Long userId) {
 //        return routineRepository.findDistinctMedicineIdByUserIdAndIsTakenIsFalse(userId);
         return null;
