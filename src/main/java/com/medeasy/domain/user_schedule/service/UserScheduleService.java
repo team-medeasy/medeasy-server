@@ -33,6 +33,12 @@ public class UserScheduleService {
     }
 
     public List<UserScheduleEntity> findAllByIdInOrderByTakeTimeAsc(List<Long> ids) {
-        return userScheduleRepository.findAllByIdInOrderByTakeTimeAsc(ids);
+        List<UserScheduleEntity> userScheduleEntities=userScheduleRepository.findAllByIdInOrderByTakeTimeAsc(ids);
+
+        if(userScheduleEntities==null || userScheduleEntities.isEmpty()){
+            throw new ApiException(ErrorCode.BAD_REQEUST, "사용자 스케줄이 존재하지 않습니다.");
+        }
+
+        return userScheduleEntities;
     }
 }

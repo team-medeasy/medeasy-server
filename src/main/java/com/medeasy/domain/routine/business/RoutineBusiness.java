@@ -86,14 +86,14 @@ public class RoutineBusiness {
     /**
      * 단일 약 루틴 저장
      *
-     * 3/15 업데이트
+     * 3/16 업데이트
      * */
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
-
         // Entity 값 가져오기
         UserEntity userEntity = userService.getUserById(userId);
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
         List<UserScheduleEntity> userScheduleEntities=userScheduleService.findAllByIdInOrderByTakeTimeAsc(routineRegisterRequest.getUserScheduleIds());
+
 
         String nickname=routineRegisterRequest.getNickname() == null ? medicineDocument.getItemName() : routineRegisterRequest.getNickname();
         int dose = routineRegisterRequest.getDose();
@@ -104,6 +104,8 @@ public class RoutineBusiness {
         // 오늘 날짜의 복용 루틴 저장
         LocalDate currentDate = LocalDate.now();
         List<LocalDate> routineDates=calculateRoutineDates(routineRegisterRequest);
+
+        log.info("약을 복용하는 날짜 결과: {}", routineDates.toString());
 
         if(routineDates.contains(currentDate)) {
             for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
@@ -152,9 +154,12 @@ public class RoutineBusiness {
             }
         }
         routineMedicineService.saveAll(routineMedicineEntities);
+
+        log.info("단일 약 루틴 저장");
     }
 
     /**
+     * 3/16
      * 약을 복용할 날짜 구하기
      * */
     public List<LocalDate> calculateRoutineDates(RoutineRegisterRequest routineRegisterRequest) {
