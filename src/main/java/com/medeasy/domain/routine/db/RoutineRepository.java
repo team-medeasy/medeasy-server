@@ -4,8 +4,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
 //    List<RoutineEntity> findAllByTakeDateAndUserIdOrderByTakeTimeAsc(LocalDate takeDate, Long userId);
@@ -69,4 +71,6 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
 //            "WHERE r.user.id = :user_id " +
 //            "AND r.isTaken = false")
 //    List<Long> findDistinctMedicineIdByUserIdAndIsTakenIsFalse(@Param("user_id") Long userId);
+
+    Optional<RoutineEntity> findByUserScheduleIdAndTakeDate(Long userScheduleId, LocalDate takeDate);
 }

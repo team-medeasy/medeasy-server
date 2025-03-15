@@ -31,5 +31,5 @@ public class RoutineMedicineEntity {
 
     // 엘라스틱 서치와의 매칭 정보
     @Column(nullable = false, length = 100)
-    private String medicine_id;
+    private String medicineId;
 }

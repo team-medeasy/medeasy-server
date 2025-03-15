@@ -17,6 +17,8 @@ import com.medeasy.domain.routine.converter.RoutineConverter;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
+import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
+import com.medeasy.domain.routine_medicine.service.RoutineMedicineService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
@@ -51,6 +53,7 @@ public class RoutineBusiness {
     private final ObjectMapper objectMapper;
 
     private final UserScheduleService userScheduleService;
+    private final RoutineMedicineService routineMedicineService;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
@@ -64,7 +67,8 @@ public class RoutineBusiness {
             MedicineConverter medicineConverter,
             @Qualifier("redisTemplateForAlarm") StringRedisTemplate redisAlarmTemplate, // @Qualifier 적용
             ObjectMapper objectMapper,
-            UserScheduleService userScheduleService
+            UserScheduleService userScheduleService,
+            RoutineMedicineService routineMedicineService
     ) {
         this.routineService = routineService;
         this.userService = userService;
@@ -77,6 +81,7 @@ public class RoutineBusiness {
         this.redisAlarmTemplate = redisAlarmTemplate;
         this.objectMapper = objectMapper;
         this.userScheduleService = userScheduleService;
+        this.routineMedicineService = routineMedicineService;
     }
     /**
      * 약 루틴 저장
@@ -122,7 +127,7 @@ public class RoutineBusiness {
         int dose = routineRegisterRequest.getDose();
 
         // 계산을 위한 변수
-        List<RoutineEntity> routineEntities=new ArrayList<>();
+        List<RoutineMedicineEntity> routineMedicineEntities=new ArrayList<>();
         int quantity=0;
 
         // 오늘 날짜의 복용 루틴 저장
@@ -134,11 +139,20 @@ public class RoutineBusiness {
 
             for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
                 if (currentTime.isBefore(userScheduleEntity.getTakeTime())) {
-                    RoutineEntity routineEntity = RoutineEntity.builder()
-                            .takeDate(currentDate)
-                            .user(userEntity)
-                            .build();
-                    routineEntities.add(routineEntity);
+
+                    // routine entity 가 존재한다면 가져오기 아니면 생성하기
+                    RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, currentDate);
+
+                    RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
+                            .nickname(nickname)
+                            .isTaken(false)
+                            .dose(dose)
+                            .routine(routineEntity)
+                            .medicineId("임시")
+                            .build()
+                            ;
+
+                    routineMedicineEntities.add(routineMedicineEntity);
 
                     quantity += dose;
                 }
@@ -171,15 +185,22 @@ public class RoutineBusiness {
                 quantity += routineRegisterRequest.getDose();
                 if (quantity > totalQuantity) break;
 
-                RoutineEntity routineEntity = RoutineEntity.builder()
-                        .takeDate(localDate)
-                        .user(userEntity)
-                        .build();
+                // routine entity 가 존재한다면 가져오기 아니면 생성하기
+                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, localDate);
 
-                routineEntities.add(routineEntity);
+                RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
+                        .nickname(nickname)
+                        .isTaken(false)
+                        .dose(dose)
+                        .routine(routineEntity)
+                        .medicineId("임시")
+                        .build()
+                        ;
+
+                routineMedicineEntities.add(routineMedicineEntity);
             }
         }
-        routineService.saveAll(routineEntities);
+        routineMedicineService.saveAll(routineMedicineEntities);
     }
 
 

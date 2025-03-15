@@ -8,6 +8,8 @@ import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineDto;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
+import com.medeasy.domain.user.db.UserEntity;
+import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +63,7 @@ public class RoutineService {
 
 
     public RoutineEntity getRoutineById(Long id) {
-        return routineRepository.findById(id).orElseThrow(()-> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
+        return routineRepository.findById(id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
     }
 
     @Transactional
@@ -72,5 +74,22 @@ public class RoutineService {
     public List<Long> getRoutinesByUserId(Long userId) {
 //        return routineRepository.findDistinctMedicineIdByUserIdAndIsTakenIsFalse(userId);
         return null;
+    }
+
+    public RoutineEntity getRoutineByUserScheduleAndTakeDate(UserEntity userEntity, UserScheduleEntity userScheduleEntity, LocalDate takeDate) {
+
+        RoutineEntity routine=routineRepository.findByUserScheduleIdAndTakeDate(userScheduleEntity.getId(), takeDate).get();
+
+        if(routine==null) {
+            var newRoutineEntity=RoutineEntity.builder()
+                    .user(userEntity)
+                    .userSchedule(userScheduleEntity)
+                    .takeDate(takeDate)
+                    .build()
+                    ;
+            routine=save(newRoutineEntity);
+        }
+
+        return routine;
     }
 }
