@@ -23,7 +23,7 @@ public class RoutineController {
 
     private final RoutineBusiness routineBusiness;
 
-    @Operation(summary = "루틴 등록", description =
+    @Operation(summary = "루틴 등록 v2", description =
             """
             루틴 등록 API: 요일과, 약을 먹는 시기를 입력하면, 오늘 날짜를 기준으로 루틴들을 등록
             
@@ -55,7 +55,7 @@ public class RoutineController {
         return Api.OK(null);
     }
 
-    @Operation(summary = "특정 날짜 범위의 루틴 조회", description =
+    @Operation(summary = "날짜 범위의 루틴 조회 v2", description =
             """
             루틴 조회 API: 특정 날짜의 사용자 루틴 리스트 조회 
             
@@ -77,25 +77,27 @@ public class RoutineController {
         return Api.OK(response);
     }
 
-    @Operation(summary = "루틴 복용 여부 체크", description =
+    @Operation(summary = "루틴 복용 여부 체크 v2", description =
             """
             루틴 복용 여부 체크 API: 특정 routine의 복용 여부 체크
             
-            routine_id와 복용 여부 'true' or 'false'를 query sting 으로 요청 
+            routine_medicine_id와 복용 여부 'true' or 'false'를 query sting 으로 요청 
             
-            반환값: routine_id, beforeIsTaken, afterIsTaken
+            반환값: routine_medicine_id, beforeIsTaken, afterIsTaken
+            
+            마지막 업데이트 3/16
             """
     )
     @PatchMapping("/check")
     public Api<Object> checkRoutine(
-            @RequestParam("routine_id")
+            @RequestParam("routine_medicine_id")
             @Parameter(description = "체크할 루틴 id", required = true)
-            Long routineId,
+            Long routineMedicineId,
             @RequestParam("is_taken")
             @Parameter(description = "약 복용 여부", required = true)
             Boolean isTaken
     ) {
-        RoutineCheckResponse response=routineBusiness.checkRoutine(routineId, isTaken);
+        RoutineCheckResponse response=routineBusiness.checkRoutine(routineMedicineId, isTaken);
         return Api.OK(response);
     }
 
@@ -129,23 +131,23 @@ public class RoutineController {
         return Api.OK(null);
     }
 
-    @Operation(summary = "단일 루틴 삭제 api", description =
+    @Operation(summary = "단일 루틴 삭제 api v2", description =
             """
             단일 루틴 삭제 api 
             
             요청: 
             
-            PathVariable로 삭제하려는 routine_id값 지정 
+            PathVariable로 삭제하려는 routine_medicine_id값 지정 
             """
     )
-    @DeleteMapping("/{routine_id}")
+    @DeleteMapping("/{routine_medicine_id}")
     public Api<Object> deleteRoutine(
             @Parameter(hidden = true)
             @UserSession Long userId,
             @Parameter(description = "삭제 하려는 루틴 id", required = true)
-            @PathVariable("routine_id") Long routineId
+            @PathVariable("routine_medicine_id") Long routineMedicineId
     ) {
-        routineBusiness.deleteRoutine(userId, routineId);
+        routineBusiness.deleteRoutine(userId, routineMedicineId);
         return Api.OK(null);
     }
 }

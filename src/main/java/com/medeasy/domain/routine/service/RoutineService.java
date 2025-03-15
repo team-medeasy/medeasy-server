@@ -1,29 +1,26 @@
 package com.medeasy.domain.routine.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.RoutineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.db.RoutineRepository;
-import com.medeasy.domain.routine.dto.RoutineDto;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
 import com.medeasy.domain.routine_medicine.converter.RoutineMedicineConverter;
 import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
-import com.medeasy.domain.routine_medicine.dto.RoutineMedicineDto;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Time;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +53,7 @@ public class RoutineService {
 
             // UserSchedule 찾기
             Optional<UserScheduleDto> existingSchedule = routineGroupDto.getUserScheduleDtos().stream()
-                    .filter(s -> s.getId().equals(userScheduleEntity.getId()))
+                    .filter(s -> s.getUserScheduleId().equals(userScheduleEntity.getId()))
                     .findFirst();
 
             UserScheduleDto scheduleDTO;
@@ -79,11 +76,6 @@ public class RoutineService {
 
     public RoutineEntity getRoutineById(Long id) {
         return routineRepository.findById(id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
-    }
-
-    @Transactional
-    public void deleteRoutine(Long routineId) {
-        routineRepository.deleteById(routineId);
     }
 
     public List<Long> getRoutinesByUserId(Long userId) {

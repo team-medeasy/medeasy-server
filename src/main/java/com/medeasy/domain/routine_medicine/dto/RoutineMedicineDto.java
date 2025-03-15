@@ -1,7 +1,5 @@
 package com.medeasy.domain.routine_medicine.dto;
 
-import com.medeasy.domain.routine.db.RoutineEntity;
-import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
@@ -10,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RoutineMedicineDto {
-    private Long id;
+    private Long routineMedicineId;
 
     private String nickname;
 

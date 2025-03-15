@@ -80,7 +80,7 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             "LEFT JOIN FETCH r.routineMedicines rm " +
             "WHERE r.user.id = :userId " +
             "AND r.takeDate BETWEEN :startDate AND :endDate " +
-            "ORDER BY r.takeDate ASC, us.takeTime ASC")
+            "ORDER BY r.takeDate ASC, us.takeTime ASC, rm.id ASC")
     List<RoutineEntity> findGroupedRoutinesByDate(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,

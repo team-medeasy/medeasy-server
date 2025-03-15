@@ -40,6 +40,7 @@ public class RoutineEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private UserScheduleEntity userSchedule;
 
+    @Builder.Default
     @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<RoutineMedicineEntity> routineMedicines = new ArrayList<>();
 
