@@ -198,12 +198,17 @@ public class RoutineBusiness {
      * 루틴 복용 체크 메서드
      * */
     @Transactional()
-    public RoutineCheckResponse checkRoutine(Long routineId, Boolean isTaken) {
+    public RoutineCheckResponse checkRoutine(Long routineMedicineId, Boolean isTaken) {
 
-        RoutineEntity routineEntity=routineService.getRoutineById(routineId);
+        var routineMedicineEntity=routineMedicineService.findById(routineMedicineId);
+        Boolean beforeTaken=routineMedicineEntity.getIsTaken();
+
+        routineMedicineEntity.setIsTaken(isTaken);
 
         return RoutineCheckResponse.builder()
-                .routineId(routineEntity.getId())
+                .routineMedicineId(routineMedicineId)
+                .afterIsTaken(isTaken)
+                .beforeIsTaken(beforeTaken)
                 .build()
                 ;
     }

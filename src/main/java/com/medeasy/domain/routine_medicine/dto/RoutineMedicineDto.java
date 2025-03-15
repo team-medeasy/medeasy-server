@@ -1,7 +1,5 @@
 package com.medeasy.domain.routine_medicine.dto;
 
-import com.medeasy.domain.routine.db.RoutineEntity;
-import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
