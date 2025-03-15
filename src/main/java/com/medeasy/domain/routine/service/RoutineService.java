@@ -77,19 +77,14 @@ public class RoutineService {
     }
 
     public RoutineEntity getRoutineByUserScheduleAndTakeDate(UserEntity userEntity, UserScheduleEntity userScheduleEntity, LocalDate takeDate) {
-
-        RoutineEntity routine=routineRepository.findByUserScheduleIdAndTakeDate(userScheduleEntity.getId(), takeDate).get();
-
-        if(routine==null) {
-            var newRoutineEntity=RoutineEntity.builder()
-                    .user(userEntity)
-                    .userSchedule(userScheduleEntity)
-                    .takeDate(takeDate)
-                    .build()
-                    ;
-            routine=save(newRoutineEntity);
-        }
-
-        return routine;
+        return routineRepository.findByUserScheduleIdAndTakeDate(userScheduleEntity.getId(), takeDate)
+                .orElseGet(() -> {
+                    RoutineEntity newRoutineEntity = RoutineEntity.builder()
+                            .user(userEntity)
+                            .userSchedule(userScheduleEntity)
+                            .takeDate(takeDate)
+                            .build();
+                    return routineRepository.save(newRoutineEntity);
+                });
     }
 }

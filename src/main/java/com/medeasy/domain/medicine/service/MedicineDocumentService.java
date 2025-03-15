@@ -1,5 +1,6 @@
 package com.medeasy.domain.medicine.service;
 
+import com.medeasy.common.api.Api;
 import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.db.*;
@@ -86,4 +87,7 @@ public class MedicineDocumentService {
         return medicineDocuments;
     }
 
+    public MedicineDocument findMedicineDocumentById(String id) {
+        return medicineSearchRepository.findById(id).orElseThrow(() -> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE));
+    }
 }

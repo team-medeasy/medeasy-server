@@ -115,7 +115,7 @@ public class RoutineBusiness {
 
         // Entity 값 가져오기
         UserEntity userEntity = userService.getUserById(userId);
-        MedicineEntity medicineEntity = medicineService.getMedicineById(routineRegisterRequest.getMedicineId());
+        MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
 
         // TODO  복용 루틴 스케줄 조회 시간 대별로 조회해서 가져와야함.
         List<UserScheduleEntity> userScheduleEntities=routineRegisterRequest.getUserScheduleIds().stream()
@@ -123,7 +123,7 @@ public class RoutineBusiness {
                 .toList();
 
 
-        String nickname=routineRegisterRequest.getNickname() == null ? medicineEntity.getItemName() : routineRegisterRequest.getNickname();
+        String nickname=routineRegisterRequest.getNickname() == null ? medicineDocument.getItemName() : routineRegisterRequest.getNickname();
         int dose = routineRegisterRequest.getDose();
 
         // 계산을 위한 변수
@@ -148,7 +148,7 @@ public class RoutineBusiness {
                             .isTaken(false)
                             .dose(dose)
                             .routine(routineEntity)
-                            .medicineId("임시")
+                            .medicineId(medicineDocument.getId())
                             .build()
                             ;
 
@@ -193,7 +193,7 @@ public class RoutineBusiness {
                         .isTaken(false)
                         .dose(dose)
                         .routine(routineEntity)
-                        .medicineId("임시")
+                        .medicineId(medicineDocument.getId())
                         .build()
                         ;
 
@@ -292,7 +292,7 @@ public class RoutineBusiness {
 //                    .types(types)
                     .dayOfWeeks(List.of(1, 2, 3, 4, 5, 6, 7))
                     .totalQuantity(totalQuantity)
-                    .medicineId(Long.parseLong(medicineDocument.getId()))
+                    .medicineId(medicineDocument.getId())
                     .build()
                     ;
 

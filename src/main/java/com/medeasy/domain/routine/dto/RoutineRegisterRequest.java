@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 public class RoutineRegisterRequest {
     @Schema(description = "복용 루틴으로 등록할 약 id", example = "3594")
-    private Long medicineId;
+    private String medicineId;
 
     @Schema(description = "약 등록 이름", example = "아스피린")
     private String nickname;
