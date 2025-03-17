@@ -2,17 +2,19 @@ package com.medeasy.domain.user.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
-import com.medeasy.domain.user.dto.RoutineScheduleRequest;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserScheduleResponse;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
+import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,19 +23,34 @@ public class UserController {
 
     private final UserBusiness userBusiness;
 
-    @Operation(summary = "사용자 루틴 스케줄 변경 api", description =
+    @Operation(summary = "사용자 루틴 스케줄 수정 api v2", description =
             """
-            사용자 루틴 스케줄 변경 API:
-            
-            루틴을 등록할 떼 사용되는 사용자의 스케줄 시간 변경
+                사용자 루틴 스케줄 수정 API:
+                
+                루틴을 등록할 떼 사용되는 사용자의 스케줄 정보 변경
             
             request_body 설명: 
             
-            morning_time(아침 시간), lunch_time(점심 시간), dinner_time(저녁 시간), bed_time(취침 시간) 
+            - user_schedule_id: 사용자 스케줄 식별 ID
+            
+            - schedule_name: 스케줄 별명 
+            
+            - take_time: 약 복용 시간  
                         
             요청 방법:
            
-            변경하고자 하는 시간대만 request_body 에 담아 요청  
+            수정 예정 데이터만 response_body에 담아 요청 
+            
+            ex) 스케줄 별명만 변경하고 싶은 경우 아래와 같이 요청  
+            
+            ```json
+            {
+                "user_schedule_id": 1,
+                "name": "아침 식사 후"
+            }
+            ```
+            
+            마지막 업데이트: 3/17
             """
     )
     @PatchMapping("/schedule/update")
@@ -41,30 +58,36 @@ public class UserController {
             @Parameter(hidden = true)
             @UserSession Long userId,
             @Valid
-            @RequestBody RoutineScheduleRequest request
+            @RequestBody UserScheduleUpdateRequest request
     ){
-        UserScheduleResponse response=userBusiness.updateRoutineSchedule(userId, request);
+        UserScheduleDto response=userBusiness.updateRoutineSchedule(userId, request);
 
         return Api.OK(response);
     }
 
-    @Operation(summary = "사용자 루틴 스케줄 조회 api", description =
+    @Operation(summary = "사용자 루틴 스케줄 조회 api v2", description =
             """
-            사용자 루틴 스케줄 조회 API:
-            
-            루틴을 등록할 떼 사용되는 사용자의 스케줄 시간 조회
+                사용자 루틴 스케줄 조회 API:
+                
+                루틴을 등록할 떼 사용되는 사용자의 스케줄 시간 조회
             
             응답 값 설명: 
             
-            morning(아침 시간), lunch(점심 시간), dinner(저녁 시간), bed_time(취침 시간) 
+            - user_schedule_id: 사용자 스케줄 식별 ID
+            
+            - name: 스케줄 이름
+            
+            - take_time: 복용 시간
+            
+            마지막 업데이트: 3/17
             """
     )
-    @GetMapping("/schdule")
+    @GetMapping("/schedule")
     public Api<Object> getRoutineSchedule(
             @Parameter(hidden = true)
             @UserSession Long userId
     ) {
-        UserScheduleResponse response=userBusiness.getRoutineSchedule(userId);
+        List<UserScheduleDto> response=userBusiness.getRoutineSchedule(userId);
 
         return Api.OK(response);
     }
@@ -141,4 +164,6 @@ public class UserController {
 
         return Api.OK(response);
     }
+
+
 }

@@ -64,5 +64,6 @@ public class UserEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+    @OrderBy("takeTime ASC")
     private List<UserScheduleEntity> userSchedules = new ArrayList<>();
 }
