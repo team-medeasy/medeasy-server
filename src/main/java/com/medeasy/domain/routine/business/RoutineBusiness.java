@@ -21,6 +21,7 @@ import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.routine_medicine.service.RoutineMedicineService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
+import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +55,7 @@ public class RoutineBusiness {
 
     private final UserScheduleService userScheduleService;
     private final RoutineMedicineService routineMedicineService;
+    private final UserScheduleConverter userScheduleConverter;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
@@ -68,8 +70,8 @@ public class RoutineBusiness {
             @Qualifier("redisTemplateForAlarm") StringRedisTemplate redisAlarmTemplate, // @Qualifier 적용
             ObjectMapper objectMapper,
             UserScheduleService userScheduleService,
-            RoutineMedicineService routineMedicineService
-    ) {
+            RoutineMedicineService routineMedicineService,
+            UserScheduleConverter userScheduleConverter) {
         this.routineService = routineService;
         this.userService = userService;
         this.medicineService = medicineService;
@@ -82,6 +84,7 @@ public class RoutineBusiness {
         this.objectMapper = objectMapper;
         this.userScheduleService = userScheduleService;
         this.routineMedicineService = routineMedicineService;
+        this.userScheduleConverter = userScheduleConverter;
     }
     /**
      * 단일 약 루틴 저장
@@ -218,8 +221,10 @@ public class RoutineBusiness {
      *
      * 처방전 분석 데이터를 토대로 루틴 추가 여부 응답을 전송한다.
      * */
-    public void registerRoutineByPrescription(Long userId, MultipartFile file) {
-        var userEntity = userService.getUserById(userId);
+    public List<RoutinePrescriptionResponse> registerRoutineByPrescription(Long userId, MultipartFile file) {
+        // TODO fetch join으로 User Schedule도 가져오기
+        var userEntity = userService.getUserByIdToFetchJoin(userId);
+        var userSchedules=userEntity.getUserSchedules().stream().map(userScheduleConverter::toDto).toList();
 
         // 처방전 이미지 파싱
         List<OcrParsedDto> parseData=ocrService.sendOcrRequest(file);
@@ -232,18 +237,24 @@ public class RoutineBusiness {
         AiResponseDto aiResponseDto=aiService.parseGeminiResponse(analysis);
         log.info("추출 데이터 파싱 완료, api token 비용: {}", aiResponseDto.getTotalTokenCount());
 
-        /**
-         * 루틴 체크 메서드 작성
-         *
-         * 보여줄 내용
-         *
-         *
-         * */
-        aiResponseDto.getDoseDtos().stream().forEach(doseDto -> {
+        List<RoutinePrescriptionResponse> response=aiResponseDto.getDoseDtos().stream().map(doseDto -> {
+            log.info("분석한 의약품 정보 체크: {}", doseDto.toString());
+            MedicineDocument medicineDocument=medicineDocumentService.findMedicineByEdiCodeAndItemName(doseDto.getEdiCode(), doseDto.getName(), 1)
+                    .getFirst();
 
+            return RoutinePrescriptionResponse.builder()
+                    .medicineId(medicineDocument.getId())
+                    .imageUrl(medicineDocument.getItemImage())
+                    .medicineName(medicineDocument.getItemName())
+                    .dose(doseDto.getDose())
+                    .totalQuantity(doseDto.getTotalDays()*doseDto.getDose()*doseDto.getScheduleCount())
+                    .userSchedules(userSchedules)
+                    .dayOfWeeks(List.of(1,2,3,4,5,6,7))
+                    .build()
+                    ;
+        }).toList();
 
-        });
-
+        return response;
     }
 
     /**

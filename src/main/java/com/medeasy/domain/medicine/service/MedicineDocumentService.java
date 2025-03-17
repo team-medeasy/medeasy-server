@@ -33,7 +33,10 @@ public class MedicineDocumentService {
 
     /**
      * EDI_CODE를 통해 정확한 단일 약품 조회
+     *
+     * findMedicineByEdiCodeAndItemName로 대체
      * */
+    @Deprecated
     public MedicineDocument findMedicineDocumentByEdiCode(String ediCode) {
         return medicineSearchCustomRepository.findByEdiCode(ediCode);
     }

@@ -1,7 +1,6 @@
 package com.medeasy.domain.routine.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.RoutineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
@@ -12,12 +11,9 @@ import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
-import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.dto.UserScheduleGroupDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -52,16 +48,16 @@ public class RoutineService {
             RoutineGroupDto routineGroupDto = routineMap.get(takeDate);
 
             // UserSchedule 찾기
-            Optional<UserScheduleDto> existingSchedule = routineGroupDto.getUserScheduleDtos().stream()
+            Optional<UserScheduleGroupDto> existingSchedule = routineGroupDto.getUserScheduleDtos().stream()
                     .filter(s -> s.getUserScheduleId().equals(userScheduleEntity.getId()))
                     .findFirst();
 
-            UserScheduleDto scheduleDTO;
+            UserScheduleGroupDto scheduleDTO;
 
             if (existingSchedule.isPresent()) {
                 scheduleDTO = existingSchedule.get();
             } else {
-                scheduleDTO = userScheduleConverter.toDto(userScheduleEntity);
+                scheduleDTO = userScheduleConverter.toGroupDto(userScheduleEntity);
                 routineGroupDto.getUserScheduleDtos().add(scheduleDTO);
             }
 
