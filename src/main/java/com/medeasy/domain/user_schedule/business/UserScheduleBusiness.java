@@ -5,7 +5,7 @@ import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.MedicationTime;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
-import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.dto.UserScheduleGroupDto;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +18,7 @@ public class UserScheduleBusiness {
     private final UserScheduleService userScheduleService;
     private final UserScheduleConverter userScheduleConverter;
 
-    public List<UserScheduleDto> registerUserDefaultSchedule(UserEntity userEntity) {
+    public List<UserScheduleGroupDto> registerUserDefaultSchedule(UserEntity userEntity) {
 
         // 기본 아침, 점심, 식사 후 스케줄 등록
         List<MedicationTime> defaultMedicationTimes = List.of(
