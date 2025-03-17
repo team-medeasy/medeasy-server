@@ -66,7 +66,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
         Query boolQuery = QueryBuilders.bool(boolQueryBuilder -> {
             if (itemName != null && !itemName.isEmpty()) {
                 boolQueryBuilder.must(QueryBuilder -> QueryBuilder.match(matchQueryBuilder -> matchQueryBuilder
-                        .field("itemName")
+                        .field("item_name")
                         .query(itemName)));
             }
 
@@ -75,7 +75,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                 Query colorQuery = QueryBuilders.bool(colorBool ->
                         colorBool.should(colors.stream()
                                 .map(color -> QueryBuilders.term(termQueryBuilder -> termQueryBuilder
-                                        .field("color")
+                                        .field("color_classes")
                                         .value(color)))
                                 .toList()
                         ).minimumShouldMatch("1")  // ✅ Colors에서 최소 1개 만족
@@ -88,7 +88,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                 Query shapeQuery = QueryBuilders.bool(shapeBool ->
                         shapeBool.should(shapes.stream()
                                 .map(shape -> QueryBuilders.term(termQueryBuilder -> termQueryBuilder
-                                        .field("shape")
+                                        .field("drug_shape")
                                         .value(shape)))
                                 .toList()
                         ).minimumShouldMatch("1")  // ✅ Shapes에서 최소 1개 만족
