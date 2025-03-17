@@ -40,4 +40,8 @@ public class UserService {
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }
+
+    public UserEntity getUserByIdToFetchJoin(Long userId) {
+        return userRepository.findByIdToFetchJoin(userId).orElseThrow(()-> new ApiException(UserErrorCode.USER_NOT_FOUNT));
+    }
 }

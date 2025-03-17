@@ -1,6 +1,6 @@
 package com.medeasy.domain.routine.dto;
 
-import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.dto.UserScheduleGroupDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,5 +19,5 @@ import java.util.List;
 public class RoutineGroupDto {
     private LocalDate takeDate;
 
-    private List<UserScheduleDto> userScheduleDtos;
+    private List<UserScheduleGroupDto> userScheduleDtos;
 }

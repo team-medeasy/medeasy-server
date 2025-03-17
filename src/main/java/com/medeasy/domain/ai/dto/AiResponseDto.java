@@ -19,13 +19,16 @@ public class AiResponseDto {
 
     @Getter
     @Setter
+    @ToString
     public static class DoseDto{
+        @JsonProperty("edi_code")
+        private String ediCode;
         @JsonProperty("name")
         private String name;
         @JsonProperty("dose")
         private Integer dose; // 1회 투약량
-        @JsonProperty("type_count")
-        private Integer typeCount; // 1일 투여횟수
+        @JsonProperty("schedule_count")
+        private Integer scheduleCount; // 1일 투여횟수
         @JsonProperty("total_days")
         private Integer totalDays; // 총 투약일수
         @JsonProperty("use_method")

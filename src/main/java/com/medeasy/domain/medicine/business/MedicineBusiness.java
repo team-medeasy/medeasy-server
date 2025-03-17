@@ -50,13 +50,6 @@ public class MedicineBusiness {
         saveLogToTxt.saveItemSeqToFile(requests);
     }
 
-    public List<MedicineResponse> searchMedicines(String medicineName, int size) {
-        List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingName(medicineName, size);
-
-        return medicineDocuments.stream()
-                .map(medicineConverter::toResponseWithDocument).toList();
-    }
-
     public void updateMedicines(List<MedicineUpdateRequest> requests) {
         requests.stream().forEach(request -> {
                     MedicineEntity medicineEntity=medicineService.getMedicineByItemCode(request.getItemSeq());

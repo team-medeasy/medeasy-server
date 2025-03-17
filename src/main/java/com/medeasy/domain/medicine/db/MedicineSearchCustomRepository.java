@@ -9,5 +9,7 @@ public interface MedicineSearchCustomRepository {
 
     List<MedicineDocument> findMedicineBySearching(String itemName, List<String> colors, List<String> shape, Pageable pageable);
 
-    void saveSearchHistory(SearchHistoryDocument searchHistoryDocument);
+    MedicineDocument findByEdiCode(String ediCode);
+
+    List<MedicineDocument> findMedicineByEdiCodeAndItemName(String ediCode, String itemName, Pageable pageable);
 }

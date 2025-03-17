@@ -66,7 +66,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
         Query boolQuery = QueryBuilders.bool(boolQueryBuilder -> {
             if (itemName != null && !itemName.isEmpty()) {
                 boolQueryBuilder.must(QueryBuilder -> QueryBuilder.match(matchQueryBuilder -> matchQueryBuilder
-                        .field("itemName")
+                        .field("item_name")
                         .query(itemName)));
             }
 
@@ -75,7 +75,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                 Query colorQuery = QueryBuilders.bool(colorBool ->
                         colorBool.should(colors.stream()
                                 .map(color -> QueryBuilders.term(termQueryBuilder -> termQueryBuilder
-                                        .field("color")
+                                        .field("color_classes")
                                         .value(color)))
                                 .toList()
                         ).minimumShouldMatch("1")  // ✅ Colors에서 최소 1개 만족
@@ -88,7 +88,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                 Query shapeQuery = QueryBuilders.bool(shapeBool ->
                         shapeBool.should(shapes.stream()
                                 .map(shape -> QueryBuilders.term(termQueryBuilder -> termQueryBuilder
-                                        .field("shape")
+                                        .field("drug_shape")
                                         .value(shape)))
                                 .toList()
                         ).minimumShouldMatch("1")  // ✅ Shapes에서 최소 1개 만족
@@ -114,7 +114,63 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
 
     }
 
-    public void saveSearchHistory(SearchHistoryDocument searchHistoryDocument){
-        elasticsearchOperations.save(searchHistoryDocument);
+    /**
+     * 처방전 약품 검색시 처음 사용되는 메서드
+     * EDI_CODE를 통해 정확히 매칭되는 약품을 찾는다.
+     * */
+    @Override
+    public MedicineDocument findByEdiCode(String ediCode) {
+        Query boolQuery=QueryBuilders.bool(boolQueryBuilder ->
+            boolQueryBuilder.must(
+                    queryBuilder -> queryBuilder.term(
+                            termQueryBuilder -> termQueryBuilder.field("edi_code").value(ediCode)
+                    )
+            )
+        );
+
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(boolQuery)
+                .withPageable(Pageable.ofSize(1))
+                .build()
+                ;
+
+        SearchHits<MedicineDocument> searchHits=elasticsearchOperations.search(nativeQuery, MedicineDocument.class);
+
+        return searchHits.getSearchHits()
+                .getFirst().getContent();
+    }
+
+
+    /**
+     * EDI_CODE와 ITEM_NAME 기반으로 약 검색하는 메서드
+     * 처방전 검색시 EDI_CODE와 일치하는 약이 존재하지 않을 경우 유사한 약이라도 찾아서 출력
+     * */
+    @Override
+    public List<MedicineDocument> findMedicineByEdiCodeAndItemName(String ediCode, String itemName, Pageable pageable) {
+        Query booQuery=QueryBuilders.bool(boolQueryBuilder ->
+            boolQueryBuilder.should(objectBuilder -> {
+                objectBuilder.term(termQueryBuilder ->
+                        termQueryBuilder.field("edi_code").value(ediCode)
+                );
+
+                objectBuilder.match(matchQueryBuilder ->
+                    matchQueryBuilder.field("item_name").query(itemName)
+                );
+                return objectBuilder;
+            })
+        );
+
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(booQuery)
+                .withPageable(pageable)
+                .build()
+                ;
+
+        SearchHits<MedicineDocument> searchHits = elasticsearchOperations.search(nativeQuery, MedicineDocument.class);
+
+        return searchHits.getSearchHits()
+                .stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
     }
 }

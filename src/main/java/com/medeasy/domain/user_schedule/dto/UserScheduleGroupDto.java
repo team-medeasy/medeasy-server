@@ -11,11 +11,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserScheduleDto {
+public class UserScheduleGroupDto {
 
     private Long userScheduleId;
 
     private String name;
 
     private LocalTime takeTime;
+
+    private List<RoutineMedicineDto> routineMedicineDtos;
 }

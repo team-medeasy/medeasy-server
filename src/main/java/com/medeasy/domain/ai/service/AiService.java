@@ -41,12 +41,13 @@ public class AiService {
             여기서 필요한 데이터만 추출, 나열할거야.
                         
             # 규칙
-            1. 처방의약품의 명칭, 1회 투약량, 1일 투여횟수, 총투약일수, 용법에 해당하는 필드가 우리가 추출할 필드야.
+            1. 처방의약품의 급여 코드, 처방의약품의 명칭, 1회 투약량, 1일 투여횟수, 총투약일수, 용법에 해당하는 필드가 우리가 추출할 필드야.
             2. 응답에는 출력형태만 포함되도록 작성해줘.
             3. 출력형태의 각 필드는 다음 정보를 포함해야해:
+                - edi_code: 처방의약품의 급여 코드
                 - name: 처방의약품의 명칭
                 - dose: 1회 투약량
-                - type_count: 1일 투여횟수
+                - schedule_count: 1일 투여횟수
                 - total_days: 총 투약일수
                 - use_method: 용법
             4. 처방전에 포함된 약의 이름을 빠짐없이, 전부 추출해야해. 간혹 약의 이름인지 헷갈릴 수도 있어.
@@ -60,16 +61,18 @@ public class AiService {
             {
             	"results": [
             		{
+            		    "edi_code" : "670100440",
             			"name": "의약품 이름1",
             			"dose": 1,
-            			"type_count": 2,
+            			"schedule_count": 2,
             			"total_days": 7,
             			"use_method": "용법"
             		},
             		{
+            		    "edi_code" : "670100441",
             			"name": "의약품 이름2",
             			"dose": 1,
-            			"type_count": 2,
+            			"schedule_count": 2,
             			"total_days": 7,
             			"use_method": "용법"
             		}
