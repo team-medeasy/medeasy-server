@@ -25,11 +25,8 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class MedicineBusiness {
 
-    private final MedicineService medicineService;
     private final MedicineDocumentService medicineDocumentService;
     private final MedicineConverter medicineConverter;
-    private final SaveLogToTxt saveLogToTxt;
-
 
     public String combineColors(String color1, String color2) {
         // 컬러 값 결합 로직
