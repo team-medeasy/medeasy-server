@@ -114,7 +114,8 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
 
     }
 
-    public void saveSearchHistory(SearchHistoryDocument searchHistoryDocument){
-        elasticsearchOperations.save(searchHistoryDocument);
+    @Override
+    public List<MedicineDocument> findMedicineByEdiCodeAndItemName(String ediCode, String itemName) {
+        return List.of();
     }
 }
