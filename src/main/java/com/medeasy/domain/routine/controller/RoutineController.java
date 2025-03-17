@@ -25,7 +25,7 @@ public class RoutineController {
 
     @Operation(summary = "루틴 등록 v2", description =
             """
-            루틴 등록 API: 요일과, 약을 먹는 시기를 입력하면, 오늘 날짜를 기준으로 루틴들을 등록
+                루틴 등록 API: 요일과, 약을 먹는 시기를 입력하면, 오늘 날짜를 기준으로 루틴들을 등록
             
             필드 설명:
             
@@ -56,7 +56,7 @@ public class RoutineController {
 
     @Operation(summary = "날짜 범위의 루틴 조회 v2", description =
             """
-            루틴 조회 API: 특정 날짜의 사용자 루틴 리스트 조회 
+                루틴 조회 API: 특정 날짜의 사용자 루틴 리스트 조회 
             
             RequestParam을 통해 조회 시작 날짜와 마지막 날짜를 입력 
             
@@ -78,7 +78,7 @@ public class RoutineController {
 
     @Operation(summary = "루틴 복용 여부 체크 v2", description =
             """
-            루틴 복용 여부 체크 API: 특정 routine의 복용 여부 체크
+                루틴 복용 여부 체크 API: 특정 routine의 복용 여부 체크
             
             routine_medicine_id와 복용 여부 'true' or 'false'를 query sting 으로 요청 
             
@@ -100,29 +100,46 @@ public class RoutineController {
         return Api.OK(response);
     }
 
-    @Operation(summary = "처방전 OCR 루틴 등록(임시)", description =
+    @Operation(summary = "처방전 OCR 루틴 등록 v2", description =
             """
-            처방전 사진을 통한 루틴 등록 API:
-            
-            1. 처방전의 글자 데이터를 추출
-            
-            2. 의약품에 해당하는 데이터만 가지고 gemini api 가공 
-            
-            3. 루틴 등록 알고리즘을 통해 사용자 루틴등록  
+                처방전 사진을 통한 루틴 등록 API:
+                
+                1. 처방전의 글자 데이터를 추출
+                
+                2. 의약품에 해당하는 데이터만 가지고 gemini api 가공 
+                
+                3. 추천 루틴 등록 정보를 제공 (약 정보, 루틴 시간)
                         
             요청 방법:
             
             MultipartRequest를 통해 이미지 파일 전송 
             
             응답 값: 
-            상태 코드, 메시지만 응답 
+            
+            medicine_id: 약 식별 id 
+            
+            medicine_name: 약 이름, 루틴을 등록할 때 기본 별명에 삽입 
+            
+            dose, total_quantity: 1회 복용량, 총 복용량 
+            
+            user_schedules: 추천하는 사용자 복용 시간 대 정보 
+            
+            - user_schedule_id: 사용자 스케줄 식별 id
+                
+            - name: 스케줄 이름 
+                
+            - take_time: 약 복용 시간 
+            
+            day_of_weeks: 추천하는 약 복용 요일
+            
+            마지막 업데이트 3/16
             """
     )
     @PostMapping(
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             path = "/prescription"
     )
-    public Api<Object> registerRoutineByPrescription(
+    public Api<List<RoutinePrescriptionResponse>> registerRoutineByPrescription(
             @Parameter(hidden = true) @UserSession Long userId,
             @RequestPart("image") MultipartFile image
     ) {
@@ -132,7 +149,7 @@ public class RoutineController {
 
     @Operation(summary = "단일 루틴 삭제 api v2", description =
             """
-            단일 루틴 삭제 api 
+                단일 루틴 삭제 api 
             
             요청: 
             
