@@ -11,6 +11,8 @@ import com.medeasy.domain.user.dto.*;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
+import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
+import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +35,7 @@ public class UserBusiness {
     private final UserConverter userConverter;
     private final RoutineService routineService;
     private final PasswordEncoder passwordEncoder;
+    private final UserScheduleConverter userScheduleConverter;
 
     /**
      * request의 null이 아닌 수정사항만 사용자의 정보에서 업데이트
@@ -65,17 +68,10 @@ public class UserBusiness {
         return null;
     }
 
-    public UserScheduleResponse getRoutineSchedule(Long userId) {
-        UserEntity userEntity=userService.getUserById(userId);
+    public List<UserScheduleDto> getRoutineSchedule(Long userId) {
+        UserEntity userEntity=userService.getUserByIdToFetchJoin(userId);
 
-//        return UserScheduleResponse.builder()
-//                .morning(userEntity.getMorning())
-//                .lunch(userEntity.getLunch())
-//                .dinner(userEntity.getDinner())
-//                .bedTime(userEntity.getBedTime())
-//                .build()
-//                ;
-        return null;
+        return userEntity.getUserSchedules().stream().map(userScheduleConverter::toDto).toList();
     }
 
     public UserUsageDaysResponse getServiceUsageDays(Long userId) {
