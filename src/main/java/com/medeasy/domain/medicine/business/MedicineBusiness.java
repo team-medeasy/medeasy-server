@@ -25,48 +25,8 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class MedicineBusiness {
 
-    private final MedicineService medicineService;
     private final MedicineDocumentService medicineDocumentService;
     private final MedicineConverter medicineConverter;
-    private final SaveLogToTxt saveLogToTxt;
-    private final MedicineRepository medicineRepository;
-
-    public Page<MedicineResponse> searchMedicineByPaging(Pageable pageable) {
-        Page<MedicineEntity> medicineEntities=medicineService.searchMedicineByPaging(pageable);
-
-        Page<MedicineResponse> response=medicineConverter.toResponse(medicineEntities);
-
-        return response;
-    }
-
-    public void saveMedicines(List<MedicineRequest> requests) {
-        List<MedicineEntity> entities = requests.stream()
-                        .map(medicineConverter::toEntity)
-                        .toList();
-
-        medicineService.saveAllWithDuplicate(entities);
-
-        // 저장된 약품의 기록을 txt 파일에 남김
-        saveLogToTxt.saveItemSeqToFile(requests);
-    }
-
-    public void updateMedicines(List<MedicineUpdateRequest> requests) {
-        requests.stream().forEach(request -> {
-                    MedicineEntity medicineEntity=medicineService.getMedicineByItemCode(request.getItemSeq());
-
-                    if (medicineEntity == null) {
-                        log.warn("Medicine not found for itemCode: {}", request.getItemSeq());
-                        return;  // 이 요청은 건너뛰고 다음 요청으로 진행
-                    }
-
-                    String color = combineColors(request.getColorClass1(), request.getColorClass2());
-
-                    medicineEntity.setShape(request.getShape());
-                    medicineEntity.setColor(color);
-
-                    medicineRepository.save(medicineEntity);
-                });
-    }
 
     public String combineColors(String color1, String color2) {
         // 컬러 값 결합 로직

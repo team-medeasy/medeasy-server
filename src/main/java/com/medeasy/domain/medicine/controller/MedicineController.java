@@ -5,17 +5,11 @@ import com.medeasy.common.api.Api;
 import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.medicine.db.MedicineColor;
 import com.medeasy.domain.medicine.db.MedicineShape;
-import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
-import com.medeasy.domain.medicine.dto.MedicineUpdateRequest;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,28 +21,6 @@ public class MedicineController {
 
     private final MedicineBusiness medicineBusiness;
     private final SearchHistoryBusiness searchHistoryBusiness;
-
-
-    @GetMapping("")
-    public Api<Page<MedicineResponse>> getMedicine(Pageable pageable) {
-
-        Page<MedicineResponse> medicinePage = medicineBusiness.searchMedicineByPaging(pageable);
-        return Api.OK(medicinePage);
-    }
-
-    // 개발 중 약 데이터 저장시 사용
-    @PostMapping("/upload")
-    @Operation(summary = "약 json 리스트 저장", description = "개발 중 약 데이터 저장용 API")
-    public String saveMedicines(
-            @Valid
-            @RequestBody List<MedicineRequest> requests
-    ) {
-        medicineBusiness.saveMedicines(requests);
-
-        return ResponseEntity.ok()
-                .body("save successful")
-                .toString();
-    }
 
     // 약 검색 색상 필터링
     @GetMapping("/search")
@@ -93,18 +65,4 @@ public class MedicineController {
         return Api.OK(medicineResponses);
     }
 
-
-    // 약 데이터 추가 컬럼
-    @PostMapping("/update")
-    @Operation(summary = "약 json 리스트 저장", description = "개발 중 약 데이터 저장용 API")
-    public String updateMedicines(
-            @Valid
-            @RequestBody List<MedicineUpdateRequest> requests
-    ) {
-        medicineBusiness.updateMedicines(requests);
-
-        return ResponseEntity.ok()
-                .body("updated successful")
-                .toString();
-    }
 }
