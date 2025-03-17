@@ -4,8 +4,6 @@ import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.converter.MedicineConverter;
 import com.medeasy.domain.medicine.db.MedicineDocument;
-import com.medeasy.domain.medicine.db.MedicineEntity;
-import com.medeasy.domain.medicine.db.MedicineRepository;
 import com.medeasy.domain.medicine.db.MedicineSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
