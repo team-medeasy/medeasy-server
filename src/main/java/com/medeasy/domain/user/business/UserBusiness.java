@@ -55,8 +55,8 @@ public class UserBusiness {
                 .orElseThrow(()->new ApiException(SchedulerError.NOT_FOUND));
 
         // 요청에 포함된 값만 업데이트
-        if (request.getName() != null) {
-            userScheduleEntity.setName(request.getName());
+        if (request.getScheduleName() != null) {
+            userScheduleEntity.setName(request.getScheduleName());
         }
         if (request.getTake_time() != null) {
             userScheduleEntity.setTakeTime(request.getTake_time());

@@ -21,9 +21,9 @@ public class UserScheduleUpdateRequest {
     private Long userScheduleId;
 
     @Schema(description = "스케줄 별명", example = "아침 식사 후", nullable = true)
-    private String name;
+    private String scheduleName;
 
     @JsonFormat(pattern = "HH:mm:ss")
-    @Schema(description = "아침 기상 시간 (형식: HH:mm:ss)", example = "08:30:00", nullable = true, type = "string")
+    @Schema(description = "복용 시간", example = "08:30:00", nullable = true, type = "string")
     private LocalTime take_time;
 }

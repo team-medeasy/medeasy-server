@@ -13,7 +13,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     @Query("SELECT u from UserEntity u " +
             "LEFT JOIN FETCH u.userSchedules " +
-            "WHERE u.id = :userId")
+            "WHERE u.id = :userId ")
     Optional<UserEntity> findByIdToFetchJoin(
             @Param("userId") Long userId
     );
