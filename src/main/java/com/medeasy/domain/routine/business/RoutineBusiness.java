@@ -89,12 +89,12 @@ public class RoutineBusiness {
      *
      * 3/16 업데이트
      * */
+    @Transactional
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
         // Entity 값 가져오기
-        UserEntity userEntity = userService.getUserById(userId);
+        UserEntity userEntity = userService.getUserById(userId); // 1번
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
         List<UserScheduleEntity> userScheduleEntities=userScheduleService.findAllByIdInOrderByTakeTimeAsc(routineRegisterRequest.getUserScheduleIds());
-
 
         String nickname=routineRegisterRequest.getNickname() == null ? medicineDocument.getItemName() : routineRegisterRequest.getNickname();
         int dose = routineRegisterRequest.getDose();
@@ -154,9 +154,14 @@ public class RoutineBusiness {
                 routineMedicineEntities.add(routineMedicineEntity);
             }
         }
-        routineMedicineService.saveAll(routineMedicineEntities);
-
         log.info("단일 약 루틴 저장");
+        routineMedicineService.saveAll(routineMedicineEntities);
+    }
+
+    public void registerRoutineList(Long userId, List<RoutineRegisterRequest> routinesRegisterRequest) {
+        routinesRegisterRequest.forEach(routineRegisterRequest -> {
+            registerRoutine(userId, routineRegisterRequest);
+        });
     }
 
     /**
@@ -302,5 +307,6 @@ public class RoutineBusiness {
             throw new ApiException(ErrorCode.SERVER_ERROR, "rouitne json 변환 중 오류");
         }
     }
+
 
 }

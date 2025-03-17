@@ -54,6 +54,25 @@ public class RoutineController {
         return Api.OK(null);
     }
 
+    @Operation(summary = "루틴 리스트 등록", description =
+            """
+                루틴 리스트 등록 API: 단일 루틴 정보를 리스트로 받아 한번에 저장 
+            
+            마지막 업데이트 3/17
+             
+            """
+    )
+    @PostMapping("/list")
+    public Api<Object> registerRoutineList(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @Valid
+            @RequestBody List<RoutineRegisterRequest> routinesRegisterRequest
+    ) {
+        routineBusiness.registerRoutineList(userId, routinesRegisterRequest);
+
+        return Api.OK(null);
+    }
+
     @Operation(summary = "날짜 범위의 루틴 조회 v2", description =
             """
                 루틴 조회 API: 특정 날짜의 사용자 루틴 리스트 조회 

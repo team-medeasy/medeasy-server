@@ -11,9 +11,14 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(
+        name = "routine_medicine_seq",
+        sequenceName = "routine_medicine_id_seq",
+        allocationSize = 30
+)
 public class RoutineMedicineEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "routine_medicine_seq")
     private Long id;
 
     @Column(nullable = false, length = 150)
