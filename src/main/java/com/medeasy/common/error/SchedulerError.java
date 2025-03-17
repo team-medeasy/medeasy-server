@@ -14,7 +14,9 @@ public enum SchedulerError implements ErrorCodeIfs{
 
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), 500, "서버 에러"),
 
-    NULL_POINT(HttpStatus.INTERNAL_SERVER_ERROR.value(), 512, "Null Point")
+    NULL_POINT(HttpStatus.INTERNAL_SERVER_ERROR.value(), 512, "Null Point"),
+
+    NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR.value(), 512, "스케줄을 찾을 수 없습니다.")
 
     ;
 

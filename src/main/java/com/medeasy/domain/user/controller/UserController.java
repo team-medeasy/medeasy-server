@@ -2,17 +2,16 @@ package com.medeasy.domain.user.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
-import com.medeasy.domain.user.dto.RoutineScheduleRequest;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserScheduleResponse;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,9 +43,9 @@ public class UserController {
             @Parameter(hidden = true)
             @UserSession Long userId,
             @Valid
-            @RequestBody RoutineScheduleRequest request
+            @RequestBody UserScheduleUpdateRequest request
     ){
-        UserScheduleResponse response=userBusiness.updateRoutineSchedule(userId, request);
+        UserScheduleDto response=userBusiness.updateRoutineSchedule(userId, request);
 
         return Api.OK(response);
     }
