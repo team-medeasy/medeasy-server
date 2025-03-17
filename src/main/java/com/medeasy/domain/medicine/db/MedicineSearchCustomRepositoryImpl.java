@@ -115,6 +115,33 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
     }
 
     /**
+     * 처방전 약품 검색시 처음 사용되는 메서드
+     * EDI_CODE를 통해 정확히 매칭되는 약품을 찾는다.
+     * */
+    @Override
+    public MedicineDocument findByEdiCode(String ediCode) {
+        Query boolQuery=QueryBuilders.bool(boolQueryBuilder ->
+            boolQueryBuilder.must(
+                    queryBuilder -> queryBuilder.term(
+                            termQueryBuilder -> termQueryBuilder.field("edi_code").value(ediCode)
+                    )
+            )
+        );
+
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(boolQuery)
+                .withPageable(Pageable.ofSize(1))
+                .build()
+                ;
+
+        SearchHits<MedicineDocument> searchHits=elasticsearchOperations.search(nativeQuery, MedicineDocument.class);
+
+        return searchHits.getSearchHits()
+                .getFirst().getContent();
+    }
+
+
+    /**
      * EDI_CODE와 ITEM_NAME 기반으로 약 검색하는 메서드
      * 처방전 검색시 EDI_CODE와 일치하는 약이 존재하지 않을 경우 유사한 약이라도 찾아서 출력
      * */
@@ -123,13 +150,12 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
         Query booQuery=QueryBuilders.bool(boolQueryBuilder ->
             boolQueryBuilder.should(objectBuilder -> {
                 objectBuilder.term(termQueryBuilder ->
-                        termQueryBuilder.field("edi_code")
+                        termQueryBuilder.field("edi_code").value(ediCode)
                 );
 
                 objectBuilder.match(matchQueryBuilder ->
-                    matchQueryBuilder.field("item_name")
+                    matchQueryBuilder.field("item_name").query(itemName)
                 );
-
                 return objectBuilder;
             })
         );
