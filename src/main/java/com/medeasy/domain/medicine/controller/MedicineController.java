@@ -5,17 +5,11 @@ import com.medeasy.common.api.Api;
 import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.medicine.db.MedicineColor;
 import com.medeasy.domain.medicine.db.MedicineShape;
-import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
-import com.medeasy.domain.medicine.dto.MedicineUpdateRequest;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
