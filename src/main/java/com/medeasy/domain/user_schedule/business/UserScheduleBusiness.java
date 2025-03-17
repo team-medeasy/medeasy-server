@@ -38,6 +38,6 @@ public class UserScheduleBusiness {
 
         List<UserScheduleEntity> newUserScheduleEntities=userScheduleService.saveAll(userScheduleEntities);
 
-        return newUserScheduleEntities.stream().map(userScheduleConverter::toDto).toList();
+        return newUserScheduleEntities.stream().map(userScheduleConverter::toGroupDto).toList();
     }
 }
