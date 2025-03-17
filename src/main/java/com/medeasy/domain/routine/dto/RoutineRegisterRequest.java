@@ -26,7 +26,7 @@ public class RoutineRegisterRequest {
     @Schema(description = "약 복용 요일, 월요일~일요일 -> 1~7", example = "[1, 2, 3]")
     private List<Integer> dayOfWeeks;
 
-    @Schema(description = "약을 복용할 사용자 스케줄 리스트")
+    @Schema(description = "약을 복용할 사용자 스케줄 리스트", example = "[1, 2, 3]")
     private List<Long> userScheduleIds;
 
 //    @Schema(description = "새 약을 복용할 시기 ", example = "[MORNING, LUNCH, DINNER, BEDTIME]")

@@ -37,8 +37,7 @@ public class RoutineController {
              
             day_of_weeks: 1(월요일)~7(일요일) 복용하고자 하는 숫자 배열 입력
              
-            types: "MORNING", "LUNCH", "DINNER", "BEDTIME" 약을 복용하는 시기 입력
-            
+            user_schedule_ids: 약을 먹고자 하는 사용자 스케줄 배열 입력
             
             마지막 업데이트 3/16
              
@@ -127,8 +126,8 @@ public class RoutineController {
             @Parameter(hidden = true) @UserSession Long userId,
             @RequestPart("image") MultipartFile image
     ) {
-        routineBusiness.registerRoutineByPrescription(userId, image);
-        return Api.OK(null);
+        var response=routineBusiness.registerRoutineByPrescription(userId, image);
+        return Api.OK(response);
     }
 
     @Operation(summary = "단일 루틴 삭제 api v2", description =
