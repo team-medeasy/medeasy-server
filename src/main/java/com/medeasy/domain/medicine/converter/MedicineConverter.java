@@ -18,63 +18,56 @@ public class MedicineConverter {
 
     public MedicineResponse toResponseWithEntity(MedicineEntity entity) {
 
-        return MedicineResponse.builder()
-                .id(entity.getId())
-                .itemCode(entity.getItemCode())
-                .entpName(entity.getEntpName())
-                .itemName(entity.getItemName())
-                .efficacy(entity.getEfficacy())
-                .useMethod(entity.getUseMethod())
-                .attention(entity.getAttention())
-                .interaction(entity.getInteraction())
-                .sideEffect(entity.getSideEffect())
-                .depositMethod(entity.getDepositMethod())
-                .openAt(entity.getOpenAt())
-                .updateAt(entity.getUpdateAt())
-                .imageUrl(entity.getImageUrl())
-                .bizrno(entity.getBizrno())
-                .build()
-                ;
+        return null;
     }
 
     public MedicineResponse toResponseWithDocument(MedicineDocument document) {
 
         return MedicineResponse.builder()
-                .id(Long.parseLong(document.getId()))
-                .itemCode(document.getItemCode())
-                .entpName(document.getEntpName())
+                .id(document.getId())
+                .itemSeq(document.getItemSeq())
                 .itemName(document.getItemName())
-                .shape(document.getShape())
-                .color(document.getColor())
-                .efficacy(document.getEfficacy())
-                .useMethod(document.getUseMethod())
-                .attention(document.getAttention())
-                .interaction(document.getInteraction())
-                .sideEffect(document.getSideEffect())
-                .depositMethod(document.getDepositMethod())
-                .openAt(document.getOpenAt())
-                .updateAt(document.getUpdateAt())
-                .imageUrl(document.getImageUrl())
-                .bizrno(document.getBizrno())
-                .build()
-                ;
+                .entpName(document.getEntpName())
+                .entpSeq(document.getEntpSeq())
+                .classNo(document.getClassNo())
+                .className(document.getClassName())
+                .ediCode(document.getEdiCode())
+                .drugShape(document.getDrugShape())
+                .colorClasses(document.getColorClasses())
+                .lineFront(document.getLineFront())
+                .lineBack(document.getLineBack())
+                .printFront(document.getPrintFront())
+                .printBack(document.getPrintBack())
+                .markCodeFrontAnal(document.getMarkCodeFrontAnal()) // 수정: 중복된 `markCodeBackAnal` 제거
+                .markCodeBackAnal(document.getMarkCodeBackAnal())
+                .indications(document.getIndications())
+                .dosage(document.getDosage())
+                .precautions(document.getPrecautions())
+                .sideEffects(document.getSideEffects())
+                .storageMethod(document.getStorageMethod())
+                .validTerm(document.getValidTerm())
+                .etcOtcName(document.getEtcOtcName())
+                .cancelName(document.getCancelName())
+                .itemImage(document.getItemImage())
+                .lengLong(document.getLengLong())
+                .lengShort(document.getLengShort())
+                .thick(document.getThick())
+                .isPill(document.getIsPill())
+                .build();
     }
+
 
     public MedicineEntity toEntity(MedicineDocument medicineDocument) {
         return MedicineEntity.builder()
-                .itemCode(medicineDocument.getItemCode())
+                .itemCode(medicineDocument.getItemSeq())
                 .entpName(medicineDocument.getEntpName())
                 .itemName(medicineDocument.getItemName())
-                .efficacy(medicineDocument.getEfficacy())
-                .useMethod(medicineDocument.getUseMethod())
-                .attention(medicineDocument.getAttention()) // getAtpnQesitm의 값과 getAtpnWarnQesitm 값 병합
-                .interaction(medicineDocument.getInteraction())
-                .sideEffect(medicineDocument.getSideEffect())
-                .depositMethod(medicineDocument.getDepositMethod())
-                .openAt(medicineDocument.getOpenAt())
-                .updateAt(medicineDocument.getUpdateAt())
-                .imageUrl(medicineDocument.getImageUrl())
-                .bizrno(medicineDocument.getBizrno())
+                .efficacy("")
+                .useMethod("")
+                .attention("") // getAtpnQesitm의 값과 getAtpnWarnQesitm 값 병합
+                .interaction("")
+                .sideEffect("")
+                .depositMethod("")
                 .build();
     }
 
@@ -107,18 +100,7 @@ public class MedicineConverter {
     }
 
     public MedicineDocument toDocument(MedicineEntity entity) {
-        return MedicineDocument.builder()
-                .id(entity.getId().toString())
-                .itemCode(entity.getItemCode())
-                .entpName(entity.getEntpName())
-                .itemName(entity.getItemName())
-                .efficacy(entity.getEfficacy())
-                .useMethod(entity.getUseMethod())
-                .attention(entity.getAttention())
-                .interaction(entity.getInteraction())
-                .sideEffect(entity.getSideEffect())
-                .depositMethod(entity.getDepositMethod())
-                .build();
+        return null;
     }
 
     private LocalDate parseOpenDate(String openDe) {
