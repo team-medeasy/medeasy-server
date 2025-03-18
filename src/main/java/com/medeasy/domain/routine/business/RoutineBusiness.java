@@ -118,9 +118,7 @@ public class RoutineBusiness {
 
                 if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
-                // TODO 테스트
                 RoutineEntity routineEntity=routineMap.get(userScheduleEntity.getId()+"_"+currentDate);
-//                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, currentDate);
 
                 RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
                         .nickname(nickname)
@@ -142,9 +140,7 @@ public class RoutineBusiness {
                 quantity += dose;
                 if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
-                // TODO 테스트
                 RoutineEntity routineEntity=routineMap.get(userScheduleEntity.getId()+"_"+localDate);
-//                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, localDate);
                 RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
                         .nickname(nickname)
                         .isTaken(false)
@@ -160,9 +156,10 @@ public class RoutineBusiness {
         routineMedicineService.saveAll(routineMedicineEntities);
     }
 
+    @Transactional
     public void registerRoutineList(Long userId, List<RoutineRegisterRequest> routinesRegisterRequest) {
         routinesRegisterRequest.forEach(routineRegisterRequest -> {
-            registerRoutine(userId, routineRegisterRequest);
+            registerRoutine(userId, routineRegisterRequest); // 자기 자신을 호출하게되면 프록시 객체를 거치지 않기 때문에 트랜잭션 적용 x
         });
     }
 
