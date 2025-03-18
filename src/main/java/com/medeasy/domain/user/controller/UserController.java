@@ -6,6 +6,7 @@ import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
 import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -62,6 +63,34 @@ public class UserController {
         UserScheduleDto response=userBusiness.updateRoutineSchedule(userId, request);
 
         return Api.OK(response);
+    }
+
+    @Operation(summary = "사용자 루틴 스케줄 추가 api", description =
+            """
+                사용자 루틴 스케줄 추가 API:
+                
+                루틴을 등록할 떼 사용되는 사용자의 스케줄 추가
+            
+            응답 값 설명: 
+            
+            - user_schedule_id: 사용자 스케줄 식별 ID
+            
+            - name: 스케줄 이름
+            
+            - take_time: 복용 시간
+            
+            마지막 업데이트: 3/17
+            """
+    )
+    @PostMapping("/schedule")
+    public Api<Object> registerRoutineSchedule(
+            @Parameter(hidden = true)
+            @UserSession Long userId,
+            @Valid @RequestBody UserScheduleRegisterRequest request
+            ) {
+        userBusiness.registerRoutineSchedule(userId, request);
+
+        return Api.OK(null);
     }
 
     @Operation(summary = "사용자 루틴 스케줄 조회 api v2", description =
