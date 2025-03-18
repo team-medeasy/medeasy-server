@@ -71,15 +71,13 @@ public class UserController {
                 
                 루틴을 등록할 떼 사용되는 사용자의 스케줄 추가
             
-            응답 값 설명: 
-            
-            - user_schedule_id: 사용자 스케줄 식별 ID
+            요청 값 설명: 
             
             - name: 스케줄 이름
             
             - take_time: 복용 시간
             
-            마지막 업데이트: 3/17
+            마지막 업데이트: 3/18
             """
     )
     @PostMapping("/schedule")
