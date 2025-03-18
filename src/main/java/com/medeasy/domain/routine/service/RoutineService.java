@@ -121,15 +121,16 @@ public class RoutineService {
             for (LocalDate takeDate : takeDates) {
                 String key = schedule.getId() + "_" + takeDate;
 
-                // DB에 존재하지 않는 루틴이라면 생성
-                if (!routineMap.containsKey(key)) {
+                // 루틴이 없으면 생성하여 리스트에 추가
+                routineMap.computeIfAbsent(key, k -> {
                     RoutineEntity newRoutine = RoutineEntity.builder()
                             .user(userEntity)
                             .userSchedule(schedule)
                             .takeDate(takeDate)
                             .build();
                     newRoutines.add(newRoutine);
-                }
+                    return newRoutine;
+                });
             }
         }
         // 새로 생성된 루틴 저장 (배치 처리)
@@ -137,8 +138,6 @@ public class RoutineService {
             routineRepository.saveAll(newRoutines);
         }
 
-        // 기존 루틴 + 새로 생성한 루틴 반환
-        existingRoutines.addAll(newRoutines);
         return routineMap;
     }
 }
