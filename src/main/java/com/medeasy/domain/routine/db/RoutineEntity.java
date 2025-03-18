@@ -26,6 +26,7 @@ import java.util.List;
 public class RoutineEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "routine_seq_generator")
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Temporal(TemporalType.DATE)

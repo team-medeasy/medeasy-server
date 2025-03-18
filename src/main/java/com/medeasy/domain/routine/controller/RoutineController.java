@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/routine")
 @RequiredArgsConstructor
@@ -49,8 +51,9 @@ public class RoutineController {
             @Valid
             @RequestBody RoutineRegisterRequest routineRegisterRequest
     ) {
+        log.info("루틴 저장 시작");
         routineBusiness.registerRoutine(userId, routineRegisterRequest);
-
+        log.info("루틴 저장 끝");
         return Api.OK(null);
     }
 
