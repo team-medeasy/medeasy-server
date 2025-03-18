@@ -106,6 +106,8 @@ public class RoutineBusiness {
         LocalDate currentDate = LocalDate.now();
         List<LocalDate> routineDates=calculateRoutineDates(routineRegisterRequest);
 
+        Map<String, RoutineEntity> routineMap= routineService.getRoutinesWithUserSchedulesAndTakeDates(userId, userScheduleEntities, routineDates);
+
         log.info("약을 복용하는 날짜 결과: {}", routineDates.toString());
 
         if(routineDates.contains(currentDate)) {
@@ -117,7 +119,7 @@ public class RoutineBusiness {
 
                 if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, currentDate);
+                RoutineEntity routineEntity=routineMap.get(userScheduleEntity.getId()+"_"+currentDate);
 
                 RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
                         .nickname(nickname)
@@ -140,7 +142,7 @@ public class RoutineBusiness {
                 if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
                 // routine entity 가 존재한다면 가져오기 아니면 생성하기
-                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, localDate);
+                RoutineEntity routineEntity=routineMap.get(userScheduleEntity.getId()+"_"+localDate);
 
                 RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
                         .nickname(nickname)
