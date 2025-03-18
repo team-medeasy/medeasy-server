@@ -57,11 +57,11 @@ public class RoutineController {
         return Api.OK(null);
     }
 
-    @Operation(summary = "루틴 리스트 등록", description =
+    @Operation(summary = "루틴 리스트 등록 v2", description =
             """
                 루틴 리스트 등록 API: 단일 루틴 정보를 리스트로 받아 한번에 저장 
             
-            마지막 업데이트 3/17
+            마지막 업데이트 3/18 -> 최적화 작업 완료 
              
             """
     )
