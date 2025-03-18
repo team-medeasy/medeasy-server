@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
+    Optional<RoutineEntity> findByUserScheduleIdAndTakeDate(Long userScheduleId, LocalDate takeDate);
+
     @Query("SELECT r FROM RoutineEntity r " +
             "JOIN FETCH r.userSchedule us " +
             "LEFT JOIN FETCH r.routineMedicines rm " +

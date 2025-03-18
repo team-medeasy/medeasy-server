@@ -109,14 +109,12 @@ public class RoutineService {
         List<Long> userScheduleIds = userScheduleEntities.stream().map(UserScheduleEntity::getId).toList();
         List<RoutineEntity> existingRoutines=routineRepository.findAllByByUserIdUserScheduleIdsAndTakeDates(userId, userScheduleIds, takeDates);
 
-        // 루틴을 찾기 위한 Map 생성 (userScheduleId + takeDate 기준으로 빠른 조회)
         Map<String, RoutineEntity> routineMap = existingRoutines.stream()
                 .collect(Collectors.toMap(
                         r -> r.getUserSchedule().getId() + "_" + r.getTakeDate(),
                         r -> r
                 ));
 
-        // 생성해야 할 루틴 리스트
         List<RoutineEntity> newRoutines = new ArrayList<>();
 
         for (UserScheduleEntity schedule : userScheduleEntities) {
