@@ -89,12 +89,13 @@ public class RoutineBusiness {
      *
      * 3/16 업데이트
      * */
+    @Transactional
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
         // Entity 값 가져오기
-        UserEntity userEntity = userService.getUserById(userId);
-        MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
-        List<UserScheduleEntity> userScheduleEntities=userScheduleService.findAllByIdInOrderByTakeTimeAsc(routineRegisterRequest.getUserScheduleIds());
+        UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
 
+        MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
+        List<UserScheduleEntity> userScheduleEntities=userEntity.getUserSchedules();
 
         String nickname=routineRegisterRequest.getNickname() == null ? medicineDocument.getItemName() : routineRegisterRequest.getNickname();
         int dose = routineRegisterRequest.getDose();
@@ -106,7 +107,7 @@ public class RoutineBusiness {
         LocalDate currentDate = LocalDate.now();
         List<LocalDate> routineDates=calculateRoutineDates(routineRegisterRequest);
 
-        log.info("약을 복용하는 날짜 결과: {}", routineDates.toString());
+        Map<String, RoutineEntity> routineMap= routineService.getRoutinesWithUserSchedulesAndTakeDates(userId, userScheduleEntities, routineDates);
 
         if(routineDates.contains(currentDate)) {
             for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
@@ -117,7 +118,9 @@ public class RoutineBusiness {
 
                 if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, currentDate);
+                // TODO 테스트
+                RoutineEntity routineEntity=routineMap.get(userScheduleEntity.getId()+"_"+currentDate);
+//                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, currentDate);
 
                 RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
                         .nickname(nickname)
@@ -139,9 +142,9 @@ public class RoutineBusiness {
                 quantity += dose;
                 if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
-                // routine entity 가 존재한다면 가져오기 아니면 생성하기
-                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, localDate);
-
+                // TODO 테스트
+                RoutineEntity routineEntity=routineMap.get(userScheduleEntity.getId()+"_"+localDate);
+//                RoutineEntity routineEntity=routineService.getRoutineByUserScheduleAndTakeDate(userEntity, userScheduleEntity, localDate);
                 RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
                         .nickname(nickname)
                         .isTaken(false)
@@ -155,8 +158,12 @@ public class RoutineBusiness {
             }
         }
         routineMedicineService.saveAll(routineMedicineEntities);
+    }
 
-        log.info("단일 약 루틴 저장");
+    public void registerRoutineList(Long userId, List<RoutineRegisterRequest> routinesRegisterRequest) {
+        routinesRegisterRequest.forEach(routineRegisterRequest -> {
+            registerRoutine(userId, routineRegisterRequest);
+        });
     }
 
     /**
@@ -302,5 +309,6 @@ public class RoutineBusiness {
             throw new ApiException(ErrorCode.SERVER_ERROR, "rouitne json 변환 중 오류");
         }
     }
+
 
 }

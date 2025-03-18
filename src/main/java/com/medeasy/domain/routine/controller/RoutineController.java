@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/routine")
 @RequiredArgsConstructor
@@ -49,7 +51,27 @@ public class RoutineController {
             @Valid
             @RequestBody RoutineRegisterRequest routineRegisterRequest
     ) {
+        log.info("루틴 저장 시작");
         routineBusiness.registerRoutine(userId, routineRegisterRequest);
+        log.info("루틴 저장 끝");
+        return Api.OK(null);
+    }
+
+    @Operation(summary = "루틴 리스트 등록", description =
+            """
+                루틴 리스트 등록 API: 단일 루틴 정보를 리스트로 받아 한번에 저장 
+            
+            마지막 업데이트 3/17
+             
+            """
+    )
+    @PostMapping("/list")
+    public Api<Object> registerRoutineList(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @Valid
+            @RequestBody List<RoutineRegisterRequest> routinesRegisterRequest
+    ) {
+        routineBusiness.registerRoutineList(userId, routinesRegisterRequest);
 
         return Api.OK(null);
     }
