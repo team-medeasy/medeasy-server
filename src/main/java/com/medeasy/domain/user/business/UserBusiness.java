@@ -167,4 +167,9 @@ public class UserBusiness {
 
         userScheduleService.save(userScheduleEntity);
     }
+
+    @Transactional
+    public void deleteRoutineSchedule(Long userId, Long userScheduleId) {
+        userScheduleService.deleteById(userScheduleId);
+    }
 }

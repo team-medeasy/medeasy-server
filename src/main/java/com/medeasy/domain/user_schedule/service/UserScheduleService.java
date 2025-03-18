@@ -41,4 +41,8 @@ public class UserScheduleService {
 
         return userScheduleEntities;
     }
+
+    public void deleteById(Long id) {
+        userScheduleRepository.deleteById(id);
+    }
 }

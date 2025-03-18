@@ -91,6 +91,30 @@ public class UserController {
         return Api.OK(null);
     }
 
+    @Operation(summary = "사용자 루틴 스케줄 삭제 api", description =
+            """
+                사용자 루틴 스케줄 삭제 API:
+                
+                루틴을 등록할 떼 사용되는 사용자의 스케줄 삭제
+            
+            요청 값 설명: 
+            
+            - take_time: 복용 시간
+            
+            마지막 업데이트: 3/18
+            """
+    )
+    @DeleteMapping("/schedule/{user_schedule_id}")
+    public Api<Object> deleteRoutineSchedule(
+            @Parameter(hidden = true)
+            @UserSession Long userId,
+            @PathVariable(name = "user_schedule_id") Long userScheduleId
+    ) {
+        userBusiness.deleteRoutineSchedule(userId, userScheduleId);
+
+        return Api.OK(null);
+    }
+
     @Operation(summary = "사용자 루틴 스케줄 조회 api v2", description =
             """
                 사용자 루틴 스케줄 조회 API:
