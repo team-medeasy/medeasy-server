@@ -2,6 +2,9 @@ package com.medeasy.domain.user.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.SchedulerError;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
@@ -10,12 +13,17 @@ import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
 import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.transaction.TransactionRolledbackException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("user")
@@ -104,7 +112,7 @@ public class UserController {
             마지막 업데이트: 3/18
             """
     )
-    @DeleteMapping("/schedule/{user_schedule_id}")
+    @DeleteMapping("/{user_schedule_id}/schedule")
     public Api<Object> deleteRoutineSchedule(
             @Parameter(hidden = true)
             @UserSession Long userId,

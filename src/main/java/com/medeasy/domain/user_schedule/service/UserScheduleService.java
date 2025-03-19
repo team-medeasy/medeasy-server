@@ -1,15 +1,18 @@
 package com.medeasy.domain.user_schedule.service;
 
 import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserScheduleService {
@@ -44,5 +47,9 @@ public class UserScheduleService {
 
     public void deleteById(Long id) {
         userScheduleRepository.deleteById(id);
+    }
+
+    public UserScheduleEntity getUserScheduleByFetchJoin(Long id) {
+        return userScheduleRepository.findByIdByFetchJoin(id).orElseThrow(()-> new ApiException(SchedulerError.NOT_FOUND));
     }
 }

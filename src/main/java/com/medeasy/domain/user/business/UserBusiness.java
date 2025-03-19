@@ -18,9 +18,12 @@ import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
 import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
+import jakarta.transaction.TransactionRolledbackException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -170,6 +173,12 @@ public class UserBusiness {
 
     @Transactional
     public void deleteRoutineSchedule(Long userId, Long userScheduleId) {
+        UserScheduleEntity userScheduleEntity=userScheduleService.getUserScheduleByFetchJoin(userScheduleId);
+
+        userScheduleEntity.getRoutine().stream()
+                .findAny()
+                .ifPresent(routine-> {throw new ApiException(SchedulerError.FOREIGN_KEY_CONSTRAINT);} );
+
         userScheduleService.deleteById(userScheduleId);
     }
 }
