@@ -1,4 +1,4 @@
-package com.medeasy.domain.schedular.dto;
+package com.medeasy.domain.alarm.dto;
 
 import lombok.*;
 

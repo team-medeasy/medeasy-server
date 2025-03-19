@@ -1,6 +1,5 @@
 package com.medeasy.domain.routine.db;
 
-import com.medeasy.domain.schedular.dto.RoutineNativeQueryDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
