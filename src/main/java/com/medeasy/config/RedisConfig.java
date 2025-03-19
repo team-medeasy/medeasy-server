@@ -47,8 +47,8 @@ public class RedisConfig {
     }
 
     // 두 번째 Redis에 대한 StringRedisTemplate
-    @Bean(name = "redisTemplateForAlarm")
-    public StringRedisTemplate redisTemplateForAlarm(RedisConnectionFactory redisConnectionFactoryAlarm) {
+    @Bean(name = "alarmRedisTemplate")
+    public StringRedisTemplate alarmRedisTemplate(RedisConnectionFactory redisConnectionFactoryAlarm) {
         return new StringRedisTemplate(redisConnectionFactoryAlarm);
     }
 }
