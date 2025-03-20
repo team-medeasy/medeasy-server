@@ -15,6 +15,8 @@ import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.business.UserScheduleBusiness;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Business
-@RequiredArgsConstructor
 public class AuthBusiness {
 
     private final UserService userService;
@@ -30,6 +31,24 @@ public class AuthBusiness {
     private final UserConverter userConverter;
     private final TokenHelperIfs jwtTokenHelper; ;
     private final UserScheduleBusiness userScheduleBusiness;
+    private final StringRedisTemplate redisTemplateForJwt;
+
+    public AuthBusiness(
+            UserService userService,
+            PasswordEncoder passwordEncoder,
+            UserConverter userConverter,
+            TokenHelperIfs jwtTokenHelper,
+            UserScheduleBusiness userScheduleBusiness,
+            @Qualifier("redisTemplateForJwt") StringRedisTemplate redisTemplateForJwt
+    ) {
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+        this.userConverter = userConverter;
+        this.jwtTokenHelper = jwtTokenHelper;
+        this.userScheduleBusiness = userScheduleBusiness;
+        this.redisTemplateForJwt = redisTemplateForJwt;
+    }
+
 
     /**
      * 회원가입 메서드
@@ -80,5 +99,15 @@ public class AuthBusiness {
                 .accessTokenExpiredAt(accessToken.getExpiredAt())
                 .build()
                 ;
+    }
+
+    public void saveFcmToken(Long userId, String fcmToken) {
+        String fcmKey="fcm_tokens:"+userId;
+
+        if(fcmToken == null){
+            fcmToken="";
+        }
+
+        redisTemplateForJwt.opsForSet().add(fcmKey, fcmToken);
     }
 }

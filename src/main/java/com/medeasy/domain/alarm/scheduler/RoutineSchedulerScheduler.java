@@ -43,14 +43,23 @@ public class RoutineSchedulerScheduler {
         this.objectMapper = objectMapper;
     }
 
-
+    /**
+     * 한시간에 한번 동작하는 스케줄러
+     * 현재시간부터 한시간 후에 해당하는 루틴들을 수집
+     * 관련 정보들을 Alarm Redis에 저장한다.
+     * */
     @Scheduled(fixedRate = 600000)
     public void saveRoutineInAlarmDatabase() {
-        List<RoutineEntity> routineEntities=routineRepository.findAllByTakeDateAndTakeTimeBetweenWithMedicine(
+        /*List<RoutineEntity> routineEntities=routineRepository.findAllByTakeDateAndTakeTimeBetweenWithMedicine(
                 LocalDate.of(2025, 3, 24),
                 LocalTime.of(8, 0, 0),
                 LocalTime.of(22, 0, 0)
-            );
+            );*/
+        List<RoutineEntity> routineEntities=routineRepository.findAllByTakeDateAndTakeTimeBetweenWithMedicine(
+                LocalDate.now(),
+                LocalTime.now(),
+                LocalTime.now().plusHours(1)
+        );
 
         log.info("routine scheduling check: {}", routineEntities.size());
 
@@ -83,7 +92,9 @@ public class RoutineSchedulerScheduler {
                 long score =  takeTime.toEpochSecond(ZoneOffset.UTC);
                 String member = userId + ":" + score;
 
+                // redis zset에 추가 - 같은 값은 중복 저장 x
                 redisTemplateAlarm.opsForZSet().add(redisKey, member, score);
+                // zset 멤버에 해당하는 json 데이터 저장
                 redisTemplateAlarm.opsForValue().set("alarm_data:" + member, alarmDataJson);
 
                 log.info("Saved alarm data in Redis ZSET: {}", alarmDataJson);

@@ -1,3 +1,4 @@
+src/main/resources/firebase/
 logs
 docker-compose.yaml
 medicine_itemseq_record.txt
