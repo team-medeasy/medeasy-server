@@ -1,5 +1,7 @@
 package com.medeasy.config;
 
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.SocketOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,9 +41,19 @@ public class RedisConfig {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisJwtHost, redisJwtPort);
         config.setPassword(redisJwtPassword);
 
+        SocketOptions socketOptions = SocketOptions.builder()
+                .connectTimeout(Duration.ofSeconds(1)) // ⏱️ 연결 시도 제한 시간
+                .build();
+
+        ClientOptions clientOptions = ClientOptions.builder()
+                .autoReconnect(false) // ❌ 재시도 하지 않음
+                .socketOptions(socketOptions)
+                .build();
+
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
                 .commandTimeout(Duration.ofSeconds(2))        // ⏱️ 커맨드 타임아웃
                 .shutdownTimeout(Duration.ofMillis(100))      // ⏱️ 종료 타임아웃
+                .clientOptions(clientOptions)
                 .build();
 
         return new LettuceConnectionFactory(config, clientConfig);
