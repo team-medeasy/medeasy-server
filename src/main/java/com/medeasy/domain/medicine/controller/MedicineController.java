@@ -6,9 +6,11 @@ import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.medicine.db.MedicineColor;
 import com.medeasy.domain.medicine.db.MedicineShape;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
+import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,4 +67,20 @@ public class MedicineController {
         return Api.OK(medicineResponses);
     }
 
+    @GetMapping("/similar")
+    @Operation(summary = "유사한 약 리스트 조회 API", description =
+                    """
+                    유사 약 리스트 조회 API:
+                                
+                    medicine_id에 해당하는 약과 유사한 약 리스트 출력 
+                    """)
+    public Api<List<MedicineSimpleDto>> getSimilarMedicineList(
+            @RequestParam(name = "medicine_id") String medicineId,
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "size") int size
+    ) {
+        var response=medicineBusiness.getSimilarMedicineList(medicineId, page, size);
+
+        return Api.OK(response);
+    }
 }

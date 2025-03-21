@@ -67,9 +67,11 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
             if (itemName != null && !itemName.isEmpty()) {
                 boolQueryBuilder.must(QueryBuilder -> QueryBuilder.match(matchQueryBuilder -> matchQueryBuilder
                         .field("item_name")
-                        .query(itemName)));
+                        .query(itemName)
+                        .fuzziness("AUTO")
+                    )
+                );
             }
-
 
             if (colors != null && !colors.isEmpty()) {
                 Query colorQuery = QueryBuilders.bool(colorBool ->
@@ -162,6 +164,39 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
 
         NativeQuery nativeQuery = NativeQuery.builder()
                 .withQuery(booQuery)
+                .withPageable(pageable)
+                .build()
+                ;
+
+        SearchHits<MedicineDocument> searchHits = elasticsearchOperations.search(nativeQuery, MedicineDocument.class);
+
+        return searchHits.getSearchHits()
+                .stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MedicineDocument> findSimilarMedicines(String className, String indications, Pageable pageable) {
+        Query boolQuery=QueryBuilders.bool(boolQueryBuilder -> {
+            boolQueryBuilder.must(queryBuilder ->
+                queryBuilder.term(termQuery ->
+                        termQuery.field("class_name")
+                                .value(className)
+                )
+            );
+
+            boolQueryBuilder.should(queryBuilder ->
+                queryBuilder.match(matchQuery->
+                    matchQuery.field("indications")
+                            .query(indications)
+                )
+            );
+            return boolQueryBuilder;
+        });
+
+        NativeQuery nativeQuery=NativeQuery.builder()
+                .withQuery(boolQuery)
                 .withPageable(pageable)
                 .build()
                 ;

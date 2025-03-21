@@ -2,19 +2,28 @@ package com.medeasy.domain.user.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.SchedulerError;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
 import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.transaction.TransactionRolledbackException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("user")
@@ -62,6 +71,56 @@ public class UserController {
         UserScheduleDto response=userBusiness.updateRoutineSchedule(userId, request);
 
         return Api.OK(response);
+    }
+
+    @Operation(summary = "사용자 루틴 스케줄 추가 api", description =
+            """
+                사용자 루틴 스케줄 추가 API:
+                
+                루틴을 등록할 떼 사용되는 사용자의 스케줄 추가
+            
+            요청 값 설명: 
+            
+            - name: 스케줄 이름
+            
+            - take_time: 복용 시간
+            
+            마지막 업데이트: 3/18
+            """
+    )
+    @PostMapping("/schedule")
+    public Api<Object> registerRoutineSchedule(
+            @Parameter(hidden = true)
+            @UserSession Long userId,
+            @Valid @RequestBody UserScheduleRegisterRequest request
+            ) {
+        userBusiness.registerRoutineSchedule(userId, request);
+
+        return Api.OK(null);
+    }
+
+    @Operation(summary = "사용자 루틴 스케줄 삭제 api", description =
+            """
+                사용자 루틴 스케줄 삭제 API:
+                
+                루틴을 등록할 떼 사용되는 사용자의 스케줄 삭제
+            
+            요청 값 설명: 
+            
+            - take_time: 복용 시간
+            
+            마지막 업데이트: 3/18
+            """
+    )
+    @DeleteMapping("/{user_schedule_id}/schedule")
+    public Api<Object> deleteRoutineSchedule(
+            @Parameter(hidden = true)
+            @UserSession Long userId,
+            @PathVariable(name = "user_schedule_id") Long userScheduleId
+    ) {
+        userBusiness.deleteRoutineSchedule(userId, userScheduleId);
+
+        return Api.OK(null);
     }
 
     @Operation(summary = "사용자 루틴 스케줄 조회 api v2", description =

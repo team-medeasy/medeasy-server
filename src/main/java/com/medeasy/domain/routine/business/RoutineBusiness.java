@@ -65,7 +65,7 @@ public class RoutineBusiness {
             OcrServiceByMultipart ocrService,
             AiService aiService,
             MedicineConverter medicineConverter,
-            @Qualifier("redisTemplateForAlarm") StringRedisTemplate redisAlarmTemplate, // @Qualifier 적용
+            @Qualifier("alarmRedisTemplate") StringRedisTemplate redisAlarmTemplate, // @Qualifier 적용
             ObjectMapper objectMapper,
             UserScheduleService userScheduleService,
             RoutineMedicineService routineMedicineService,

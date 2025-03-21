@@ -16,9 +16,7 @@ import java.time.LocalTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserScheduleUpdateRequest {
-    @Schema(description = "스케줄 식별 ID", example = "1", nullable = true)
-    private Long userScheduleId;
+public class UserScheduleRegisterRequest {
 
     @Schema(description = "스케줄 별명", example = "아침 식사 후", nullable = true)
     private String scheduleName;

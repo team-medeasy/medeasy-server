@@ -35,7 +35,7 @@ public class MedicineDocument {
     @Field(name = "class_no", type = FieldType.Keyword)
     private String classNo; // 분류 코드
 
-    @Field(name = "class_name", type = FieldType.Text, analyzer = "korean_nori")
+    @Field(name = "class_name", type = FieldType.Keyword)
     private String className; // 분류명
 
     @Field(name = "edi_code", type = FieldType.Keyword)

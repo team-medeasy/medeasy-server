@@ -8,7 +8,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -78,13 +77,16 @@ public class JwtTokenHelper implements TokenHelperIfs{
 
         // Redis에 (refreshToken -> userId) 저장 + TTL 설정(시간 단위 HOUR)
         // refreshToken이 만료되면 자동으로 레디스에서 제거되도록
-        redisJwtTemplate.opsForValue().set(
-                userId,
-                jwtToken,
-                refreshTokenPlusHour,
-                TimeUnit.HOURS
-        );
-
+        try {
+            redisJwtTemplate.opsForValue().set(
+                    userId,
+                    jwtToken,
+                    refreshTokenPlusHour,
+                    TimeUnit.HOURS
+            );
+        }catch (Exception e){
+            log.info("사용자 {} 로그인 중 redis refresh token 저장 오류 발생: {}", userId, e.getMessage());
+        }
 
         return TokenDto.builder()
                 .token(jwtToken)

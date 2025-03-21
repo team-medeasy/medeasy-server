@@ -15,11 +15,15 @@ import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
 import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
+import jakarta.transaction.TransactionRolledbackException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -58,13 +62,16 @@ public class UserBusiness {
         if (request.getScheduleName() != null) {
             userScheduleEntity.setName(request.getScheduleName());
         }
-        if (request.getTake_time() != null) {
-            userScheduleEntity.setTakeTime(request.getTake_time());
+        if (request.getTakeTime() != null) {
+            userScheduleEntity.setTakeTime(request.getTakeTime());
         }
 
         return userScheduleConverter.toDto(userScheduleEntity);
     }
 
+    /**
+     * 사용자 스케줄 반환 메서드
+     * */
     @Transactional
     public List<UserScheduleDto> getRoutineSchedule(Long userId) {
         UserEntity userEntity=userService.getUserByIdToFetchJoin(userId);
@@ -72,6 +79,9 @@ public class UserBusiness {
         return userEntity.getUserSchedules().stream().map(userScheduleConverter::toDto).toList();
     }
 
+    /**
+     * 사용자 가입 일수 반환 메서드
+     * */
     @Transactional
     public UserUsageDaysResponse getServiceUsageDays(Long userId) {
 
@@ -120,6 +130,9 @@ public class UserBusiness {
                 ;
     }
 
+    /**
+     * 사용자 회원탈퇴 메서드
+     * */
     @Transactional
     public void unregisterUser(Long userId, String password) {
         UserEntity userEntity=userService.getUserById(userId);
@@ -131,10 +144,41 @@ public class UserBusiness {
         userService.deleteUser(userId);
     }
 
+    /**
+     * 사용자 단순 정보 조회 메서드
+     * */
     @Transactional
     public UserResponse getUserInfo(Long userId) {
         UserEntity userEntity=userService.getUserById(userId);
 
         return userConverter.toResponse(userEntity);
+    }
+
+    /**
+     * 사용자 스케줄 등록 메서드
+     * */
+    @Transactional
+    public void registerRoutineSchedule(Long userId, UserScheduleRegisterRequest request) {
+        UserEntity userEntity=userService.getUserByIdToFetchJoin(userId);
+
+        UserScheduleEntity userScheduleEntity=UserScheduleEntity.builder()
+                .name(request.getScheduleName())
+                .takeTime(request.getTakeTime())
+                .user(userEntity)
+                .build()
+                ;
+
+        userScheduleService.save(userScheduleEntity);
+    }
+
+    @Transactional
+    public void deleteRoutineSchedule(Long userId, Long userScheduleId) {
+        UserScheduleEntity userScheduleEntity=userScheduleService.getUserScheduleByFetchJoin(userScheduleId);
+
+        userScheduleEntity.getRoutine().stream()
+                .findAny()
+                .ifPresent(routine-> {throw new ApiException(SchedulerError.FOREIGN_KEY_CONSTRAINT);} );
+
+        userScheduleService.deleteById(userScheduleId);
     }
 }

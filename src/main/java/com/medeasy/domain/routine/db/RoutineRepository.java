@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,4 +33,28 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             @Param("userScheduleIds") List<Long> userScheduleIds,
             @Param("takeDates") List<LocalDate> takeDates
     );
+
+    @Query("SELECT r FROM RoutineEntity r " +
+            "JOIN FETCH r.userSchedule us " +
+            "JOIN FETCH r.routineMedicines rm " +
+            "WHERE r.takeDate = :date " +
+            "AND us.takeTime BETWEEN :startTime AND :endTime")
+    List<RoutineEntity> findAllByTakeDateAndTakeTimeBetweenWithMedicine(
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime);
+
+
+/*    @Query(value = "SELECT r.id AS routineId, us.name AS scheduleName, r.take_date AS takeDate, " +
+            "rm.medicine_id AS medicineId, rm.nickname AS medicineNickname, rm.dose AS dose, " +
+            "us.user_id AS userId, us.take_time AS takeTime FROM " +
+            "(SELECT * FROM routine WHERE take_date = :date) r " +
+            "JOIN user_schedule us ON r.user_schedule_id = us.id " +
+            "JOIN routine_medicine rm ON r.id = rm.routine_id " +
+            "WHERE us.take_time BETWEEN :startTime AND :endTime",
+            nativeQuery = true)
+    List<RoutineNativeQueryDto> findAllByTakeDateAndTakeTimeBetweenWithMedicineNative(
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime);*/
 }

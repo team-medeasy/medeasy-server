@@ -53,4 +53,12 @@ public class MedicineDocumentService {
 
         return medicineDocuments;
     }
+
+    public List<MedicineDocument> findSimilarMedicineList(MedicineDocument medicineDocument, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size+1);
+
+        List<MedicineDocument> similarMedicineDocuments=medicineSearchCustomRepository.findSimilarMedicines(medicineDocument.getClassName(), medicineDocument.getIndications(), pageable) ;
+
+        return similarMedicineDocuments;
+    }
 }

@@ -39,13 +39,22 @@ public class AuthController {
 
     // 로그인 API
     @PostMapping("/login")
-    @Operation(summary = "로그인", description = "사용자 정보 확인 후 JWT 토큰 발급")
+    @Operation(summary = "로그인", description =
+            """
+            사용자 정보 확인 후 JWT 토큰 발급
+            
+            3/20 추가: 사용자 로그인시 FCM에서 발급받은 token 전달.
+            
+            값을 아예 넣지 않아도 null 처리 해놓은 상태
+            """
+    )
     public Api<TokenResponse> login(
             @Valid
             @RequestBody LoginRequest request
     ) {
         UserDto user=authBusiness.validateUser(request);
         TokenResponse tokenResponse=authBusiness.issueToken(user);
+        authBusiness.saveFcmToken(user.getId(), request.getFcmToken());
 
         return Api.OK(tokenResponse);
     }

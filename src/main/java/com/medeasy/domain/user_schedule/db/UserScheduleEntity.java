@@ -1,10 +1,13 @@
 package com.medeasy.domain.user_schedule.db;
 
+import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.user.db.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -29,4 +32,8 @@ public class UserScheduleEntity {
     @Column(name = "take_time")
     @Temporal(TemporalType.TIME)
     private LocalTime takeTime;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "userSchedule", orphanRemoval = false)
+    private List<RoutineEntity> routine=new ArrayList<>();
 }
