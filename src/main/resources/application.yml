@@ -6,6 +6,7 @@ spring:
       url: ${ES_HOST}:${ES_PORT}
       host: ${ES_HOST}
       port: ${ES_PORT}
+      password: ${ES_PASSWORD}
 
     redis:
       host: ${REDIS_HOST}

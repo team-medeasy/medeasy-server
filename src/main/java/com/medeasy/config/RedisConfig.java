@@ -65,9 +65,19 @@ public class RedisConfig {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisAlarmHost, redisAlarmPort);
         config.setPassword(redisAlarmPassword);
 
+        SocketOptions socketOptions = SocketOptions.builder()
+                .connectTimeout(Duration.ofSeconds(1)) // ⏱️ 연결 시도 제한 시간
+                .build();
+
+        ClientOptions clientOptions = ClientOptions.builder()
+                .autoReconnect(false) // ❌ 재시도 하지 않음
+                .socketOptions(socketOptions)
+                .build();
+
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
                 .commandTimeout(Duration.ofSeconds(2))        // ⏱️ 커맨드 타임아웃
                 .shutdownTimeout(Duration.ofMillis(100))      // ⏱️ 종료 타임아웃
+                .clientOptions(clientOptions)
                 .build();
 
         return new LettuceConnectionFactory(config, clientConfig);
