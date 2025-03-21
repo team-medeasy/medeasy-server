@@ -6,6 +6,7 @@ import com.medeasy.domain.medicine.converter.MedicineConverter;
 import com.medeasy.domain.medicine.db.*;
 import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
+import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import com.medeasy.domain.medicine.dto.MedicineUpdateRequest;
 import com.medeasy.domain.medicine.service.MedicineDocumentService;
 import com.medeasy.domain.medicine.service.MedicineService;
@@ -58,4 +59,11 @@ public class MedicineBusiness {
         return medicineDocuments.stream().map(medicineConverter::toResponseWithDocument).toList();
     }
 
+    public List<MedicineSimpleDto> getSimilarMedicineList(String medicineId, int page, int size) {
+        MedicineDocument medicineDocument=medicineDocumentService.findMedicineDocumentById(medicineId);
+
+        List<MedicineDocument> medicineDocuments=medicineDocumentService.findSimilarMedicineList(medicineDocument, page, size);
+
+        return medicineDocuments.stream().map(medicineConverter::toSimpleResponseWithDocument).toList();
+    }
 }

@@ -173,4 +173,37 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                 .map(SearchHit::getContent)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<MedicineDocument> findSimilarMedicines(String className, String indications, Pageable pageable) {
+        Query boolQuery=QueryBuilders.bool(boolQueryBuilder -> {
+            boolQueryBuilder.must(queryBuilder ->
+                queryBuilder.term(termQuery ->
+                        termQuery.field("class_name")
+                                .value(className)
+                )
+            );
+
+            boolQueryBuilder.should(queryBuilder ->
+                queryBuilder.match(matchQuery->
+                    matchQuery.field("indications")
+                            .query(indications)
+                )
+            );
+            return boolQueryBuilder;
+        });
+
+        NativeQuery nativeQuery=NativeQuery.builder()
+                .withQuery(boolQuery)
+                .withPageable(pageable)
+                .build()
+                ;
+
+        SearchHits<MedicineDocument> searchHits = elasticsearchOperations.search(nativeQuery, MedicineDocument.class);
+
+        return searchHits.getSearchHits()
+                .stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
+    }
 }

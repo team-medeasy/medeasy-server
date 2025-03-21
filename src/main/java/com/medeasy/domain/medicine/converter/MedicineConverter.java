@@ -3,6 +3,7 @@ package com.medeasy.domain.medicine.converter;
 import com.medeasy.common.annotation.Converter;
 import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
+import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -46,6 +47,16 @@ public class MedicineConverter {
                 .thick(document.getThick())
                 .isPill(document.getIsPill())
                 .build();
+    }
+
+    public MedicineSimpleDto toSimpleResponseWithDocument(MedicineDocument document) {
+        return MedicineSimpleDto.builder()
+                .medicineId(document.getId())
+                .medicineName(document.getItemName())
+                .entpName(document.getEntpName())
+                .className(document.getClassName())
+                .build()
+                ;
     }
 
     private LocalDate parseOpenDate(String openDe) {
