@@ -17,19 +17,15 @@ public class ElasticSearchConfig extends ElasticsearchConfiguration {
     private String host;
     @Value("${spring.data.elasticsearch.port}")
     private int port;
+    @Value("${spring.elasticsearch.password}")
+    private String password;
 
     @Override
     public ClientConfiguration clientConfiguration() {
         return ClientConfiguration.builder()
                 .connectedTo(url)
+                .withBasicAuth("elastic", password)
                 .build()
                 ;
-    }
-
-    @Bean
-    public RestClient restClient() {
-        return RestClient.builder(
-                new HttpHost(host, port, "http")
-        ).build();
     }
 }
