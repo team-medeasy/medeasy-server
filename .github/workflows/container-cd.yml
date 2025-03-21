@@ -25,9 +25,11 @@ jobs:
 
       REDIS_JWT_HOST: ${{secrets.REDIS_JWT_HOST}}
       REDIS_JWT_PORT: ${{secrets.REDIS_JWT_PORT}}
+      REDIS_JWT_PASSWORD: ${{secrest.REDIS_JWT_PASSWORD}}
 
       REDIS_ALARM_HOST: ${{secrets.REDIS_ALARM_HOST}}
       REDIS_ALARM_PORT: ${{secrets.REDIS_ALARM_PORT}}
+      REDIS_ALARM_PASSWORD: ${{secrest.REDIS_ALARM_PASSWORD}}
 
       OCR_API_URL: ${{secrets.OCR_API_URL}}
       OCR_SECRET: ${{secrets.OCR_SECRET}}
