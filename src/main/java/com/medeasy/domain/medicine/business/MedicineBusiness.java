@@ -63,6 +63,8 @@ public class MedicineBusiness {
         MedicineDocument medicineDocument=medicineDocumentService.findMedicineDocumentById(medicineId);
 
         List<MedicineDocument> medicineDocuments=medicineDocumentService.findSimilarMedicineList(medicineDocument, page, size);
+        // 유사한 약 중 검색 대상 약 제외
+        medicineDocuments.removeFirst();
 
         return medicineDocuments.stream().map(medicineConverter::toSimpleResponseWithDocument).toList();
     }

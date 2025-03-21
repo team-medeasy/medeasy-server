@@ -55,7 +55,7 @@ public class MedicineDocumentService {
     }
 
     public List<MedicineDocument> findSimilarMedicineList(MedicineDocument medicineDocument, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size+1);
 
         List<MedicineDocument> similarMedicineDocuments=medicineSearchCustomRepository.findSimilarMedicines(medicineDocument.getClassName(), medicineDocument.getIndications(), pageable) ;
 
