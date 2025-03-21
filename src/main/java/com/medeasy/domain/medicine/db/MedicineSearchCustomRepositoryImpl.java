@@ -67,9 +67,11 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
             if (itemName != null && !itemName.isEmpty()) {
                 boolQueryBuilder.must(QueryBuilder -> QueryBuilder.match(matchQueryBuilder -> matchQueryBuilder
                         .field("item_name")
-                        .query(itemName)));
+                        .query(itemName)
+                        .fuzziness("AUTO")
+                    )
+                );
             }
-
 
             if (colors != null && !colors.isEmpty()) {
                 Query colorQuery = QueryBuilders.bool(colorBool ->
