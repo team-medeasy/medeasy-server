@@ -14,6 +14,7 @@ import com.medeasy.domain.user.dto.UserResponse;
 import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.business.UserScheduleBusiness;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Business
 public class AuthBusiness {
 
@@ -107,6 +109,10 @@ public class AuthBusiness {
             fcmToken="";
         }
 
-        redisTemplateForJwt.opsForSet().add(fcmKey, fcmToken);
+        try {
+            redisTemplateForJwt.opsForSet().add(fcmKey, fcmToken);
+        }catch (Exception e){
+            log.info("사용자 {} 로그인 중 fcm token 저장 오류 발생: {}", userId, e.getMessage());
+        }
     }
 }
