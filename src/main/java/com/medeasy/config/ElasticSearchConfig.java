@@ -17,7 +17,7 @@ public class ElasticSearchConfig extends ElasticsearchConfiguration {
     private String host;
     @Value("${spring.data.elasticsearch.port}")
     private int port;
-    @Value("${spring.elasticsearch.password}")
+    @Value("${spring.data.elasticsearch.password}")
     private String password;
 
     @Override
