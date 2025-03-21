@@ -16,7 +16,7 @@ public enum SchedulerError implements ErrorCodeIfs{
 
     NULL_POINT(HttpStatus.INTERNAL_SERVER_ERROR.value(), 512, "Null Point"),
 
-    NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR.value(), 512, "스케줄을 찾을 수 없습니다."),
+    NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR.value(), 404, "스케줄을 찾을 수 없습니다."),
 
     FOREIGN_KEY_CONSTRAINT(HttpStatus.CONFLICT.value(), 409, "삭제할 수 없습니다. 스케줄에 등록된 루틴이 존재합니다."),
     ;

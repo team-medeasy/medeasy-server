@@ -14,7 +14,6 @@ import com.medeasy.domain.user.dto.UserResponse;
 import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.business.UserScheduleBusiness;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
