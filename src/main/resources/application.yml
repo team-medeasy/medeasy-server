@@ -49,10 +49,12 @@ redis:
   jwt:
     host: ${REDIS_JWT_HOST}
     port: ${REDIS_JWT_PORT}
+    password: ${REDIS_JWT_PASSWORD}
 
   alarm:
     host: ${REDIS_ALARM_HOST}
     port: ${REDIS_ALARM_PORT}
+    password: ${REDIS_ALARM_PASSWORD}
 
 ocr:
   api:
