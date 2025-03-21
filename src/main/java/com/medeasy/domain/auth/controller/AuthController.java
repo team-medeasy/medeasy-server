@@ -55,6 +55,7 @@ public class AuthController {
         UserDto user=authBusiness.validateUser(request);
         TokenResponse tokenResponse=authBusiness.issueToken(user);
         authBusiness.saveFcmToken(user.getId(), request.getFcmToken());
+        log.info("사용자 로그인 완료: {}", user.getId());
 
         return Api.OK(tokenResponse);
     }
