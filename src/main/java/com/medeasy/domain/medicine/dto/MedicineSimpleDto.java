@@ -16,4 +16,6 @@ public class MedicineSimpleDto {
     private String medicineName;
 
     private String className;
+
+    private String itemImage;
 }

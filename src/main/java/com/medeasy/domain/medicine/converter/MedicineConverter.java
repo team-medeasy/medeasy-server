@@ -55,6 +55,7 @@ public class MedicineConverter {
                 .medicineName(document.getItemName())
                 .entpName(document.getEntpName())
                 .className(document.getClassName())
+                .itemImage(document.getItemImage())
                 .build()
                 ;
     }
