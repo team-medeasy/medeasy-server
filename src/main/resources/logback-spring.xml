@@ -25,6 +25,27 @@
         </encoder>
     </appender>
 
+    <!-- 메일 발송 Appender -->
+    <appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
+        <smtpHost>smtp.gmail.com</smtpHost>
+        <smtpPort>587</smtpPort>
+        <username>${GMAIL_USERNAME}</username>
+        <password>${GMAIL_PASSWORD}</password>
+        <STARTTLS>true</STARTTLS>
+
+        <to>${GMAIL_USERNAME}</to>
+        <from>${GMAIL_USERNAME}</from>
+
+        <subject>[ALERT] Spring App Log 경고 발생</subject>
+
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${LOG_PATTERN}</pattern>
+        </layout>
+
+        <!-- 최소 경고 레벨 -->
+        <threshold>ERROR</threshold>
+    </appender>
+
     <!-- 콘솔에 로그 출력 (필요한 경우) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -36,5 +57,6 @@
     <root level="INFO">
         <appender-ref ref="DAILY_ROLLING_FILE_APPENDER" />
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="EMAIL"/>
     </root>
 </configuration>

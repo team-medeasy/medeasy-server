@@ -28,6 +28,14 @@ spring:
         order_inserts: true
         order_updates: true
         show_sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 #        generate_statistics: true # 배치 실행 횟수
 #logging:
 #  level:
