@@ -85,7 +85,7 @@ public class JwtTokenHelper implements TokenHelperIfs{
                     TimeUnit.HOURS
             );
         }catch (Exception e){
-            log.info("사용자 {} 로그인 중 redis refresh token 저장 오류 발생: {}", userId, e.getMessage());
+            log.error("사용자 {} 로그인 중 redis refresh token 저장 오류 발생: {}", userId, e.getMessage());
         }
 
         return TokenDto.builder()
