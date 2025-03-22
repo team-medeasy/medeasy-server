@@ -112,7 +112,7 @@ public class AuthBusiness {
         try {
             redisTemplateForJwt.opsForSet().add(fcmKey, fcmToken);
         }catch (Exception e){
-            log.info("사용자 {} 로그인 중 fcm token 저장 오류 발생: {}", userId, e.getMessage());
+            log.error("사용자 {} 로그인 중 fcm token 저장 오류 발생: {}", userId, e.getMessage());
         }
     }
 }

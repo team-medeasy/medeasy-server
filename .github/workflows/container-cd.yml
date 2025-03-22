@@ -37,6 +37,9 @@ jobs:
       GEMINI_API_URL: ${{secrets.GEMINI_API_URL}}
       GEMINI_API_KEY: ${{secrets.GEMINI_API_KEY}}
 
+      GMAIL_USERNAME: ${{secrets.GMAIL_USERNAME}}
+      GMAIL_PASSWORD: ${{secrets.GMAIL_PASSWORD}}
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
