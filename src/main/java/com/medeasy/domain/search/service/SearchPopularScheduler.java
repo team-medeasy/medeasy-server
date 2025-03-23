@@ -80,8 +80,6 @@ public class SearchPopularScheduler {
 
                         int changeRank =  pastRank-currentRank; // 양수: 순위 상승 음수: 순위 하락
 
-                        log.info("{}: 과거 랭킹: {}, 현재 랭킹: {}, 랭킹 차이: {}", keyword, pastRank, currentRank, isNewKeyword ? pastRank : changeRank);
-
                         return SearchPopularDocument.builder()
                             .rank(index + 1)
                             .keyword(nowSearchPopularResponse.get(index).getKeyword())
@@ -96,7 +94,7 @@ public class SearchPopularScheduler {
             // Elasticsearch 저장 로직 추가
             searchPopularRepository.saveAll(documents);
         } catch (Exception e) {
-            throw new ApiException(SchedulerError.SERVER_ERROR, "인기 검색어 저장 중 오류");
+            throw new ApiException(SchedulerError.SERVER_ERROR, "인기 검색어 기록 스케줄러 오류");
         }
     }
 

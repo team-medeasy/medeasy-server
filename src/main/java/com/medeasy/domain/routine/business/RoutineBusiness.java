@@ -224,7 +224,6 @@ public class RoutineBusiness {
      * 처방전 분석 데이터를 토대로 루틴 추가 여부 응답을 전송한다.
      * */
     public List<RoutinePrescriptionResponse> registerRoutineByPrescription(Long userId, MultipartFile file) {
-        // TODO fetch join으로 User Schedule도 가져오기
         var userEntity = userService.getUserByIdToFetchJoin(userId);
         var userSchedules=userEntity.getUserSchedules().stream().map(userScheduleConverter::toDto).toList();
 
@@ -265,6 +264,7 @@ public class RoutineBusiness {
      *
      * TODO 루틴 등록시에는 약을 먹는 시기를 명시하지만, 처방전 등록시에는 자동으로 설정하던, 미리 설정 값을 입력받는 쪽으로 구현
      * */
+    @Deprecated
     private List<String> convertTypeCountToTypes(int typeCount) {
 
         if(typeCount==1){
@@ -294,6 +294,7 @@ public class RoutineBusiness {
         routineMedicineService.deleteRoutine(routineMedicineId);
     }
 
+    @Deprecated
     public String convertToJson(String clientId, String medicineName, LocalDateTime dateTime) {
         Map<String, Object> alarmData= new HashMap<>();
         alarmData.put("client_id", clientId);

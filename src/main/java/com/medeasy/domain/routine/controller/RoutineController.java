@@ -51,9 +51,8 @@ public class RoutineController {
             @Valid
             @RequestBody RoutineRegisterRequest routineRegisterRequest
     ) {
-        log.info("루틴 저장 시작");
         routineBusiness.registerRoutine(userId, routineRegisterRequest);
-        log.info("루틴 저장 끝");
+        log.info("루틴 등록 완료 사용자: {}", userId);
         return Api.OK(null);
     }
 
@@ -72,6 +71,7 @@ public class RoutineController {
             @RequestBody List<RoutineRegisterRequest> routinesRegisterRequest
     ) {
         routineBusiness.registerRoutineList(userId, routinesRegisterRequest);
+        log.info("루틴 리스트 등록 완료 사용자: {}", userId);
 
         return Api.OK(null);
     }
@@ -94,6 +94,7 @@ public class RoutineController {
             @Parameter(example = "2025-03-20") @RequestParam(name = "end_date", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         var response=routineBusiness.getRoutineListByDate(userId, startDate, endDate);
+        log.info("루틴 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -111,6 +112,7 @@ public class RoutineController {
     )
     @PatchMapping("/check")
     public Api<Object> checkRoutine(
+            @Parameter(hidden = true) @UserSession Long userId,
             @RequestParam("routine_medicine_id")
             @Parameter(description = "체크할 루틴 id", required = true)
             Long routineMedicineId,
@@ -119,6 +121,8 @@ public class RoutineController {
             Boolean isTaken
     ) {
         RoutineCheckResponse response=routineBusiness.checkRoutine(routineMedicineId, isTaken);
+
+        log.info("루틴 체크 완료 사용자: {}", userId);
         return Api.OK(response);
     }
 
@@ -166,6 +170,7 @@ public class RoutineController {
             @RequestPart("image") MultipartFile image
     ) {
         var response=routineBusiness.registerRoutineByPrescription(userId, image);
+        log.info("처방전 루틴 분석 완료: {}", userId);
         return Api.OK(response);
     }
 
@@ -180,12 +185,12 @@ public class RoutineController {
     )
     @DeleteMapping("/{routine_medicine_id}")
     public Api<Object> deleteRoutine(
-            @Parameter(hidden = true)
-            @UserSession Long userId,
+            @Parameter(hidden = true) @UserSession Long userId,
             @Parameter(description = "삭제 하려는 루틴 id", required = true)
             @PathVariable("routine_medicine_id") Long routineMedicineId
     ) {
         routineBusiness.deleteRoutine(userId, routineMedicineId);
+        log.info("루틴 삭제 완료 사용자: {}", userId);
         return Api.OK(null);
     }
 }
