@@ -10,12 +10,13 @@ import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/medicine")
 @RequiredArgsConstructor
@@ -63,6 +64,7 @@ public class MedicineController {
 
         // 약 검색
         List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(userId, name, colors, shapes, size);
+        log.info("약 검색 완료 사용자: {}", userId);
 
         return Api.OK(medicineResponses);
     }
@@ -75,11 +77,13 @@ public class MedicineController {
                     medicine_id에 해당하는 약과 유사한 약 리스트 출력 
                     """)
     public Api<List<MedicineSimpleDto>> getSimilarMedicineList(
+            @Parameter(hidden = true) @UserSession Long userId,
             @RequestParam(name = "medicine_id") String medicineId,
             @RequestParam(name = "page") int page,
             @RequestParam(name = "size") int size
     ) {
         var response=medicineBusiness.getSimilarMedicineList(medicineId, page, size);
+        log.info("유사한 약 검색 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }

@@ -69,6 +69,7 @@ public class AuthController {
     ) {
         TokenResponse tokenResponse=authBusiness.recreateAccessToken(request.getRefreshToken());
 
+        log.info("사용자 refresh token 재발급 완료");
         return Api.OK(tokenResponse);
     }
 }

@@ -2,9 +2,6 @@ package com.medeasy.domain.user.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
-import com.medeasy.common.error.ErrorCode;
-import com.medeasy.common.error.SchedulerError;
-import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
@@ -13,12 +10,9 @@ import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
 import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.transaction.TransactionRolledbackException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,6 +63,7 @@ public class UserController {
             @RequestBody UserScheduleUpdateRequest request
     ){
         UserScheduleDto response=userBusiness.updateRoutineSchedule(userId, request);
+        log.info("스케줄 업데이트 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -95,6 +90,7 @@ public class UserController {
             @Valid @RequestBody UserScheduleRegisterRequest request
             ) {
         userBusiness.registerRoutineSchedule(userId, request);
+        log.info("스케줄 추가 완료 사용자: {}", userId);
 
         return Api.OK(null);
     }
@@ -146,6 +142,7 @@ public class UserController {
             @UserSession Long userId
     ) {
         List<UserScheduleDto> response=userBusiness.getRoutineSchedule(userId);
+        log.info("스케줄 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -165,6 +162,7 @@ public class UserController {
             @UserSession Long userId
     ) {
         UserUsageDaysResponse response=userBusiness.getServiceUsageDays(userId);
+        log.info("서비스 이용날짜 반환 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -202,6 +200,7 @@ public class UserController {
             @Valid@RequestBody UserDeleteRequest request
     ) {
         userBusiness.unregisterUser(userId, request.getPassword());
+        log.info("회원 탈퇴 완료 사용자: {}", userId);
 
         return Api.OK(null);
     }
@@ -219,6 +218,7 @@ public class UserController {
             @UserSession Long userId
     ) {
         var response=userBusiness.getUserInfo(userId);
+        log.info("회원 정보 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
