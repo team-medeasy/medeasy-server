@@ -9,6 +9,7 @@ import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.service.RoutineService;
+import com.medeasy.domain.routine_medicine.service.RoutineMedicineService;
 import com.medeasy.domain.user.dto.*;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserConverter;
@@ -46,6 +47,7 @@ public class UserBusiness {
     private final PasswordEncoder passwordEncoder;
     private final UserScheduleConverter userScheduleConverter;
     private final UserScheduleService userScheduleService;
+    private final RoutineMedicineService routineMedicineService;
 
     /**
      * request의 null이 아닌 수정사항만 사용자의 정보에서 업데이트
@@ -122,11 +124,10 @@ public class UserBusiness {
     @Transactional
     public UserMedicinesResponse getUserMedicinesCount(Long userId) {
         UserEntity userEntity=userService.getUserById(userId);
-        List<Long> userMedicinesIds = routineService.getRoutinesByUserId(userId);
+        var routineMedicines = routineMedicineService.getDistinctRoutineMedicinesByUserId(userId);
 
         return UserMedicinesResponse.builder()
-                .medicineCount(userMedicinesIds.size())
-                .medicineIds(userMedicinesIds)
+                .medicineCount(routineMedicines.size())
                 .build()
                 ;
     }

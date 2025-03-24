@@ -8,6 +8,7 @@ import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
 import com.medeasy.domain.routine_medicine.converter.RoutineMedicineConverter;
 import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
+import com.medeasy.domain.routine_medicine.db.RoutineMedicineRepository;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class RoutineService {
 
     private final RoutineRepository routineRepository;
+    private final RoutineMedicineRepository routineMedicineRepository;
     private final ObjectMapper objectMapper;
     private final RoutineMedicineConverter routineMedicineConverter;
     private final UserScheduleConverter userScheduleConverter;
@@ -75,12 +77,6 @@ public class RoutineService {
 
     public RoutineEntity getRoutineById(Long id) {
         return routineRepository.findById(id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
-    }
-
-    // TODO 약 개수 반환 수정
-    public List<Long> getRoutinesByUserId(Long userId) {
-//        return routineRepository.findDistinctMedicineIdByUserIdAndIsTakenIsFalse(userId);
-        return null;
     }
 
     /**
