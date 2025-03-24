@@ -41,4 +41,8 @@ public class RoutineMedicineService {
             throw new ApiException(ErrorCode.SERVER_ERROR);
         }
     }
+
+    public List<Long> getDistinctRoutineMedicinesByUserId(Long userId) {
+        return routineMedicineRepository.findDistinctRoutineMedicinesByUserId(userId);
+    }
 }
