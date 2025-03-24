@@ -77,6 +77,7 @@ public class RoutineService {
         return routineRepository.findById(id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
     }
 
+    // TODO 약 개수 반환 수정
     public List<Long> getRoutinesByUserId(Long userId) {
 //        return routineRepository.findDistinctMedicineIdByUserIdAndIsTakenIsFalse(userId);
         return null;
