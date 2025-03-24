@@ -22,6 +22,7 @@ public class MedicineConverter {
                 .itemName(document.getItemName())
                 .entpName(document.getEntpName())
                 .entpSeq(document.getEntpSeq())
+                .chart(document.getChart())
                 .classNo(document.getClassNo())
                 .className(document.getClassName())
                 .ediCode(document.getEdiCode())

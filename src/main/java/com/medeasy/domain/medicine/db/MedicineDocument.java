@@ -32,6 +32,9 @@ public class MedicineDocument {
     @Field(name = "entp_seq", type = FieldType.Keyword)
     private String entpSeq; // 제조사 코드
 
+    @Field(name = "chart", type = FieldType.Text)
+    private String chart; // 성상
+
     @Field(name = "class_no", type = FieldType.Keyword)
     private String classNo; // 분류 코드
 

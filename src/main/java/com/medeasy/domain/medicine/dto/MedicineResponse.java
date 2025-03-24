@@ -20,6 +20,8 @@ public class MedicineResponse {
 
     private String entpSeq; // 제조사 코드
 
+    private String chart; // 성상
+
     private String classNo; // 분류 코드
 
     private String className; // 분류명
