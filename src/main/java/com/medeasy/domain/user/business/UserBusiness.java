@@ -2,6 +2,7 @@ package com.medeasy.domain.user.business;
 
 import com.medeasy.common.annotation.Business;
 import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;

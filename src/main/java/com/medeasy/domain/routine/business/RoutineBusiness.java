@@ -251,6 +251,10 @@ public class RoutineBusiness {
                     .totalQuantity(doseDto.getTotalDays()*doseDto.getDose()*doseDto.getScheduleCount())
                     .userSchedules(userSchedules)
                     .dayOfWeeks(List.of(1,2,3,4,5,6,7))
+                    .totalDays(doseDto.getTotalDays())
+                    .entpName(medicineDocument.getEntpName())
+                    .className(medicineDocument.getClassName())
+                    .etcOtcName(medicineDocument.getEtcOtcName())
                     .build()
                     ;
         }).toList();

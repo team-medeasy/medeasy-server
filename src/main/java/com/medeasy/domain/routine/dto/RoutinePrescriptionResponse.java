@@ -17,9 +17,17 @@ public class RoutinePrescriptionResponse {
 
     private String medicineName;
 
+    private String entpName;
+
     private int dose;
 
     private int totalQuantity;
+
+    private int totalDays;
+
+    private String className;
+
+    private String etcOtcName;
 
     private List<UserScheduleDto> userSchedules;
 
