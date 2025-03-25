@@ -87,4 +87,38 @@ public class MedicineController {
 
         return Api.OK(response);
     }
+
+    @GetMapping("/medicine_id/{medicine_id}")
+    @Operation(summary = "medicine id를 통한 약 조회", description =
+            """
+                약 조회 API
+                
+                medicine_id를 통한 약 데이터 조회
+            """)
+    public Api<MedicineResponse> getMedicineById(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @PathVariable("medicine_id") String medicineId
+    ) {
+        MedicineResponse response=medicineBusiness.getMedicineById(medicineId);
+        log.info("약 id 조회 완료 사용자: {}", userId);
+
+        return Api.OK(response);
+    }
+
+    @GetMapping("/item_seq/{item_seq}")
+    @Operation(summary = "medicine item_seq를 통한 약 조회", description =
+            """
+                약 조회 API
+                
+                item_seq를 통한 약 데이터 조회
+            """)
+    public Api<MedicineResponse> getMedicineByItemSeq(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @PathVariable("item_seq") String itemSeq
+    ) {
+        MedicineResponse response=medicineBusiness.getMedicineByItemSeq(itemSeq);
+        log.info("약 item_seq 조회 완료 사용자: {}", userId);
+
+        return Api.OK(response);
+    }
 }
