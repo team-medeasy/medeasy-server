@@ -10,4 +10,5 @@ public interface MedicineSearchRepository extends ElasticsearchRepository<Medici
     // containing이 prefix 방식으로 저장하는 듯 -> 아님 match_phrase에 가까움
     List<MedicineDocument> findByItemNameContaining(String itemName, Pageable pageable);
 
+    List<MedicineDocument> findByItemSeq(String itemSeq);
 }

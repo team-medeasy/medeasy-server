@@ -61,4 +61,13 @@ public class MedicineDocumentService {
 
         return similarMedicineDocuments;
     }
+
+    public MedicineDocument getMedicineByItemSeq(String itemSeq) {
+        return medicineSearchRepository.findByItemSeq(itemSeq).stream()
+                .findFirst()
+                .orElseThrow(() -> new ApiException(
+                        MedicineErrorCode.NOT_FOUND_MEDICINE,
+                        "item_seq와 일치하는 약이 없습니다.")
+                );
+    }
 }

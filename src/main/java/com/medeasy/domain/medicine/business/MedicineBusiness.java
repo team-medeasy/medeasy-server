@@ -65,4 +65,16 @@ public class MedicineBusiness {
 
         return medicineDocuments.stream().map(medicineConverter::toSimpleResponseWithDocument).toList();
     }
+
+    public MedicineResponse getMedicineById(String medicineId) {
+        MedicineDocument medicineDocument=medicineDocumentService.findMedicineDocumentById(medicineId);
+
+        return medicineConverter.toResponseWithDocument(medicineDocument);
+    }
+
+    public MedicineResponse getMedicineByItemSeq(String itemSeq) {
+        MedicineDocument medicineDocument=medicineDocumentService.getMedicineByItemSeq(itemSeq);
+
+        return medicineConverter.toResponseWithDocument(medicineDocument);
+    }
 }
