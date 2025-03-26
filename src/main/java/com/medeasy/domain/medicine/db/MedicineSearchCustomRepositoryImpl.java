@@ -177,7 +177,8 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
     }
 
     @Override
-    public List<MedicineDocument> findSimilarMedicines(String className, String indications, Pageable pageable) {
+    public List<MedicineDocument> findSimilarMedicines(String className, List<String> indications, Pageable pageable) {
+        String indication = indications.toString();
         Query boolQuery=QueryBuilders.bool(boolQueryBuilder -> {
             boolQueryBuilder.must(queryBuilder ->
                 queryBuilder.term(termQuery ->
@@ -189,7 +190,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
             boolQueryBuilder.should(queryBuilder ->
                 queryBuilder.match(matchQuery->
                     matchQuery.field("indications")
-                            .query(indications)
+                            .query(indication)
                 )
             );
             return boolQueryBuilder;
