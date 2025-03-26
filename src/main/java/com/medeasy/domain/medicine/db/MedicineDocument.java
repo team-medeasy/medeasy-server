@@ -9,6 +9,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.List;
+
 
 @Data
 @Builder
@@ -72,16 +74,16 @@ public class MedicineDocument {
     private String markCodeBackAnal; // 뒷면 마크코드 분석값
 
     @Field(name = "indications", type = FieldType.Text, analyzer = "korean_nori")
-    private String indications; // 효능 및 효과
+    private List<String> indications; // 효능 및 효과
 
     @Field(name = "dosage", type = FieldType.Text, analyzer = "korean_nori")
-    private String dosage; // 복용 방법
+    private List<String> dosage; // 복용 방법
 
     @Field(name = "precautions", type = FieldType.Text, analyzer = "korean_nori")
-    private String precautions; // 주의사항
+    private List<String> precautions; // 주의사항
 
     @Field(name = "side_effects", type = FieldType.Text, analyzer = "korean_nori")
-    private String sideEffects; // 부작용
+    private List<String> sideEffects; // 부작용
 
     @Field(name = "storage_method", type = FieldType.Text, analyzer = "korean_nori")
     private String storageMethod; // 보관 방법
