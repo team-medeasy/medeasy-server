@@ -47,11 +47,11 @@ public class MedicineBusiness {
     /**
      * 메인 검색 로직
      * */
-    public List<MedicineResponse> searchMedicinesWithColor(Long userId, String medicineName, List<MedicineColor> enumColors, List<MedicineShape> enumShapes, int size) {
+    public List<MedicineResponse> searchMedicinesWithColor(Long userId, String medicineName, List<MedicineColor> enumColors, List<MedicineShape> enumShapes, int page, int size) {
         List<String> colors= (enumColors != null && !enumColors.isEmpty()) ? enumColors.stream().map(MedicineColor::getColor).toList() : null;
         List<String> shapes= (enumShapes != null && !enumShapes.isEmpty()) ? enumShapes.stream().map(MedicineShape::getShape).toList() : null;
 
-        List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingNameWithColor(medicineName, colors, shapes, size);
+        List<MedicineDocument> medicineDocuments=medicineDocumentService.searchMedicineContainingNameWithColor(medicineName, colors, shapes, page, size);
 
         return medicineDocuments.stream().map(medicineConverter::toResponseWithDocument).toList();
     }
