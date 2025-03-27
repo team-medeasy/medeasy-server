@@ -53,6 +53,10 @@ public class MedicineController {
             @Parameter(description = "약 모양 필터링 (nullable)", required = false)
             List<MedicineShape> shapes,
 
+            @RequestParam(value = "page", defaultValue = "0", required = false)
+            @Parameter(description = "페이지 번호(default: 0)", required = false)
+            int page,
+
             @RequestParam(value = "size", defaultValue = "10", required = false)
             @Parameter(description = "불러올 데이터 개수 (default: 10)", required = false)
             int size
@@ -63,7 +67,7 @@ public class MedicineController {
         }
 
         // 약 검색
-        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(userId, name, colors, shapes, size);
+        List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(userId, name, colors, shapes, page, size);
         log.info("약 검색 완료 사용자: {}", userId);
 
         return Api.OK(medicineResponses);
