@@ -77,4 +77,10 @@ public class MedicineBusiness {
 
         return medicineConverter.toResponseWithDocument(medicineDocument);
     }
+
+    public List<MedicineResponse> getMedicineListByIds(List<String> medicineIds) {
+        List<MedicineDocument> medicineDocuments=medicineDocumentService.getMedicinesByIds(medicineIds);
+
+        return medicineDocuments.stream().map(medicineConverter::toResponseWithDocument).toList();
+    }
 }

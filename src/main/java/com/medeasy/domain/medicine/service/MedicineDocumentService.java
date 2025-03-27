@@ -70,4 +70,8 @@ public class MedicineDocumentService {
                         "item_seq와 일치하는 약이 없습니다.")
                 );
     }
+
+    public List<MedicineDocument> getMedicinesByIds(List<String> medicineIds) {
+        return medicineSearchCustomRepository.findMedicinesByMget(medicineIds);
+    }
 }

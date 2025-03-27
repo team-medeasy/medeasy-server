@@ -125,4 +125,21 @@ public class MedicineController {
 
         return Api.OK(response);
     }
+
+    @GetMapping("/medicine/list")
+    @Operation(summary = "약 리스트 조회", description =
+            """
+                약 리스트 조회 API
+                
+                medicine id list를 통한 약 정보 리스트 조회 API
+            """)
+    public Api<List<MedicineResponse>> getMedicineListByIds(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @RequestParam("medicine_ids") List<String> medicineIds
+    ) {
+        List<MedicineResponse> response=medicineBusiness.getMedicineListByIds(medicineIds);
+        log.info("약 리스트 조회 완료 사용자: {}", userId);
+
+        return Api.OK(response);
+    }
 }

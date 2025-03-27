@@ -14,4 +14,8 @@ public interface MedicineSearchCustomRepository {
     List<MedicineDocument> findMedicineByEdiCodeAndItemName(String ediCode, String itemName, Pageable pageable);
 
     List<MedicineDocument> findSimilarMedicines(String className, List<String> indications, Pageable pageable);
+
+    List<MedicineDocument> findMedicinesByIds(List<String> ids);
+
+    List<MedicineDocument> findMedicinesByMget(List<String> ids);
 }
