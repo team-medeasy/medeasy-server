@@ -12,5 +12,5 @@ import java.util.List;
 public class UserMedicinesResponse {
     private int medicineCount;
 
-//    private List<Long> medicineIds;
+    private List<Long> medicineIds;
 }

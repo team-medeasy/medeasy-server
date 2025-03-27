@@ -124,10 +124,11 @@ public class UserBusiness {
     @Transactional
     public UserMedicinesResponse getUserMedicinesCount(Long userId) {
         UserEntity userEntity=userService.getUserById(userId);
-        var routineMedicines = routineMedicineService.getDistinctRoutineMedicinesByUserId(userId);
+        var medicineIds = routineMedicineService.getDistinctRoutineMedicinesByUserId(userId);
 
         return UserMedicinesResponse.builder()
-                .medicineCount(routineMedicines.size())
+                .medicineCount(medicineIds.size())
+                .medicineIds(medicineIds)
                 .build()
                 ;
     }
