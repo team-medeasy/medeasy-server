@@ -126,7 +126,7 @@ public class MedicineController {
         return Api.OK(response);
     }
 
-    @GetMapping("/medicine/list")
+    @GetMapping("/list")
     @Operation(summary = "약 리스트 조회", description =
             """
                 약 리스트 조회 API
