@@ -2,23 +2,46 @@ package com.medeasy.domain.medicine.db;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch.core.mget.MultiGetError;
+import co.elastic.clients.elasticsearch.core.mget.MultiGetOperation;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.MedicineErrorCode;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.search.db.SearchHistoryDocument;
+import com.medeasy.domain.search.dto.SearchPopularDto;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.util.EntityUtils;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.RestClient;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.MultiGetItem;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.rmi.ServerError;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Repository
 @AllArgsConstructor
 public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomRepository {
 
     private final ElasticsearchOperations elasticsearchOperations;
+    private final RestClient restClient;
+    private final ObjectMapper objectMapper;
 
     /**
      *
@@ -209,4 +232,56 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                 .map(SearchHit::getContent)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<MedicineDocument> findMedicinesByIds(List<String> ids) {
+        Query idsQuery=QueryBuilders.ids(idsQueryBuilder -> idsQueryBuilder.values(ids));
+
+        NativeQuery nativeQuery=NativeQuery.builder()
+                .withQuery(idsQuery)
+                .build()
+                ;
+
+        SearchHits<MedicineDocument> searchHits = elasticsearchOperations.search(nativeQuery, MedicineDocument.class);
+
+        return searchHits.getSearchHits()
+                .stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MedicineDocument> findMedicinesByMget(List<String> ids) {
+        try {
+            String queryJson = objectMapper.writeValueAsString(Map.of("ids", ids));
+
+            Request request = new Request("GET", "/medicine_data/_mget");
+            request.setJsonEntity(queryJson);
+
+            Response response = restClient.performRequest(request);
+            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+
+            JsonNode root = objectMapper.readTree(responseBody);
+            JsonNode docs = root.path("docs");
+
+            List<MedicineDocument> result = new ArrayList<>();
+            for (JsonNode doc : docs) {
+                if (doc.path("found").asBoolean()) {
+                    JsonNode id = doc.path("_id");
+                    JsonNode source = doc.path("_source");
+
+                    MedicineDocument medicine = objectMapper.treeToValue(source, MedicineDocument.class);
+                    medicine.setId(id.asText());
+                    result.add(medicine);
+                }else{
+                    log.error("잘못된 Medicine Id값 요청: {}", doc.path("_id").asText());
+                }
+            }
+
+            return result;
+        }catch (Exception e){
+            throw new ApiException(ErrorCode.SERVER_ERROR);
+        }
+    }
+
 }
