@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Business
@@ -97,6 +98,10 @@ public class RoutineBusiness {
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
         List<UserScheduleEntity> userScheduleEntities=userEntity.getUserSchedules();
 
+        List<UserScheduleEntity> registerUserScheduleEntities = userScheduleEntities.stream()
+                .filter(userScheduleEntity -> routineRegisterRequest.getUserScheduleIds().contains(userScheduleEntity.getId()))
+                .collect(Collectors.toList());
+
         String nickname=routineRegisterRequest.getNickname() == null ? medicineDocument.getItemName() : routineRegisterRequest.getNickname();
         int dose = routineRegisterRequest.getDose();
 
@@ -107,10 +112,10 @@ public class RoutineBusiness {
         LocalDate currentDate = LocalDate.now();
         List<LocalDate> routineDates=calculateRoutineDates(routineRegisterRequest);
 
-        Map<String, RoutineEntity> routineMap= routineService.getRoutinesWithUserSchedulesAndTakeDates(userId, userScheduleEntities, routineDates);
+        Map<String, RoutineEntity> routineMap= routineService.getRoutinesWithUserSchedulesAndTakeDates(userId, registerUserScheduleEntities, routineDates);
 
         if(routineDates.contains(currentDate)) {
-            for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
+            for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
                 if (LocalTime.now().isAfter(userScheduleEntity.getTakeTime())) {
                     continue;
                 }
@@ -136,7 +141,7 @@ public class RoutineBusiness {
         }
 
         for (LocalDate localDate : routineDates) {
-            for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
+            for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
                 quantity += dose;
                 if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
