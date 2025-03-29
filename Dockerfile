@@ -1,17 +1,20 @@
-# Build stage
-FROM openjdk:21-jdk
+# ======== 1단계: Build Stage ========
+FROM gradle:8.5-jdk21 AS builder
 
-CMD ["./gradlew", "clean", "build"]
+WORKDIR /app
 
-# 환경변수 설정
-ENV CUSTOM_NAME default
+COPY . .
 
-# jar 파일 위치를 변수로 설정
-ARG JAR_FILE=build/libs/*.jar
+# 캐시를 활용한 build 속도 최적화
+RUN gradle clean build -x test
 
-# jar 파일을 컨테이너 내부에 복사
-COPY ${JAR_FILE} app.jar
+# ======== 2단계: Run Stage ========
+FROM eclipse-temurin:21-jre as runtime
 
-# 외부 호스트 8080 포트로 노출
+WORKDIR /app
+
+# 빌드 결과 JAR 복사
+COPY --from=builder /app/build/libs/*.jar app.jar
+
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
