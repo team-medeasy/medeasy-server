@@ -20,5 +20,7 @@ public class AlarmDto {
 
     private LocalDateTime takeTime;
 
+    private String status;
+
     //TODO nok 추가
 }

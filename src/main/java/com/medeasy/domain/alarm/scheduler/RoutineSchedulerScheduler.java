@@ -82,6 +82,7 @@ public class RoutineSchedulerScheduler {
                     .scheduleName(scheduleName)
                     .medicineNames(medicineNames)
                     .takeTime(takeTime)
+                    .status("scheduled")
                     .build()
                     ;
 
@@ -90,6 +91,9 @@ public class RoutineSchedulerScheduler {
                 String redisKey = "alarm";
 
                 long score =  takeTime.toEpochSecond(ZoneOffset.UTC);
+
+                log.info("알람 스케줄러 시간대 디버깅: {}", score);
+
                 String member = userId + ":" + score;
 
                 // redis zset에 추가 - 같은 값은 중복 저장 x
