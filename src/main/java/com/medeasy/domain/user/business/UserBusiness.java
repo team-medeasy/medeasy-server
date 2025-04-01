@@ -15,6 +15,9 @@ import com.medeasy.domain.user.dto.*;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
+import com.medeasy.domain.user_care_mapping.converter.UserCareMappingConverter;
+import com.medeasy.domain.user_care_mapping.db.UserCareMappingEntity;
+import com.medeasy.domain.user_care_mapping.service.UserCareMappingService;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
@@ -31,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -44,12 +48,14 @@ public class UserBusiness {
 
     private final UserService userService;
     private final UserConverter userConverter;
-    private final RoutineService routineService;
     private final PasswordEncoder passwordEncoder;
     private final UserScheduleConverter userScheduleConverter;
     private final UserScheduleService userScheduleService;
     private final RoutineMedicineService routineMedicineService;
     private final AuthBusiness authBusiness;
+
+    private final UserCareMappingService userCareMappingService;
+    private final UserCareMappingConverter userCareMappingConverter;
 
     /**
      * request의 null이 아닌 수정사항만 사용자의 정보에서 업데이트
@@ -187,10 +193,35 @@ public class UserBusiness {
         userScheduleService.deleteById(userScheduleId);
     }
 
-    public void registerCareReceiver(Long userId, RegisterCareReceiverRequest request) {
+    @Transactional
+    public RegisterCareResponse registerCareReceiver(Long userId, RegisterCareRequest request) {
         UserEntity careReceiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
         UserEntity careGiverUserEntity = userService.getUserById(userId);
 
+        UserCareMappingEntity userCareMappingEntity=userCareMappingConverter.registerCareRelation(careGiverUserEntity, careReceiverUserEntity);
+        UserCareMappingEntity newUserCareMappingEntity=userCareMappingService.save(userCareMappingEntity);
 
+        return RegisterCareResponse.builder()
+                .careGiverId(newUserCareMappingEntity.getCareProvider().getId())
+                .careReceiverId(newUserCareMappingEntity.getCareReceiver().getId())
+                .registeredAt(newUserCareMappingEntity.getRegisteredAt())
+                .build()
+                ;
+    }
+
+    @Transactional
+    public RegisterCareResponse registerCareProvider(Long userId, RegisterCareRequest request) {
+        UserEntity careGiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
+        UserEntity careReceiverUserEntity= userService.getUserById(userId);
+
+        UserCareMappingEntity userCareMappingEntity=userCareMappingConverter.registerCareRelation(careGiverUserEntity, careReceiverUserEntity);
+        UserCareMappingEntity newUserCareMappingEntity=userCareMappingService.save(userCareMappingEntity);
+
+        return RegisterCareResponse.builder()
+                .careGiverId(newUserCareMappingEntity.getCareProvider().getId())
+                .careReceiverId(newUserCareMappingEntity.getCareReceiver().getId())
+                .registeredAt(LocalDateTime.now())
+                .build()
+                ;
     }
 }
