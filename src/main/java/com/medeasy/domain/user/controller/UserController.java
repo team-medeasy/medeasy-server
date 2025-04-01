@@ -2,7 +2,9 @@ package com.medeasy.domain.user.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
+import com.medeasy.domain.auth.business.AuthBusiness;
 import com.medeasy.domain.user.business.UserBusiness;
+import com.medeasy.domain.user.dto.RegisterCareReceiverRequest;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
@@ -24,6 +26,7 @@ import java.util.List;
 public class UserController {
 
     private final UserBusiness userBusiness;
+    private final AuthBusiness authBusiness;
 
     @Operation(summary = "사용자 루틴 스케줄 수정 api v2", description =
             """
@@ -223,5 +226,23 @@ public class UserController {
         return Api.OK(response);
     }
 
+    @Operation(summary = "루틴 관리 대상 등록 API", description =
+            """
+                루틴 관리 대상 등록 API:
+                
+                루틴 정보와 알림을 받고자 하는 상대를 등록
+            
+             
+           
+            """
+    )
+    @PostMapping("/care_receiver")
+    public Api<Object> registerCareGiver(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @Valid @RequestBody RegisterCareReceiverRequest request
+    ) {
+        userBusiness.registerCareReceiver(userId, request);
 
+        return null;
+    }
 }

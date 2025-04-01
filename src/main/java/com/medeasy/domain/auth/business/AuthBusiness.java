@@ -76,6 +76,16 @@ public class AuthBusiness {
         return userConverter.toDto(user);
     }
 
+    // 사용자 비밀번호 검증
+    public UserEntity validateUser(String email, String password) {
+        UserEntity user = userService.getUserByEmail(email);
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new ApiException(UserErrorCode.USER_NOT_FOUNT);
+        }
+        return user;
+    }
+
+
     // 토큰 발급
     public TokenResponse issueToken(UserDto userDto) {
         Map<String, Object> claims = new HashMap<>();
@@ -110,7 +120,7 @@ public class AuthBusiness {
         }
 
         try {
-            redisTemplateForJwt.opsForSet().add(fcmKey, fcmToken);
+            redisTemplateForJwt.opsForValue().set(fcmKey, fcmToken);
         }catch (Exception e){
             log.error("사용자 {} 로그인 중 fcm token 저장 오류 발생: {}", userId, e.getMessage());
         }

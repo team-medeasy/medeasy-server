@@ -16,7 +16,6 @@ public class UserConverter {
                 .password(userRegisterRequest.getPassword())
                 .birthday(userRegisterRequest.getBirthday())
                 .gender(userRegisterRequest.getGender())
-                .nok(null)
                 .build()
                 ;
     }
