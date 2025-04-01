@@ -223,5 +223,22 @@ public class UserController {
         return Api.OK(response);
     }
 
+    @Operation(summary = "루틴 관리 대상 등록 API", description =
+            """
+            루틴 관리 대상 등록 API:
+            
+            루틴 정보와 알림을 받고자 하는 상대를 등록 
+           
+            """
+    )
+    @PostMapping("/register/care_giver")
+    public Api<Object> registerNOK(
+            @Parameter(hidden = true)
+            @UserSession Long userId
+    ) {
+        var response=userBusiness.getUserInfo(userId);
+        log.info("회원 정보 조회 완료 사용자: {}", userId);
 
+        return Api.OK(response);
+    }
 }

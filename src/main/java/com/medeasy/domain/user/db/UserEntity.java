@@ -42,7 +42,6 @@ public class UserEntity {
     @Column(name = "registered_at")
     private Date registeredAt;
 
-    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "logined_at")
     private LocalDateTime loginedAt;
@@ -51,12 +50,12 @@ public class UserEntity {
     private Date birthday;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "nok_id")
-    private UserEntity nok;
+    @JoinColumn(name = "care_giver")
+    private UserEntity careGiver;
 
     @Builder.Default
-    @OneToMany(mappedBy = "nok")
-    private List<UserEntity> subUsers = new ArrayList<>();
+    @OneToMany(mappedBy = "careGiver")
+    private List<UserEntity> careReceivers = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
