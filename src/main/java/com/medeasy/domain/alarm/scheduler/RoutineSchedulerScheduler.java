@@ -48,63 +48,63 @@ public class RoutineSchedulerScheduler {
      * 현재시간부터 한시간 후에 해당하는 루틴들을 수집
      * 관련 정보들을 Alarm Redis에 저장한다.
      * */
-    @Scheduled(fixedRate = 600000)
-    public void saveRoutineInAlarmDatabase() {
-        /*List<RoutineEntity> routineEntities=routineRepository.findAllByTakeDateAndTakeTimeBetweenWithMedicine(
-                LocalDate.of(2025, 3, 24),
-                LocalTime.of(8, 0, 0),
-                LocalTime.of(22, 0, 0)
-            );*/
-        List<RoutineEntity> routineEntities=routineRepository.findAllByTakeDateAndTakeTimeBetweenWithMedicine(
-                LocalDate.now(),
-                LocalTime.now(),
-                LocalTime.now().plusHours(1)
-        );
-
-        log.info("routine scheduling check: {}", routineEntities.size());
-
-        /**
-         * 반환해야 할 값 user_id, schedule_name, medicineNames, take_time, nok_id
-         * */
-        routineEntities.forEach(routine -> {
-            Long userId = routine.getUser().getId();
-
-            String scheduleName=routine.getUserSchedule().getName();
-
-            List<String> medicineNames = routine.getRoutineMedicines().stream().map(routineMedicine -> {
-                return medicineDocumentService.findMedicineDocumentById(routineMedicine.getMedicineId()).getItemName();
-            }).toList();
-
-            LocalDateTime takeTime= LocalDateTime.of(routine.getTakeDate(), routine.getUserSchedule().getTakeTime());
-
-            AlarmDto alarmData=AlarmDto.builder()
-                    .userId(userId)
-                    .scheduleName(scheduleName)
-                    .medicineNames(medicineNames)
-                    .takeTime(takeTime)
-                    .status("scheduled")
-                    .build()
-                    ;
-
-            try {
-                String alarmDataJson = objectMapper.writeValueAsString(alarmData);
-                String redisKey = "alarm";
-
-                long score =  takeTime.toEpochSecond(ZoneOffset.UTC);
-
-                log.info("알람 스케줄러 시간대 디버깅: {}", score);
-
-                String member = userId + ":" + score;
-
-                // redis zset에 추가 - 같은 값은 중복 저장 x
-                redisTemplateAlarm.opsForZSet().add(redisKey, member, score);
-                // zset 멤버에 해당하는 json 데이터 저장
-                redisTemplateAlarm.opsForValue().set("alarm_data:" + member, alarmDataJson);
-
-                log.info("Saved alarm data in Redis ZSET: {}", alarmDataJson);
-            }catch (JsonProcessingException e){
-                throw new ApiException(SchedulerError.SERVER_ERROR, "JSON PROCESSING ERROR");
-            }
-        });
-    }
+//    @Scheduled(fixedRate = 600000)
+//    public void saveRoutineInAlarmDatabase() {
+//        /*List<RoutineEntity> routineEntities=routineRepository.findAllByTakeDateAndTakeTimeBetweenWithMedicine(
+//                LocalDate.of(2025, 3, 24),
+//                LocalTime.of(8, 0, 0),
+//                LocalTime.of(22, 0, 0)
+//            );*/
+//        List<RoutineEntity> routineEntities=routineRepository.findAllByTakeDateAndTakeTimeBetweenWithMedicine(
+//                LocalDate.now(),
+//                LocalTime.now(),
+//                LocalTime.now().plusHours(1)
+//        );
+//
+//        log.info("routine scheduling check: {}", routineEntities.size());
+//
+//        /**
+//         * 반환해야 할 값 user_id, schedule_name, medicineNames, take_time, nok_id
+//         * */
+//        routineEntities.forEach(routine -> {
+//            Long userId = routine.getUser().getId();
+//
+//            String scheduleName=routine.getUserSchedule().getName();
+//
+//            List<String> medicineNames = routine.getRoutineMedicines().stream().map(routineMedicine -> {
+//                return medicineDocumentService.findMedicineDocumentById(routineMedicine.getMedicineId()).getItemName();
+//            }).toList();
+//
+//            LocalDateTime takeTime= LocalDateTime.of(routine.getTakeDate(), routine.getUserSchedule().getTakeTime());
+//
+//            AlarmDto alarmData=AlarmDto.builder()
+//                    .userId(userId)
+//                    .scheduleName(scheduleName)
+//                    .medicineNames(medicineNames)
+//                    .takeTime(takeTime)
+//                    .status("scheduled")
+//                    .build()
+//                    ;
+//
+//            try {
+//                String alarmDataJson = objectMapper.writeValueAsString(alarmData);
+//                String redisKey = "alarm";
+//
+//                long score =  takeTime.toEpochSecond(ZoneOffset.UTC);
+//
+//                log.info("알람 스케줄러 시간대 디버깅: {}", score);
+//
+//                String member = userId + ":" + score;
+//
+//                // redis zset에 추가 - 같은 값은 중복 저장 x
+//                redisTemplateAlarm.opsForZSet().add(redisKey, member, score);
+//                // zset 멤버에 해당하는 json 데이터 저장
+//                redisTemplateAlarm.opsForValue().set("alarm_data:" + member, alarmDataJson);
+//
+//                log.info("Saved alarm data in Redis ZSET: {}", alarmDataJson);
+//            }catch (JsonProcessingException e){
+//                throw new ApiException(SchedulerError.SERVER_ERROR, "JSON PROCESSING ERROR");
+//            }
+//        });
+//    }
 }
