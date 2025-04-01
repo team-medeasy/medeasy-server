@@ -47,7 +47,6 @@ public class UserBusiness {
 
     private final UserService userService;
     private final UserConverter userConverter;
-    private final RoutineService routineService;
     private final PasswordEncoder passwordEncoder;
     private final UserScheduleConverter userScheduleConverter;
     private final UserScheduleService userScheduleService;
@@ -193,6 +192,7 @@ public class UserBusiness {
         userScheduleService.deleteById(userScheduleId);
     }
 
+    @Transactional
     public RegisterCareResponse registerCareReceiver(Long userId, RegisterCareReceiverRequest request) {
         UserEntity careReceiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
         UserEntity careGiverUserEntity = userService.getUserById(userId);

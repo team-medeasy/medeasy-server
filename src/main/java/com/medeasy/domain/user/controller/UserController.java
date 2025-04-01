@@ -2,6 +2,8 @@ package com.medeasy.domain.user.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
+import com.medeasy.common.error.UserErrorCode;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.business.AuthBusiness;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.RegisterCareReceiverRequest;
@@ -16,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -245,12 +248,16 @@ public class UserController {
             """
     )
     @PostMapping("/care_receiver")
-    public Api<RegisterCareResponse> registerCareGiver(
+    public Api<RegisterCareResponse> registerCareReceiver(
             @Parameter(hidden = true) @UserSession Long userId,
             @Valid @RequestBody RegisterCareReceiverRequest request
     ) {
-        var response=userBusiness.registerCareReceiver(userId, request);
+        try {
+            var response=userBusiness.registerCareReceiver(userId, request);
+            return Api.OK(response);
 
-        return Api.OK(response);
+        }catch (DataIntegrityViolationException e){
+            throw new ApiException(UserErrorCode.DUPLICATE_CARE_ERROR);
+        }
     }
 }
