@@ -5,6 +5,7 @@ import com.medeasy.common.api.Api;
 import com.medeasy.domain.auth.business.AuthBusiness;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.RegisterCareReceiverRequest;
+import com.medeasy.domain.user.dto.RegisterCareResponse;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
@@ -230,19 +231,26 @@ public class UserController {
             """
                 루틴 관리 대상 등록 API:
                 
-                루틴 정보와 알림을 받고자 하는 상대를 등록
+                루틴 정보와 알림을 받고자 하는 피보호자를 등록
             
-             
+                피보호자의 이메일과 비밀번호를 입력하여 관계 검증 
            
+            응답 값: 
+                
+            care_giver_id: 보호자 id 
+            
+            care_receiver_id: 피보호자 id
+            
+            registered_at: 관계가 등록된 시간 
             """
     )
     @PostMapping("/care_receiver")
-    public Api<Object> registerCareGiver(
+    public Api<RegisterCareResponse> registerCareGiver(
             @Parameter(hidden = true) @UserSession Long userId,
             @Valid @RequestBody RegisterCareReceiverRequest request
     ) {
-        userBusiness.registerCareReceiver(userId, request);
+        var response=userBusiness.registerCareReceiver(userId, request);
 
-        return null;
+        return Api.OK(response);
     }
 }

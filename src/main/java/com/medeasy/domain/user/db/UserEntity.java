@@ -51,12 +51,12 @@ public class UserEntity {
     private Date birthday;
 
     @Builder.Default
-    @OneToMany(mappedBy = "careGiver")
+    @OneToMany(mappedBy = "careProvider")
     private List<UserCareMappingEntity> careReceivers=new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "careReceiver")
-    private List<UserCareMappingEntity> careGivers = new ArrayList<>();
+    private List<UserCareMappingEntity> careProviders = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)

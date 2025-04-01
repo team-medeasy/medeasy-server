@@ -26,8 +26,8 @@ public class UserCareMappingEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "care_giver_id")
-    private UserEntity careGiver;
+    @JoinColumn(name = "care_provider_id")
+    private UserEntity careProvider;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "care_receiver_id")
