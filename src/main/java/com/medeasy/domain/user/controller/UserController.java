@@ -6,7 +6,7 @@ import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.business.AuthBusiness;
 import com.medeasy.domain.user.business.UserBusiness;
-import com.medeasy.domain.user.dto.RegisterCareReceiverRequest;
+import com.medeasy.domain.user.dto.RegisterCareRequest;
 import com.medeasy.domain.user.dto.RegisterCareResponse;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
@@ -230,9 +230,9 @@ public class UserController {
         return Api.OK(response);
     }
 
-    @Operation(summary = "루틴 관리 대상 등록 API", description =
+    @Operation(summary = "루틴 관리 대상(피보호자) 등록 API", description =
             """
-                루틴 관리 대상 등록 API:
+                루틴 관리 대상(피보호자) 등록 API:
                 
                 루틴 정보와 알림을 받고자 하는 피보호자를 등록
             
@@ -250,10 +250,41 @@ public class UserController {
     @PostMapping("/care_receiver")
     public Api<RegisterCareResponse> registerCareReceiver(
             @Parameter(hidden = true) @UserSession Long userId,
-            @Valid @RequestBody RegisterCareReceiverRequest request
+            @Valid @RequestBody RegisterCareRequest request
     ) {
         try {
             var response=userBusiness.registerCareReceiver(userId, request);
+            return Api.OK(response);
+
+        }catch (DataIntegrityViolationException e){
+            throw new ApiException(UserErrorCode.DUPLICATE_CARE_ERROR);
+        }
+    }
+
+    @Operation(summary = "루틴 관리 보호자 등록 API", description =
+            """
+                루틴 관리 보호자 등록 API:
+                
+                루틴 정보와 알림을 제공할 보호자 등록
+            
+                보호자 이메일과 비밀번호를 입력하여 관계 검증 
+           
+            응답 값: 
+                
+            care_giver_id: 보호자 id 
+            
+            care_receiver_id: 피보호자 id
+            
+            registered_at: 관계가 등록된 시간 
+            """
+    )
+    @PostMapping("/care_provider")
+    public Api<RegisterCareResponse> registerCareProvider(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @Valid @RequestBody RegisterCareRequest request
+    ) {
+        try {
+            var response=userBusiness.registerCareProvider(userId, request);
             return Api.OK(response);
 
         }catch (DataIntegrityViolationException e){

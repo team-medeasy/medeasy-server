@@ -15,5 +15,5 @@ public class RegisterCareResponse {
 
     private Long careReceiverId;
 
-    private LocalDateTime registerAt;
+    private LocalDateTime registeredAt;
 }

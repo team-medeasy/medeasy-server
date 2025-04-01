@@ -4,6 +4,8 @@ import com.medeasy.common.annotation.Converter;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_care_mapping.db.UserCareMappingEntity;
 
+import java.time.LocalDateTime;
+
 @Converter
 public class UserCareMappingConverter {
 
@@ -11,6 +13,7 @@ public class UserCareMappingConverter {
         return UserCareMappingEntity.builder()
                 .careReceiver(careReceiver)
                 .careProvider(careProvider)
+                .registeredAt(LocalDateTime.now())
                 .build()
                 ;
     }

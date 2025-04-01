@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -193,7 +194,7 @@ public class UserBusiness {
     }
 
     @Transactional
-    public RegisterCareResponse registerCareReceiver(Long userId, RegisterCareReceiverRequest request) {
+    public RegisterCareResponse registerCareReceiver(Long userId, RegisterCareRequest request) {
         UserEntity careReceiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
         UserEntity careGiverUserEntity = userService.getUserById(userId);
 
@@ -203,10 +204,24 @@ public class UserBusiness {
         return RegisterCareResponse.builder()
                 .careGiverId(newUserCareMappingEntity.getCareProvider().getId())
                 .careReceiverId(newUserCareMappingEntity.getCareReceiver().getId())
-                .registerAt(newUserCareMappingEntity.getRegisteredAt())
+                .registeredAt(newUserCareMappingEntity.getRegisteredAt())
                 .build()
                 ;
     }
 
+    @Transactional
+    public RegisterCareResponse registerCareProvider(Long userId, RegisterCareRequest request) {
+        UserEntity careGiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
+        UserEntity careReceiverUserEntity= userService.getUserById(userId);
 
+        UserCareMappingEntity userCareMappingEntity=userCareMappingConverter.registerCareRelation(careGiverUserEntity, careReceiverUserEntity);
+        UserCareMappingEntity newUserCareMappingEntity=userCareMappingService.save(userCareMappingEntity);
+
+        return RegisterCareResponse.builder()
+                .careGiverId(newUserCareMappingEntity.getCareProvider().getId())
+                .careReceiverId(newUserCareMappingEntity.getCareReceiver().getId())
+                .registeredAt(LocalDateTime.now())
+                .build()
+                ;
+    }
 }
