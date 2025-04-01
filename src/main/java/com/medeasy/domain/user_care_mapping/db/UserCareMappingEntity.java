@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
 @Table(name = "user_care_mapping")
 @SequenceGenerator(
         name = "user_care_mapping_seq_generator",

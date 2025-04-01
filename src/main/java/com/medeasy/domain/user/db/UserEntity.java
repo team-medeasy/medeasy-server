@@ -1,6 +1,7 @@
 package com.medeasy.domain.user.db;
 
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.user_care_mapping.db.UserCareMappingEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,13 +50,13 @@ public class UserEntity {
     @Temporal(TemporalType.DATE)
     private Date birthday;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "care_giver")
-    private UserEntity careGiver;
-
     @Builder.Default
     @OneToMany(mappedBy = "careGiver")
-    private List<UserEntity> careReceivers = new ArrayList<>();
+    private List<UserCareMappingEntity> careReceivers=new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "careReceiver")
+    private List<UserCareMappingEntity> careGivers = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
