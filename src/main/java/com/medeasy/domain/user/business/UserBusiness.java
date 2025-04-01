@@ -6,6 +6,7 @@ import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
+import com.medeasy.domain.auth.business.AuthBusiness;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.service.RoutineService;
@@ -48,6 +49,7 @@ public class UserBusiness {
     private final UserScheduleConverter userScheduleConverter;
     private final UserScheduleService userScheduleService;
     private final RoutineMedicineService routineMedicineService;
+    private final AuthBusiness authBusiness;
 
     /**
      * request의 null이 아닌 수정사항만 사용자의 정보에서 업데이트
@@ -183,5 +185,12 @@ public class UserBusiness {
                 .ifPresent(routine-> {throw new ApiException(SchedulerError.FOREIGN_KEY_CONSTRAINT);} );
 
         userScheduleService.deleteById(userScheduleId);
+    }
+
+    public void registerCareReceiver(Long userId, RegisterCareReceiverRequest request) {
+        UserEntity careReceiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
+        UserEntity careGiverUserEntity = userService.getUserById(userId);
+
+
     }
 }
