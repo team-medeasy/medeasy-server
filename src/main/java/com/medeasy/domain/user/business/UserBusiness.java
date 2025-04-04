@@ -17,6 +17,8 @@ import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_care_mapping.converter.UserCareMappingConverter;
 import com.medeasy.domain.user_care_mapping.db.UserCareMappingEntity;
+import com.medeasy.domain.user_care_mapping.db.UserCareMappingRepository;
+import com.medeasy.domain.user_care_mapping.dto.CareReceiverResponse;
 import com.medeasy.domain.user_care_mapping.service.UserCareMappingService;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
@@ -56,6 +58,7 @@ public class UserBusiness {
 
     private final UserCareMappingService userCareMappingService;
     private final UserCareMappingConverter userCareMappingConverter;
+    private final UserCareMappingRepository userCareMappingRepository;
 
     /**
      * request의 null이 아닌 수정사항만 사용자의 정보에서 업데이트
@@ -223,5 +226,17 @@ public class UserBusiness {
                 .registeredAt(LocalDateTime.now())
                 .build()
                 ;
+    }
+
+    @Transactional
+    public List<CareReceiverResponse> getUserCareReceivers(Long userId) {
+        List<UserCareMappingEntity> careReceivers=userCareMappingService.findAllCareReceivers(userId);
+
+        return careReceivers.stream().map(userCareMappingConverter::toCareReceiverResponse).toList();
+    }
+
+    @Transactional
+    public void deleteUserReceiver(Long userId, Long receiverId) {
+        userCareMappingService.deleteCareReceiver(userId, receiverId);
     }
 }

@@ -1,3 +1,4 @@
+deploy-spring.sh
 src/main/resources/firebase/
 logs
 docker-compose.yaml

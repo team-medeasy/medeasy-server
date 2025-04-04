@@ -5,6 +5,8 @@ import com.medeasy.domain.user_care_mapping.db.UserCareMappingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserCareMappingService {
@@ -13,5 +15,13 @@ public class UserCareMappingService {
 
     public UserCareMappingEntity save(UserCareMappingEntity userCareMappingEntity) {
         return userCareMappingRepository.save(userCareMappingEntity);
+    }
+
+    public List<UserCareMappingEntity> findAllCareReceivers(Long userId){
+        return userCareMappingRepository.findAllByCareProviderIdWithFetchJoin(userId);
+    }
+
+    public void deleteCareReceiver(Long userId, Long receiverId) {
+        userCareMappingRepository.deleteByCareProviderIdAndCareReceiverId(userId, receiverId);
     }
 }
