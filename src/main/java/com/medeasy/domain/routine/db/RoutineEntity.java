@@ -1,5 +1,7 @@
 package com.medeasy.domain.routine.db;
 
+import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
+import com.medeasy.domain.routine_group_mapping.db.RoutineGroupMappingEntity;
 import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
@@ -43,6 +45,10 @@ public class RoutineEntity {
     @Builder.Default
     @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<RoutineMedicineEntity> routineMedicines = new ArrayList<>();
+
+    @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Builder.Default
+    private List<RoutineGroupMappingEntity> routineGroupMappings=new ArrayList<>();
 
     /*
     * CascadeType.ALL 부모 엔티티의 업데이트를 자식에서도 따라감.
