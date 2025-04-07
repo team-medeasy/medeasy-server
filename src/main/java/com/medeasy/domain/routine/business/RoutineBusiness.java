@@ -89,6 +89,9 @@ public class RoutineBusiness {
      * 단일 약 루틴 저장
      *
      * 3/16 업데이트
+     *
+     *
+     * TODO 요청에 넣은 스케줄이 내 스케줄이 아닌 경우 오류 리턴
      * */
     @Transactional
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {

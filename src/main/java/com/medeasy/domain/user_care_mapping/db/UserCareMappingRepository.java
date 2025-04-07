@@ -14,4 +14,7 @@ public interface UserCareMappingRepository extends JpaRepository<UserCareMapping
     List<UserCareMappingEntity> findAllByCareProviderIdWithFetchJoin(@Param("userId") Long userId);
 
     void deleteByCareProviderIdAndCareReceiverId(Long userId, Long careProviderId);
+
+    @Query("SELECT u.careProvider.id FROM UserCareMappingEntity u WHERE u.careReceiver.id = :careReceiverId")
+    List<Long> findCareProviderIdsByCareReceiverId(@Param("careReceiverId") Long careReceiverId);
 }
