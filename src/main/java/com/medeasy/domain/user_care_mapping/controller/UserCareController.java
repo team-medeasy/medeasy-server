@@ -1,4 +1,4 @@
-package com.medeasy.domain.user_care_mapping.care;
+package com.medeasy.domain.user_care_mapping.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
