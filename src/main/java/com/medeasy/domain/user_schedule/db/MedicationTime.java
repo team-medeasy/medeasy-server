@@ -9,6 +9,12 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public enum MedicationTime {
 
+    MORNING("아침", LocalTime.of(8, 30)),
+    LUNCH("점심", LocalTime.of(12, 0)),
+    DINNER("저녁", LocalTime.of(18, 30)),
+    BED_TIME("자기 전", LocalTime.of(22, 0)),
+
+
     MORNING_BEFORE_MEAL("아침 식사 전", LocalTime.of(7, 30)),
     MORNING_AFTER_MEAL("아침 식사 후", LocalTime.of(8, 30)),
     LUNCH_BEFORE_MEAL("점심 식사 전", LocalTime.of(11, 30)),

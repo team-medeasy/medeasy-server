@@ -18,13 +18,14 @@ public class UserScheduleBusiness {
     private final UserScheduleService userScheduleService;
     private final UserScheduleConverter userScheduleConverter;
 
-    public List<UserScheduleGroupDto> registerUserDefaultSchedule(UserEntity userEntity) {
+    public void registerUserDefaultSchedule(UserEntity userEntity) {
 
         // 기본 아침, 점심, 식사 후 스케줄 등록
         List<MedicationTime> defaultMedicationTimes = List.of(
-                    MedicationTime.MORNING_AFTER_MEAL,
-                    MedicationTime.LUNCH_AFTER_MEAL,
-                    MedicationTime.DINNER_AFTER_MEAL
+                    MedicationTime.MORNING,
+                    MedicationTime.LUNCH,
+                    MedicationTime.DINNER,
+                    MedicationTime.BED_TIME
                 );
 
         List<UserScheduleEntity> userScheduleEntities=defaultMedicationTimes.stream().map(defaultMedicationTime -> {
@@ -37,7 +38,6 @@ public class UserScheduleBusiness {
         }).toList();
 
         List<UserScheduleEntity> newUserScheduleEntities=userScheduleService.saveAll(userScheduleEntities);
-
-        return newUserScheduleEntities.stream().map(userScheduleConverter::toGroupDto).toList();
+//        return newUserScheduleEntities.stream().map(userScheduleConverter::toGroupDto).toList();
     }
 }
