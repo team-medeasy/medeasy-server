@@ -7,26 +7,21 @@ import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.ai.dto.AiResponseDto;
 import com.medeasy.domain.ai.service.AiService;
-import com.medeasy.domain.medicine.converter.MedicineConverter;
 import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.service.MedicineDocumentService;
-import com.medeasy.domain.medicine.service.MedicineService;
 import com.medeasy.domain.ocr.dto.OcrParsedDto;
 import com.medeasy.domain.ocr.service.OcrServiceByMultipart;
-import com.medeasy.domain.routine.converter.RoutineConverter;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
+import com.medeasy.domain.routine_group.service.RoutineGroupService;
 import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.routine_medicine.service.RoutineMedicineService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
-import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,47 +37,37 @@ import java.util.stream.Collectors;
 @Slf4j
 @Business
 public class RoutineBusiness {
-    private final RoutineService routineService;
-    private final UserService userService;
-    private final MedicineService medicineService;
-    private final MedicineDocumentService medicineDocumentService;
-    private final RoutineConverter routineConverter;
-    private final OcrServiceByMultipart ocrService;
-    private final AiService aiService;
-    private final MedicineConverter medicineConverter;
-    private final StringRedisTemplate redisAlarmTemplate;
     private final ObjectMapper objectMapper;
 
-    private final UserScheduleService userScheduleService;
+    private final UserService userService;
+    private final RoutineService routineService;
+    private final RoutineGroupService routineGroupService;
+    private final MedicineDocumentService medicineDocumentService;
+
+    private final OcrServiceByMultipart ocrService;
+    private final AiService aiService;
+
     private final RoutineMedicineService routineMedicineService;
     private final UserScheduleConverter userScheduleConverter;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
             RoutineService routineService,
+            RoutineGroupService routineGroupService,
             UserService userService,
-            MedicineService medicineService,
             MedicineDocumentService medicineDocumentService,
-            RoutineConverter routineConverter,
             OcrServiceByMultipart ocrService,
             AiService aiService,
-            MedicineConverter medicineConverter,
-            @Qualifier("alarmRedisTemplate") StringRedisTemplate redisAlarmTemplate, // @Qualifier 적용
             ObjectMapper objectMapper,
-            UserScheduleService userScheduleService,
             RoutineMedicineService routineMedicineService,
-            UserScheduleConverter userScheduleConverter) {
+            UserScheduleConverter userScheduleConverter
+    ) {
         this.routineService = routineService;
         this.userService = userService;
-        this.medicineService = medicineService;
         this.medicineDocumentService = medicineDocumentService;
-        this.routineConverter = routineConverter;
         this.ocrService = ocrService;
         this.aiService = aiService;
-        this.medicineConverter = medicineConverter;
-        this.redisAlarmTemplate = redisAlarmTemplate;
         this.objectMapper = objectMapper;
-        this.userScheduleService = userScheduleService;
         this.routineMedicineService = routineMedicineService;
         this.userScheduleConverter = userScheduleConverter;
     }
@@ -101,6 +86,7 @@ public class RoutineBusiness {
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
         List<UserScheduleEntity> userScheduleEntities=userEntity.getUserSchedules();
 
+        // request 에 포함된 schedule 정보 가져오기
         List<UserScheduleEntity> registerUserScheduleEntities = userScheduleEntities.stream()
                 .filter(userScheduleEntity -> routineRegisterRequest.getUserScheduleIds().contains(userScheduleEntity.getId()))
                 .collect(Collectors.toList());
@@ -119,7 +105,9 @@ public class RoutineBusiness {
         LocalDate currentDate = LocalDate.now();
         List<LocalDate> routineDates=calculateRoutineDates(routineRegisterRequest);
 
-        Map<String, RoutineEntity> routineMap= routineService.getRoutinesWithUserSchedulesAndTakeDates(userId, registerUserScheduleEntities, routineDates);
+        // 사용할 루틴 미리 조회 및 생성
+        List<RoutineEntity> routines= routineService.getOrCreateRoutines(userId, registerUserScheduleEntities, routineDates);
+        Map<String, RoutineEntity> routineMap = routineService.toRoutineMap(routines);
 
         if(routineDates.contains(currentDate)) {
             for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
@@ -144,9 +132,11 @@ public class RoutineBusiness {
                 routineMedicineEntities.add(routineMedicineEntity);
             }
 
+            // 오늘 날짜 등록 후 리스트 제외
             routineDates.remove(currentDate);
         }
 
+        // 오늘 날짜를 제외한 루틴 생성
         for (LocalDate localDate : routineDates) {
             for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
                 quantity += dose;
@@ -166,6 +156,8 @@ public class RoutineBusiness {
             }
         }
         routineMedicineService.saveAll(routineMedicineEntities);
+
+
     }
 
     @Transactional
