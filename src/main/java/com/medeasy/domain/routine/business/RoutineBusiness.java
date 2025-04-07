@@ -63,6 +63,7 @@ public class RoutineBusiness {
             UserScheduleConverter userScheduleConverter
     ) {
         this.routineService = routineService;
+        this.routineGroupService = routineGroupService;
         this.userService = userService;
         this.medicineDocumentService = medicineDocumentService;
         this.ocrService = ocrService;
@@ -157,7 +158,7 @@ public class RoutineBusiness {
         }
         routineMedicineService.saveAll(routineMedicineEntities);
 
-
+        routineGroupService.mappingRoutineGroup(medicineDocument.getId(), routines);
     }
 
     @Transactional
