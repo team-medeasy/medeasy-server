@@ -85,5 +85,4 @@ jobs:
           key: ${{ secrets.MEDEASY_PEM }}
           script: |
             sh deploy-spring.sh
-          verbose: true
 
