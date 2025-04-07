@@ -3,6 +3,7 @@ package com.medeasy.domain.routine.business;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.annotation.Business;
 import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.ai.dto.AiResponseDto;
 import com.medeasy.domain.ai.service.AiService;
@@ -91,7 +92,6 @@ public class RoutineBusiness {
      * 3/16 업데이트
      *
      *
-     * TODO 요청에 넣은 스케줄이 내 스케줄이 아닌 경우 오류 리턴
      * */
     @Transactional
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
@@ -104,6 +104,10 @@ public class RoutineBusiness {
         List<UserScheduleEntity> registerUserScheduleEntities = userScheduleEntities.stream()
                 .filter(userScheduleEntity -> routineRegisterRequest.getUserScheduleIds().contains(userScheduleEntity.getId()))
                 .collect(Collectors.toList());
+
+        if(registerUserScheduleEntities.size() != routineRegisterRequest.getUserScheduleIds().size()){
+            throw new ApiException(SchedulerError.NOT_FOUND);
+        }
 
         String nickname=routineRegisterRequest.getNickname() == null ? medicineDocument.getItemName() : routineRegisterRequest.getNickname();
         int dose = routineRegisterRequest.getDose();
