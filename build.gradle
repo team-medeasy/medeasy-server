@@ -38,6 +38,10 @@ dependencies {
 	runtimeOnly 'com.h2database:h2'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+	implementation "com.querydsl:querydsl-jpa"
+	annotationProcessor("com.querydsl:querydsl-apt:5.0.1:jpa")
+	annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+
 	// 엘라스틱 서치 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch:3.4.2'
 	implementation 'co.elastic.clients:elasticsearch-java:8.15.0' // 최신 Elasticsearch 클라이언트
