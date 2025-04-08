@@ -265,13 +265,13 @@ public class UserController {
             day_of_weeks: 복용 주기 1~7 (월~일)
             """
     )
-    @GetMapping("/medicine/current")
+    @GetMapping("/medicines/current")
     public Api<Object> getUserMedicinesList(
             @Parameter(hidden = true)
             @UserSession Long userId
     ) {
         var response=routineBusiness.getCurrentRoutineList(userId, null, null);
-        log.info("회원 정보 조회 완료 사용자: {}", userId);
+        log.info("회원 현재 복용 중인 약 리스트 조회 사용자: {}", userId);
 
         return Api.OK(response);
     }

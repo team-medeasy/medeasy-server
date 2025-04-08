@@ -327,7 +327,7 @@ public class RoutineBusiness {
         }
     }
 
-
+    @Transactional
     public List<CurrentRoutineMedicineResponse> getCurrentRoutineList(Long userId, LocalDate startDate, LocalDate endDate) {
         // 현재 복용 중인 약 복용 기한 가져오기 (routine_group_id, start_date, end_date)
         List<RoutineGroupDateRangeDto> routineGroupDateRangeDtos=routineQueryRepository.findStartAndEndDateRangeByGroup(userId, startDate, endDate);
