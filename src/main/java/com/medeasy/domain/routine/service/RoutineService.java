@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.error.RoutineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.routine.db.RoutineQueryRepository;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
 import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
 public class RoutineService {
 
     private final RoutineRepository routineRepository;
+    private final RoutineQueryRepository routineQueryRepository;
+
     private final RoutineMedicineRepository routineMedicineRepository;
     private final ObjectMapper objectMapper;
     private final RoutineMedicineConverter routineMedicineConverter;

@@ -5,6 +5,7 @@ import com.medeasy.common.api.Api;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.business.AuthBusiness;
+import com.medeasy.domain.routine.business.RoutineBusiness;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.RegisterCareRequest;
 import com.medeasy.domain.user.dto.RegisterCareResponse;
@@ -31,6 +32,7 @@ public class UserController {
 
     private final UserBusiness userBusiness;
     private final AuthBusiness authBusiness;
+    private final RoutineBusiness routineBusiness;
 
     @Operation(summary = "사용자 루틴 스케줄 수정 api v2", description =
             """
@@ -225,6 +227,50 @@ public class UserController {
             @UserSession Long userId
     ) {
         var response=userBusiness.getUserInfo(userId);
+        log.info("회원 정보 조회 완료 사용자: {}", userId);
+
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "사용자 약 루틴 정보 조회 API", description =
+            """
+                사용자 약 루틴 정보 조회 API:
+                
+                사용자가 복용하고 있는 간단한 약 정보와 복용기간, 복용량, 복용 주기를 반환한다.
+            
+            응답 값: 
+            
+            medicine_id: 약 ID
+                                
+            medicine_image: 약 이미지
+                                
+            medicine_name: 약 이름 
+                                
+            nickname: 약 루틴 등록 별칭 
+                                
+            entp_name: 제약사 이름 
+                                
+            class_name: 분류명
+                                
+            etc_otc_name: 전문의약품 여부 
+                                
+            routine_start_date: 약 복용 시작일
+                                
+            routine_end_date: 약 복용 종료일 
+                                
+            dose: 복용량 
+                                
+            schedule_size: 하루 복용 횟수 
+                                
+            day_of_weeks: 복용 주기 1~7 (월~일)
+            """
+    )
+    @GetMapping("/medicine/current")
+    public Api<Object> getUserMedicinesList(
+            @Parameter(hidden = true)
+            @UserSession Long userId
+    ) {
+        var response=routineBusiness.getCurrentRoutineList(userId, null, null);
         log.info("회원 정보 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);

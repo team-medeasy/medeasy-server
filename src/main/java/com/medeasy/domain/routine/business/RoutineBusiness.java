@@ -12,6 +12,8 @@ import com.medeasy.domain.medicine.service.MedicineDocumentService;
 import com.medeasy.domain.ocr.dto.OcrParsedDto;
 import com.medeasy.domain.ocr.service.OcrServiceByMultipart;
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.routine.db.RoutineQueryRepository;
+import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.routine_group.service.RoutineGroupService;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,6 +52,9 @@ public class RoutineBusiness {
 
     private final RoutineMedicineService routineMedicineService;
     private final UserScheduleConverter userScheduleConverter;
+    private final RoutineRepository routineRepository;
+
+    private final RoutineQueryRepository routineQueryRepository;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
@@ -60,7 +66,9 @@ public class RoutineBusiness {
             AiService aiService,
             ObjectMapper objectMapper,
             RoutineMedicineService routineMedicineService,
-            UserScheduleConverter userScheduleConverter
+            UserScheduleConverter userScheduleConverter,
+            RoutineRepository routineRepository,
+            RoutineQueryRepository routineQueryRepository
     ) {
         this.routineService = routineService;
         this.routineGroupService = routineGroupService;
@@ -71,6 +79,8 @@ public class RoutineBusiness {
         this.objectMapper = objectMapper;
         this.routineMedicineService = routineMedicineService;
         this.userScheduleConverter = userScheduleConverter;
+        this.routineRepository = routineRepository;
+        this.routineQueryRepository = routineQueryRepository;
     }
     /**
      * 단일 약 루틴 저장
@@ -318,4 +328,66 @@ public class RoutineBusiness {
     }
 
 
+    public List<CurrentRoutineMedicineResponse> getCurrentRoutineList(Long userId, LocalDate startDate, LocalDate endDate) {
+        // 현재 복용 중인 약 복용 기한 가져오기 (routine_group_id, start_date, end_date)
+        List<RoutineGroupDateRangeDto> routineGroupDateRangeDtos=routineQueryRepository.findStartAndEndDateRangeByGroup(userId, startDate, endDate);
+        Map<Long, RoutineGroupDateRangeDto> mapGroupIdToDateRange =
+                routineGroupDateRangeDtos.stream()
+                        .collect(Collectors.toMap(
+                                RoutineGroupDateRangeDto::getRoutineGroupId,
+                                Function.identity()
+                        ));
+
+        List<Long> routineGroupIds = routineGroupDateRangeDtos.stream().map(RoutineGroupDateRangeDto::getRoutineGroupId).toList();
+
+        // 복용량, 복용주기
+        List<RoutineFlatDto> routineFlatDtos = routineQueryRepository.findRoutineInfoByUserIdAndGroupIds(userId, routineGroupIds);
+
+        Map<Long, List<RoutineFlatDto>> mapGroupedByGroupId = routineFlatDtos.stream()
+                .collect(Collectors.groupingBy(RoutineFlatDto::getRoutineGroupId));
+
+        /**
+         * 두개의 List Fetch 로인해 MultipleBagExecption이 발생
+         * 따라서 Native Query를 통해 필요한 정보만 가져올 예정
+         *
+         * user_schedule(id), routine_medicine(medicine_id, nickname, dose), routine(take_date)
+         * */
+
+        // 응답 생성
+        return routineGroupIds.stream().map(routineGroupId->{
+            RoutineGroupDateRangeDto routineGroupDateRangeDto=mapGroupIdToDateRange.get(routineGroupId);
+            List<RoutineFlatDto> routines=mapGroupedByGroupId.get(routineGroupId);
+            List<LocalDate> takeDates=routines.stream().map(RoutineFlatDto::getTakeDate).toList();
+
+            List<Long> userScheduleIds=routines.stream().map(RoutineFlatDto::getUserScheduleId).distinct().toList();
+
+            RoutineFlatDto routineFlat= routines.getFirst();
+
+            // 약 정보 가져오기
+            String medicineId = routineFlat.getMedicineId();
+            MedicineDocument medicineDocument=medicineDocumentService.findMedicineDocumentById(medicineId);
+
+            List<Integer> dayOfWeekNumbers = takeDates.stream()
+                    .map(date -> date.getDayOfWeek().getValue()) // 1(월) ~ 7(일)
+                    .distinct()
+                    .sorted()
+                    .toList();
+
+            return CurrentRoutineMedicineResponse.builder()
+                    .medicineId(medicineDocument.getId())
+                    .nickname(routineFlat.getNickname())
+                    .medicineName(medicineDocument.getItemName())
+                    .medicineImage(medicineDocument.getItemImage())
+                    .entpName(medicineDocument.getEntpName())
+                    .etcOtcName(medicineDocument.getEtcOtcName())
+                    .className(medicineDocument.getClassName())
+                    .dose(routineFlat.getDose())
+                    .scheduleSize(userScheduleIds.size())
+                    .routineStartDate(routineGroupDateRangeDto.getStartDate())
+                    .routineEndDate(routineGroupDateRangeDto.getEndDate())
+                    .dayOfWeeks(dayOfWeekNumbers)
+                    .build()
+                    ;
+        }).toList();
+    }
 }
