@@ -193,4 +193,14 @@ public class RoutineController {
         log.info("루틴 삭제 완료 사용자: {}", userId);
         return Api.OK(null);
     }
+
+    @PatchMapping("")
+    public Api<Object> updateRoutineMedicine(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @Valid @RequestBody RoutineUpdateRequest request
+    ) {
+        routineBusiness.updateRoutine(userId, request);
+
+        return null;
+    }
 }

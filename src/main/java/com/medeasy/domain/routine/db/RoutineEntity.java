@@ -1,8 +1,6 @@
 package com.medeasy.domain.routine.db;
 
-import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
 import com.medeasy.domain.routine_group_mapping.db.RoutineGroupMappingEntity;
-import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import jakarta.persistence.*;
@@ -42,9 +40,17 @@ public class RoutineEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private UserScheduleEntity userSchedule;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<RoutineMedicineEntity> routineMedicines = new ArrayList<>();
+    @Column(nullable = false)
+    private String nickname;
+
+    @Column(nullable = false)
+    private String medicineId;
+
+    @Column(nullable = false)
+    private int dose;
+
+    @Column(nullable = false)
+    private boolean isTaken;
 
     @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default

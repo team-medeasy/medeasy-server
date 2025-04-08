@@ -173,6 +173,82 @@ public class RoutineBusiness {
     }
 
     @Transactional
+    public void registerRoutineByTotalDays(Long userId, RoutineRegisterRequestByTotalDays routineRegisterRequest) {
+        // Entity 값 가져오기
+        UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
+
+        MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
+        List<UserScheduleEntity> userScheduleEntities=userEntity.getUserSchedules();
+
+        // request 에 포함된 schedule 정보 가져오기
+        List<UserScheduleEntity> registerUserScheduleEntities = userScheduleEntities.stream()
+                .filter(userScheduleEntity -> routineRegisterRequest.getUserScheduleIds().contains(userScheduleEntity.getId()))
+                .collect(Collectors.toList());
+
+        if(registerUserScheduleEntities.size() != routineRegisterRequest.getUserScheduleIds().size()){
+            throw new ApiException(SchedulerError.NOT_FOUND);
+        }
+
+        String nickname=routineRegisterRequest.getNickname() == null ? medicineDocument.getItemName() : routineRegisterRequest.getNickname();
+        int dose = routineRegisterRequest.getDose();
+
+        List<RoutineMedicineEntity> routineMedicineEntities=new ArrayList<>();
+
+        // 오늘 날짜의 복용 루틴 저장
+        LocalDate currentDate = LocalDate.now();
+        List<LocalDate> routineDates=calculateRoutineDatesByTotalDays(routineRegisterRequest);
+
+        // 사용할 루틴 미리 조회 및 생성
+        List<RoutineEntity> routines= routineService.getOrCreateRoutines(userId, registerUserScheduleEntities, routineDates);
+        Map<String, RoutineEntity> routineMap = routineService.toRoutineMap(routines);
+
+        if(routineDates.contains(currentDate)) {
+            for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
+                if (LocalTime.now().isAfter(userScheduleEntity.getTakeTime())) {
+                    continue;
+                }
+                RoutineEntity routineEntity=routineMap.get(userScheduleEntity.getId()+"_"+currentDate);
+
+                RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
+                        .nickname(nickname)
+                        .isTaken(false)
+                        .dose(dose)
+                        .routine(routineEntity)
+                        .medicineId(medicineDocument.getId())
+                        .build()
+                        ;
+
+                routineMedicineEntities.add(routineMedicineEntity);
+            }
+
+            // 오늘 날짜 등록 후 리스트 제외
+            routineDates.remove(currentDate);
+        }
+
+        // 오늘 날짜를 제외한 루틴 생성
+        for (LocalDate localDate : routineDates) {
+            for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
+                RoutineEntity routineEntity=routineMap.get(userScheduleEntity.getId()+"_"+localDate);
+                RoutineMedicineEntity routineMedicineEntity=RoutineMedicineEntity.builder()
+                        .nickname(nickname)
+                        .isTaken(false)
+                        .dose(dose)
+                        .routine(routineEntity)
+                        .medicineId(medicineDocument.getId())
+                        .build()
+                        ;
+
+                routineMedicineEntities.add(routineMedicineEntity);
+            }
+        }
+        routineMedicineService.saveAll(routineMedicineEntities);
+
+        routineGroupService.mappingRoutineGroup(medicineDocument.getId(), routines);
+    }
+
+
+
+    @Transactional
     public void registerRoutineList(Long userId, List<RoutineRegisterRequest> routinesRegisterRequest) {
         routinesRegisterRequest.forEach(routineRegisterRequest -> {
             registerRoutine(userId, routineRegisterRequest); // 자기 자신을 호출하게되면 프록시 객체를 거치지 않기 때문에 트랜잭션 적용 x
@@ -190,6 +266,24 @@ public class RoutineBusiness {
 
         List<LocalDate> dates = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
+
+        while(dates.size() < requiredDays) {
+            int todayDayValue = currentDate.getDayOfWeek().getValue();
+
+            if(routineRegisterRequest.getDayOfWeeks().contains(todayDayValue)) {
+                dates.add(currentDate);
+            }
+
+            currentDate = currentDate.plusDays(1);
+        }
+
+        return dates;
+    }
+
+    public List<LocalDate> calculateRoutineDatesByTotalDays(RoutineRegisterRequestByTotalDays routineRegisterRequest) {
+        List<LocalDate> dates = new ArrayList<>();
+        LocalDate currentDate = LocalDate.now();
+        int requiredDays = routineRegisterRequest.getTotalDays();
 
         while(dates.size() < requiredDays) {
             int todayDayValue = currentDate.getDayOfWeek().getValue();
@@ -395,5 +489,22 @@ public class RoutineBusiness {
                     .build()
                     ;
         }).toList();
+    }
+
+    /**
+     * 루틴 업데이트 메서드
+     * 일단 routine_medicine_id가 포함된 routine_group까지 올라가서 값들을 가져오고
+     *
+     * user_schedule, routine, routine_medicine, routine_group
+     *
+     * 이미 복용한 루틴은 패스, 나머지 약들로 재배치
+     *
+     * 1. routine_medicine_id가 포함된 routine_group_id 추출 -> 불가 routine은 여러 group_id에 속해있음.
+     * 2. routine_group_id에 속해있는 routine_medicine list 조회 -> is_taken false
+     * 3. routine_medicine false list 전부 delete
+     * 4. 투여일수에 현재 복용한 일수를 제외한 일수에 대해서 수정 요청 데이터를 반영하여 routine_medicine 저장
+     * */
+    public void updateRoutine(Long userId, RoutineUpdateRequest request) {
+
     }
 }
