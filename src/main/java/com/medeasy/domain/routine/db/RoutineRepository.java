@@ -1,5 +1,6 @@
 package com.medeasy.domain.routine.db;
 
+import com.medeasy.domain.routine.dto.RoutineGroupDateRangeDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,17 +45,10 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime);
 
+    @Query("SELECT new com.medeasy.domain.routine.dto.RoutineGroupDateRangeDto(rgm.routineGroup.id, MIN(r.takeDate), MAX(r.takeDate)) " +
+            "FROM RoutineEntity r JOIN r.routineGroupMappings rgm " +
+            "WHERE r.user.id = :userId " +
+            "GROUP BY rgm.routineGroup.id")
+    List<RoutineGroupDateRangeDto> findStartAndEndDateRangeByGroup(Long userId);
 
-/*    @Query(value = "SELECT r.id AS routineId, us.name AS scheduleName, r.take_date AS takeDate, " +
-            "rm.medicine_id AS medicineId, rm.nickname AS medicineNickname, rm.dose AS dose, " +
-            "us.user_id AS userId, us.take_time AS takeTime FROM " +
-            "(SELECT * FROM routine WHERE take_date = :date) r " +
-            "JOIN user_schedule us ON r.user_schedule_id = us.id " +
-            "JOIN routine_medicine rm ON r.id = rm.routine_id " +
-            "WHERE us.take_time BETWEEN :startTime AND :endTime",
-            nativeQuery = true)
-    List<RoutineNativeQueryDto> findAllByTakeDateAndTakeTimeBetweenWithMedicineNative(
-            @Param("date") LocalDate date,
-            @Param("startTime") LocalTime startTime,
-            @Param("endTime") LocalTime endTime);*/
 }
