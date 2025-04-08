@@ -16,6 +16,7 @@ import com.medeasy.domain.routine.db.RoutineQueryRepository;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
+import com.medeasy.domain.routine_group.service.RoutineDateRangeStrategy;
 import com.medeasy.domain.routine_group.service.RoutineGroupService;
 import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.routine_medicine.service.RoutineMedicineService;
@@ -328,9 +329,14 @@ public class RoutineBusiness {
     }
 
     @Transactional
-    public List<CurrentRoutineMedicineResponse> getCurrentRoutineList(Long userId, LocalDate startDate, LocalDate endDate) {
+    public List<CurrentRoutineMedicineResponse> getRoutineList(
+            Long userId,
+            LocalDate startDate,
+            LocalDate endDate,
+            RoutineDateRangeStrategy routineDateRangeStrategy
+    ) {
         // 현재 복용 중인 약 복용 기한 가져오기 (routine_group_id, start_date, end_date)
-        List<RoutineGroupDateRangeDto> routineGroupDateRangeDtos=routineQueryRepository.findStartAndEndDateRangeByGroup(userId, startDate, endDate);
+        List<RoutineGroupDateRangeDto> routineGroupDateRangeDtos=routineDateRangeStrategy.findRoutineGroupDateRanges(userId, startDate, endDate);
         Map<Long, RoutineGroupDateRangeDto> mapGroupIdToDateRange =
                 routineGroupDateRangeDtos.stream()
                         .collect(Collectors.toMap(
