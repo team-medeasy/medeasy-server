@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.error.RoutineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.routine.db.RoutineQueryRepository;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
+import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
 import com.medeasy.domain.routine_medicine.converter.RoutineMedicineConverter;
 import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.routine_medicine.db.RoutineMedicineRepository;
@@ -26,11 +28,14 @@ import java.util.stream.Collectors;
 public class RoutineService {
 
     private final RoutineRepository routineRepository;
+    private final RoutineQueryRepository routineQueryRepository;
+
     private final RoutineMedicineRepository routineMedicineRepository;
     private final ObjectMapper objectMapper;
     private final RoutineMedicineConverter routineMedicineConverter;
     private final UserScheduleConverter userScheduleConverter;
     private final UserService userService;
+
 
     public RoutineEntity save(RoutineEntity routineEntity) {
         return routineRepository.save(routineEntity);
@@ -97,43 +102,59 @@ public class RoutineService {
     }
 
     /**
-     * 루틴 조회 배치 처리
-     * 필요한 루틴들을 가져오고, 루틴이 존재하지 않다면 배치로 생성
-     * */
-    public Map<String ,RoutineEntity> getRoutinesWithUserSchedulesAndTakeDates(Long userId, List<UserScheduleEntity> userScheduleEntities, List<LocalDate> takeDates) {
+     * 루틴 조회 및 필요 시 배치 생성
+     */
+    public List<RoutineEntity> getOrCreateRoutines(
+            Long userId,
+            List<UserScheduleEntity> userScheduleEntities,
+            List<LocalDate> takeDates
+    ) {
         UserEntity userEntity = userService.getUserById(userId);
-        List<Long> userScheduleIds = userScheduleEntities.stream().map(UserScheduleEntity::getId).toList();
-        List<RoutineEntity> existingRoutines=routineRepository.findAllByByUserIdUserScheduleIdsAndTakeDates(userId, userScheduleIds, takeDates);
+        List<Long> userScheduleIds = userScheduleEntities.stream()
+                .map(UserScheduleEntity::getId)
+                .toList();
 
-        Map<String, RoutineEntity> routineMap = existingRoutines.stream()
-                .collect(Collectors.toMap(
-                        r -> r.getUserSchedule().getId() + "_" + r.getTakeDate(),
-                        r -> r
-                ));
-
+        List<RoutineEntity> existingRoutines = routineRepository
+                .findAllByByUserIdUserScheduleIdsAndTakeDates(userId, userScheduleIds, takeDates);
         List<RoutineEntity> newRoutines = new ArrayList<>();
+
+        Set<String> existingKeys = existingRoutines.stream()
+                .map(r -> r.getUserSchedule().getId() + "_" + r.getTakeDate())
+                .collect(Collectors.toSet());
 
         for (UserScheduleEntity schedule : userScheduleEntities) {
             for (LocalDate takeDate : takeDates) {
                 String key = schedule.getId() + "_" + takeDate;
-
-                // 루틴이 없으면 생성하여 리스트에 추가
-                routineMap.computeIfAbsent(key, k -> {
+                if (!existingKeys.contains(key)) {
                     RoutineEntity newRoutine = RoutineEntity.builder()
                             .user(userEntity)
                             .userSchedule(schedule)
                             .takeDate(takeDate)
                             .build();
                     newRoutines.add(newRoutine);
-                    return newRoutine;
-                });
+                    existingKeys.add(key);
+                    existingRoutines.add(newRoutine); // 최종 결과 리스트에 추가
+                }
             }
         }
-        // 새로 생성된 루틴 저장 (배치 처리)
+
         if (!newRoutines.isEmpty()) {
             routineRepository.saveAll(newRoutines);
         }
 
-        return routineMap;
+        return existingRoutines;
     }
+
+
+    /**
+     * 루틴 리스트를 Map<"userScheduleId_takeDate", RoutineEntity>로 변환
+     */
+    public Map<String, RoutineEntity> toRoutineMap(List<RoutineEntity> routines) {
+        return routines.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getUserSchedule().getId() + "_" + r.getTakeDate(),
+                        r -> r
+                ));
+    }
+
 }

@@ -7,26 +7,23 @@ import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.ai.dto.AiResponseDto;
 import com.medeasy.domain.ai.service.AiService;
-import com.medeasy.domain.medicine.converter.MedicineConverter;
 import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.service.MedicineDocumentService;
-import com.medeasy.domain.medicine.service.MedicineService;
 import com.medeasy.domain.ocr.dto.OcrParsedDto;
 import com.medeasy.domain.ocr.service.OcrServiceByMultipart;
-import com.medeasy.domain.routine.converter.RoutineConverter;
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.routine.db.RoutineQueryRepository;
+import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
+import com.medeasy.domain.routine_group.service.RoutineGroupService;
 import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
 import com.medeasy.domain.routine_medicine.service.RoutineMedicineService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
-import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,54 +34,53 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Business
 public class RoutineBusiness {
-    private final RoutineService routineService;
-    private final UserService userService;
-    private final MedicineService medicineService;
-    private final MedicineDocumentService medicineDocumentService;
-    private final RoutineConverter routineConverter;
-    private final OcrServiceByMultipart ocrService;
-    private final AiService aiService;
-    private final MedicineConverter medicineConverter;
-    private final StringRedisTemplate redisAlarmTemplate;
     private final ObjectMapper objectMapper;
 
-    private final UserScheduleService userScheduleService;
+    private final UserService userService;
+    private final RoutineService routineService;
+    private final RoutineGroupService routineGroupService;
+    private final MedicineDocumentService medicineDocumentService;
+
+    private final OcrServiceByMultipart ocrService;
+    private final AiService aiService;
+
     private final RoutineMedicineService routineMedicineService;
     private final UserScheduleConverter userScheduleConverter;
+    private final RoutineRepository routineRepository;
+
+    private final RoutineQueryRepository routineQueryRepository;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
             RoutineService routineService,
+            RoutineGroupService routineGroupService,
             UserService userService,
-            MedicineService medicineService,
             MedicineDocumentService medicineDocumentService,
-            RoutineConverter routineConverter,
             OcrServiceByMultipart ocrService,
             AiService aiService,
-            MedicineConverter medicineConverter,
-            @Qualifier("alarmRedisTemplate") StringRedisTemplate redisAlarmTemplate, // @Qualifier 적용
             ObjectMapper objectMapper,
-            UserScheduleService userScheduleService,
             RoutineMedicineService routineMedicineService,
-            UserScheduleConverter userScheduleConverter) {
+            UserScheduleConverter userScheduleConverter,
+            RoutineRepository routineRepository,
+            RoutineQueryRepository routineQueryRepository
+    ) {
         this.routineService = routineService;
+        this.routineGroupService = routineGroupService;
         this.userService = userService;
-        this.medicineService = medicineService;
         this.medicineDocumentService = medicineDocumentService;
-        this.routineConverter = routineConverter;
         this.ocrService = ocrService;
         this.aiService = aiService;
-        this.medicineConverter = medicineConverter;
-        this.redisAlarmTemplate = redisAlarmTemplate;
         this.objectMapper = objectMapper;
-        this.userScheduleService = userScheduleService;
         this.routineMedicineService = routineMedicineService;
         this.userScheduleConverter = userScheduleConverter;
+        this.routineRepository = routineRepository;
+        this.routineQueryRepository = routineQueryRepository;
     }
     /**
      * 단일 약 루틴 저장
@@ -101,6 +97,7 @@ public class RoutineBusiness {
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
         List<UserScheduleEntity> userScheduleEntities=userEntity.getUserSchedules();
 
+        // request 에 포함된 schedule 정보 가져오기
         List<UserScheduleEntity> registerUserScheduleEntities = userScheduleEntities.stream()
                 .filter(userScheduleEntity -> routineRegisterRequest.getUserScheduleIds().contains(userScheduleEntity.getId()))
                 .collect(Collectors.toList());
@@ -119,7 +116,9 @@ public class RoutineBusiness {
         LocalDate currentDate = LocalDate.now();
         List<LocalDate> routineDates=calculateRoutineDates(routineRegisterRequest);
 
-        Map<String, RoutineEntity> routineMap= routineService.getRoutinesWithUserSchedulesAndTakeDates(userId, registerUserScheduleEntities, routineDates);
+        // 사용할 루틴 미리 조회 및 생성
+        List<RoutineEntity> routines= routineService.getOrCreateRoutines(userId, registerUserScheduleEntities, routineDates);
+        Map<String, RoutineEntity> routineMap = routineService.toRoutineMap(routines);
 
         if(routineDates.contains(currentDate)) {
             for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
@@ -144,9 +143,11 @@ public class RoutineBusiness {
                 routineMedicineEntities.add(routineMedicineEntity);
             }
 
+            // 오늘 날짜 등록 후 리스트 제외
             routineDates.remove(currentDate);
         }
 
+        // 오늘 날짜를 제외한 루틴 생성
         for (LocalDate localDate : routineDates) {
             for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
                 quantity += dose;
@@ -166,6 +167,8 @@ public class RoutineBusiness {
             }
         }
         routineMedicineService.saveAll(routineMedicineEntities);
+
+        routineGroupService.mappingRoutineGroup(medicineDocument.getId(), routines);
     }
 
     @Transactional
@@ -324,5 +327,67 @@ public class RoutineBusiness {
         }
     }
 
+    @Transactional
+    public List<CurrentRoutineMedicineResponse> getCurrentRoutineList(Long userId, LocalDate startDate, LocalDate endDate) {
+        // 현재 복용 중인 약 복용 기한 가져오기 (routine_group_id, start_date, end_date)
+        List<RoutineGroupDateRangeDto> routineGroupDateRangeDtos=routineQueryRepository.findStartAndEndDateRangeByGroup(userId, startDate, endDate);
+        Map<Long, RoutineGroupDateRangeDto> mapGroupIdToDateRange =
+                routineGroupDateRangeDtos.stream()
+                        .collect(Collectors.toMap(
+                                RoutineGroupDateRangeDto::getRoutineGroupId,
+                                Function.identity()
+                        ));
 
+        List<Long> routineGroupIds = routineGroupDateRangeDtos.stream().map(RoutineGroupDateRangeDto::getRoutineGroupId).toList();
+
+        // 복용량, 복용주기
+        List<RoutineFlatDto> routineFlatDtos = routineQueryRepository.findRoutineInfoByUserIdAndGroupIds(userId, routineGroupIds);
+
+        Map<Long, List<RoutineFlatDto>> mapGroupedByGroupId = routineFlatDtos.stream()
+                .collect(Collectors.groupingBy(RoutineFlatDto::getRoutineGroupId));
+
+        /**
+         * 두개의 List Fetch 로인해 MultipleBagExecption이 발생
+         * 따라서 Native Query를 통해 필요한 정보만 가져올 예정
+         *
+         * user_schedule(id), routine_medicine(medicine_id, nickname, dose), routine(take_date)
+         * */
+
+        // 응답 생성
+        return routineGroupIds.stream().map(routineGroupId->{
+            RoutineGroupDateRangeDto routineGroupDateRangeDto=mapGroupIdToDateRange.get(routineGroupId);
+            List<RoutineFlatDto> routines=mapGroupedByGroupId.get(routineGroupId);
+            List<LocalDate> takeDates=routines.stream().map(RoutineFlatDto::getTakeDate).toList();
+
+            List<Long> userScheduleIds=routines.stream().map(RoutineFlatDto::getUserScheduleId).distinct().toList();
+
+            RoutineFlatDto routineFlat= routines.getFirst();
+
+            // 약 정보 가져오기
+            String medicineId = routineFlat.getMedicineId();
+            MedicineDocument medicineDocument=medicineDocumentService.findMedicineDocumentById(medicineId);
+
+            List<Integer> dayOfWeekNumbers = takeDates.stream()
+                    .map(date -> date.getDayOfWeek().getValue()) // 1(월) ~ 7(일)
+                    .distinct()
+                    .sorted()
+                    .toList();
+
+            return CurrentRoutineMedicineResponse.builder()
+                    .medicineId(medicineDocument.getId())
+                    .nickname(routineFlat.getNickname())
+                    .medicineName(medicineDocument.getItemName())
+                    .medicineImage(medicineDocument.getItemImage())
+                    .entpName(medicineDocument.getEntpName())
+                    .etcOtcName(medicineDocument.getEtcOtcName())
+                    .className(medicineDocument.getClassName())
+                    .dose(routineFlat.getDose())
+                    .scheduleSize(userScheduleIds.size())
+                    .routineStartDate(routineGroupDateRangeDto.getStartDate())
+                    .routineEndDate(routineGroupDateRangeDto.getEndDate())
+                    .dayOfWeeks(dayOfWeekNumbers)
+                    .build()
+                    ;
+        }).toList();
+    }
 }
