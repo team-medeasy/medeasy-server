@@ -38,9 +38,11 @@ dependencies {
 	runtimeOnly 'com.h2database:h2'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-	implementation "com.querydsl:querydsl-jpa"
-	annotationProcessor("com.querydsl:querydsl-apt:5.0.1:jpa")
-	annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+	// queryDSL
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
 	// 엘라스틱 서치 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch:3.4.2'
