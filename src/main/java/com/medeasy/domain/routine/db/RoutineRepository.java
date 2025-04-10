@@ -15,10 +15,9 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
 
     @Query("SELECT r FROM RoutineEntity r " +
             "JOIN FETCH r.userSchedule us " +
-            "LEFT JOIN FETCH r.routineMedicines rm " +
             "WHERE r.user.id = :userId " +
             "AND r.takeDate BETWEEN :startDate AND :endDate " +
-            "ORDER BY r.takeDate ASC, us.takeTime ASC, rm.id ASC")
+            "ORDER BY r.takeDate ASC, us.takeTime ASC")
     List<RoutineEntity> findGroupedRoutinesByDate(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
@@ -51,4 +50,5 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             "GROUP BY rgm.routineGroup.id")
     List<RoutineGroupDateRangeDto> findStartAndEndDateRangeByGroup(Long userId);
 
+    void deleteByUserIdAndId(Long userId, Long id);
 }

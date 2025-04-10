@@ -78,8 +78,8 @@ public class RoutineService {
         return routineRepository.findById(id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
     }
 
-    public void deleteRoutineById(Long id) {
-        routineRepository.deleteById(id);
+    public void deleteRoutineByUserIdAndId(Long userId, Long routineId) {
+        routineRepository.deleteByUserIdAndId(userId, routineId);
     }
 
     /**

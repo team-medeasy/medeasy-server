@@ -381,7 +381,7 @@ public class RoutineBusiness {
      * */
     public void deleteRoutine(Long userId, Long routineId) {
         // routine 존재 여부 파악
-        routineService.deleteRoutine(routineMedicineId);
+        routineService.deleteRoutineByUserIdAndId(userId, routineId);
     }
 
     @Deprecated
