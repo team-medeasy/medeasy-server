@@ -5,6 +5,7 @@ import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.business.AuthBusiness;
+import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.dto.*;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserConverter;
@@ -44,7 +45,7 @@ public class UserBusiness {
     private final PasswordEncoder passwordEncoder;
     private final UserScheduleConverter userScheduleConverter;
     private final UserScheduleService userScheduleService;
-    private final RoutineMedicineService routineMedicineService;
+    private final RoutineService routineService;
     private final AuthBusiness authBusiness;
 
     private final UserCareMappingService userCareMappingService;
@@ -126,7 +127,7 @@ public class UserBusiness {
     @Transactional
     public UserMedicinesResponse getUserMedicinesCount(Long userId) {
         UserEntity userEntity=userService.getUserById(userId);
-        var medicineIds = routineMedicineService.getDistinctRoutineMedicinesByUserId(userId);
+        List<String> medicineIds = routineService.getDistinctRoutineByUserId(userId);
 
         return UserMedicinesResponse.builder()
                 .medicineCount(medicineIds.size())

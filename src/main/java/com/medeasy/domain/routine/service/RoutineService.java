@@ -171,4 +171,7 @@ public class RoutineService {
                 ));
     }
 
+    public List<String> getDistinctRoutineByUserId(Long userId) {
+        return routineRepository.findDistinctMeidicneIdByUserId(userId);
+    }
 }

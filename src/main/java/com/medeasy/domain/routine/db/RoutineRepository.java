@@ -51,4 +51,9 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
     List<RoutineGroupDateRangeDto> findStartAndEndDateRangeByGroup(Long userId);
 
     void deleteByUserIdAndId(Long userId, Long id);
+
+    @Query("SELECT DISTINCT r.medicineId " +
+            "FROM RoutineEntity r " +
+            "WHERE r.user.id = :userId ")
+    List<String> findDistinctMeidicneIdByUserId(Long userId);
 }
