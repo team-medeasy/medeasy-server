@@ -11,7 +11,6 @@ import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
-import com.medeasy.domain.user_schedule.dto.UserScheduleGroupDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

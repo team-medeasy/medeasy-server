@@ -1,16 +1,10 @@
 package com.medeasy.domain.user.business;
 
 import com.medeasy.common.annotation.Business;
-import com.medeasy.common.error.ErrorCode;
-import com.medeasy.common.error.MedicineErrorCode;
 import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.business.AuthBusiness;
-import com.medeasy.domain.auth.util.TokenHelperIfs;
-import com.medeasy.domain.routine.db.RoutineEntity;
-import com.medeasy.domain.routine.service.RoutineService;
-import com.medeasy.domain.routine_medicine.service.RoutineMedicineService;
 import com.medeasy.domain.user.dto.*;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserConverter;
@@ -26,12 +20,9 @@ import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
 import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
-import jakarta.transaction.TransactionRolledbackException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
