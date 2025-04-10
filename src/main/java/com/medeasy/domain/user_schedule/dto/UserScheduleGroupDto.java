@@ -1,6 +1,5 @@
 package com.medeasy.domain.user_schedule.dto;
 
-import com.medeasy.domain.routine_medicine.dto.RoutineMedicineDto;
 import lombok.*;
 
 import java.time.LocalTime;

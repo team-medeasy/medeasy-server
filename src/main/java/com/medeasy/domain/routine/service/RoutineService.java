@@ -30,9 +30,7 @@ public class RoutineService {
     private final RoutineRepository routineRepository;
     private final RoutineQueryRepository routineQueryRepository;
 
-    private final RoutineMedicineRepository routineMedicineRepository;
     private final ObjectMapper objectMapper;
-    private final RoutineMedicineConverter routineMedicineConverter;
     private final UserScheduleConverter userScheduleConverter;
     private final UserService userService;
 

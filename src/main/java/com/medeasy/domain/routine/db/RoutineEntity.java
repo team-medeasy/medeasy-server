@@ -50,7 +50,7 @@ public class RoutineEntity {
     private int dose;
 
     @Column(nullable = false)
-    private boolean isTaken;
+    private Boolean isTaken;
 
     @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default
