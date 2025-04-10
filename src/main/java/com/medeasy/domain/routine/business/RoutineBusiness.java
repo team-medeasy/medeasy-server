@@ -379,9 +379,9 @@ public class RoutineBusiness {
     /**
      * 루틴 제거 메서드
      * */
-    public void deleteRoutine(Long userId, Long routineMedicineId) {
+    public void deleteRoutine(Long userId, Long routineId) {
         // routine 존재 여부 파악
-        routineMedicineService.deleteRoutine(routineMedicineId);
+        routineService.deleteRoutine(routineMedicineId);
     }
 
     @Deprecated

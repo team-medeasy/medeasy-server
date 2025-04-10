@@ -7,10 +7,6 @@ import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.db.RoutineQueryRepository;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
-import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
-import com.medeasy.domain.routine_medicine.converter.RoutineMedicineConverter;
-import com.medeasy.domain.routine_medicine.db.RoutineMedicineEntity;
-import com.medeasy.domain.routine_medicine.db.RoutineMedicineRepository;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
@@ -80,6 +76,10 @@ public class RoutineService {
 
     public RoutineEntity getRoutineById(Long id) {
         return routineRepository.findById(id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
+    }
+
+    public void deleteRoutineById(Long id) {
+        routineRepository.deleteById(id);
     }
 
     /**
