@@ -3,7 +3,6 @@ package com.medeasy.domain.routine.db;
 import com.medeasy.domain.routine.dto.RoutineFlatDto;
 import com.medeasy.domain.routine.dto.RoutineGroupDateRangeDto;
 import com.medeasy.domain.routine_group_mapping.db.QRoutineGroupMappingEntity;
-import com.medeasy.domain.routine_medicine.db.QRoutineMedicineEntity;
 import com.medeasy.domain.user_schedule.db.QUserScheduleEntity;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
@@ -93,7 +92,6 @@ public class RoutineQueryRepository {
         QRoutineEntity r = QRoutineEntity.routineEntity;
         QUserScheduleEntity us = QUserScheduleEntity.userScheduleEntity;
         QRoutineGroupMappingEntity rgm = QRoutineGroupMappingEntity.routineGroupMappingEntity;
-        QRoutineMedicineEntity rm = QRoutineMedicineEntity.routineMedicineEntity;
 
         return queryFactory
                 .select(Projections.constructor(
@@ -101,14 +99,13 @@ public class RoutineQueryRepository {
                         rgm.routineGroup.id,
                         r.takeDate,
                         us.id,
-                        rm.medicineId,
-                        rm.nickname,
-                        rm.dose
+                        r.medicineId,
+                        r.nickname,
+                        r.dose
                 ))
                 .from(r)
                 .join(r.userSchedule, us)
                 .join(r.routineGroupMappings, rgm)
-                .join(r.routineMedicines, rm)
                 .where(
                         r.user.id.eq(userId),
                         rgm.routineGroup.id.in(routineGroupIds)

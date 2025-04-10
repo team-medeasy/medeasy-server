@@ -5,7 +5,6 @@ import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.MedicationTime;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
-import com.medeasy.domain.user_schedule.dto.UserScheduleGroupDto;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.RequiredArgsConstructor;
 
