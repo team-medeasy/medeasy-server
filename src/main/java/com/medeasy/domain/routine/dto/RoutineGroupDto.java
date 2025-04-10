@@ -25,7 +25,7 @@ public class RoutineGroupDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    static class UserScheduleGroupDto {
+    public static class UserScheduleGroupDto {
 
         private Long userScheduleId;
 
@@ -33,13 +33,13 @@ public class RoutineGroupDto {
 
         private LocalTime takeTime;
 
-        private List<RoutineDto> routineMedicineDtos;
+        private List<RoutineDto> routineDtos;
 
         @Data
         @NoArgsConstructor
         @AllArgsConstructor
         @Builder
-        static class RoutineDto{
+        public static class RoutineDto{
             private Long routineId;
             private String nickname;
             private Boolean isTaken;

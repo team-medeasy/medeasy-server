@@ -45,29 +45,46 @@ public class RoutineService {
 
         for(RoutineEntity routineEntity: routineEntities) {
             LocalDate takeDate=routineEntity.getTakeDate();
-            UserScheduleEntity userScheduleEntity = routineEntity.getUserSchedule();
-            List<RoutineMedicineEntity> routineMedicineEntities = routineEntity.getRoutineMedicines();
 
-            routineMap.putIfAbsent(takeDate, new RoutineGroupDto(takeDate, new ArrayList<>()));
+            // 날짜 기준 그룹 생성
+            routineMap.putIfAbsent(takeDate, RoutineGroupDto.builder()
+                    .takeDate(takeDate)
+                    .userScheduleDtos(new ArrayList<>())
+                    .build()
+            );
             RoutineGroupDto routineGroupDto = routineMap.get(takeDate);
 
-            // UserSchedule 찾기
-            Optional<UserScheduleGroupDto> existingSchedule = routineGroupDto.getUserScheduleDtos().stream()
-                    .filter(s -> s.getUserScheduleId().equals(userScheduleEntity.getId()))
+            // 2. 스케줄 기준 그룹 찾기
+            UserScheduleEntity userScheduleEntity = routineEntity.getUserSchedule();
+            Optional<RoutineGroupDto.UserScheduleGroupDto> existingScheduleOpt = routineGroupDto.getUserScheduleDtos().stream()
+                    .filter(dto -> dto.getUserScheduleId().equals(userScheduleEntity.getId()))
                     .findFirst();
 
-            UserScheduleGroupDto scheduleDTO;
+            RoutineGroupDto.UserScheduleGroupDto scheduleDto;
 
-            if (existingSchedule.isPresent()) {
-                scheduleDTO = existingSchedule.get();
+            if (existingScheduleOpt.isPresent()) {
+                scheduleDto = existingScheduleOpt.get();
             } else {
-                scheduleDTO = userScheduleConverter.toGroupDto(userScheduleEntity);
-                routineGroupDto.getUserScheduleDtos().add(scheduleDTO);
+                scheduleDto = RoutineGroupDto.UserScheduleGroupDto.builder()
+                        .userScheduleId(userScheduleEntity.getId())
+                        .name(userScheduleEntity.getName())
+                        .takeTime(userScheduleEntity.getTakeTime())
+                        .routineDtos(new ArrayList<>())
+                        .build();
+
+                routineGroupDto.getUserScheduleDtos().add(scheduleDto);
             }
 
-            routineMedicineEntities.forEach(entity->{
-                scheduleDTO.getRoutineMedicineDtos().add(routineMedicineConverter.toDto(entity));
-            });
+
+            // 3. 루틴을 RoutineDto로 변환하여 추가
+            RoutineGroupDto.UserScheduleGroupDto.RoutineDto routineDto =
+                    RoutineGroupDto.UserScheduleGroupDto.RoutineDto.builder()
+                            .routineId(routineEntity.getId())
+                            .nickname(routineEntity.getNickname())
+                            .isTaken(routineEntity.getIsTaken())
+                            .build();
+
+            scheduleDto.getRoutineDtos().add(routineDto);
         }
 
         return new ArrayList<>(routineMap.values());
