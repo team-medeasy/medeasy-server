@@ -125,7 +125,7 @@ public class RoutineBusiness {
                 quantity += dose;
                 if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(currentDate, userEntity, userScheduleEntity, routineRegisterRequest);
+                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(currentDate, nickname, userEntity, userScheduleEntity, routineRegisterRequest);
                 routineEntities.add(routineEntity);
             }
 
@@ -139,7 +139,7 @@ public class RoutineBusiness {
                 quantity += dose;
                 if (quantity > routineRegisterRequest.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, userEntity, userScheduleEntity, routineRegisterRequest);
+                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, nickname, userEntity, userScheduleEntity, routineRegisterRequest);
                 routineEntities.add(routineEntity);
             }
         }
@@ -379,6 +379,7 @@ public class RoutineBusiness {
     /**
      * 루틴 제거 메서드
      * */
+    @Transactional
     public void deleteRoutine(Long userId, Long routineId) {
         // routine 존재 여부 파악
         routineService.deleteRoutineByUserIdAndId(userId, routineId);

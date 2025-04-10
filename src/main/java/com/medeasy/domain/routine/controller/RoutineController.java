@@ -113,14 +113,14 @@ public class RoutineController {
     @PatchMapping("/check")
     public Api<Object> checkRoutine(
             @Parameter(hidden = true) @UserSession Long userId,
-            @RequestParam("routine_medicine_id")
+            @RequestParam("routine_id")
             @Parameter(description = "체크할 루틴 id", required = true)
-            Long routineMedicineId,
+            Long routineId,
             @RequestParam("is_taken")
             @Parameter(description = "약 복용 여부", required = true)
             Boolean isTaken
     ) {
-        RoutineCheckResponse response=routineBusiness.checkRoutine(routineMedicineId, isTaken);
+        RoutineCheckResponse response=routineBusiness.checkRoutine(routineId, isTaken);
 
         log.info("루틴 체크 완료 사용자: {}", userId);
         return Api.OK(response);
@@ -183,13 +183,13 @@ public class RoutineController {
             PathVariable로 삭제하려는 routine_medicine_id값 지정 
             """
     )
-    @DeleteMapping("/{routine_medicine_id}")
+    @DeleteMapping("/{routine_id}")
     public Api<Object> deleteRoutine(
             @Parameter(hidden = true) @UserSession Long userId,
             @Parameter(description = "삭제 하려는 루틴 id", required = true)
-            @PathVariable("routine_medicine_id") Long routineMedicineId
+            @PathVariable("routine_id") Long routineId
     ) {
-        routineBusiness.deleteRoutine(userId, routineMedicineId);
+        routineBusiness.deleteRoutine(userId, routineId);
         log.info("루틴 삭제 완료 사용자: {}", userId);
         return Api.OK(null);
     }
