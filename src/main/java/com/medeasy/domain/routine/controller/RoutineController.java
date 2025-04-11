@@ -156,9 +156,11 @@ public class RoutineController {
                 
             - take_time: 약 복용 시간 
             
+            - is_recommended: 추천 스케줄 유무 
+            
             day_of_weeks: 추천하는 약 복용 요일
             
-            마지막 업데이트 3/16
+            마지막 업데이트 4/11
             """
     )
     @PostMapping(
