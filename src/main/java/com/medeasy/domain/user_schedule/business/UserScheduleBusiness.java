@@ -15,7 +15,6 @@ import java.util.List;
 public class UserScheduleBusiness {
 
     private final UserScheduleService userScheduleService;
-    private final UserScheduleConverter userScheduleConverter;
 
     public void registerUserDefaultSchedule(UserEntity userEntity) {
 
@@ -35,8 +34,5 @@ public class UserScheduleBusiness {
                     .build()
             ;
         }).toList();
-
-        List<UserScheduleEntity> newUserScheduleEntities=userScheduleService.saveAll(userScheduleEntities);
-//        return newUserScheduleEntities.stream().map(userScheduleConverter::toGroupDto).toList();
     }
 }

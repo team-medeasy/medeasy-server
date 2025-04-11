@@ -22,7 +22,9 @@ import com.medeasy.domain.routine_group.service.RoutineGroupService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
+import com.medeasy.domain.user_schedule.db.MedicationTime;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
+import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -311,7 +313,14 @@ public class RoutineBusiness {
      * */
     public List<RoutinePrescriptionResponse> registerRoutineByPrescription(Long userId, MultipartFile file) {
         var userEntity = userService.getUserByIdToFetchJoin(userId);
-        var userSchedules=userEntity.getUserSchedules().stream().map(userScheduleConverter::toDto).toList();
+        List<UserScheduleDto> userScheduleDtos=userEntity.getUserSchedules().stream().map(userScheduleConverter::toDto).toList();
+
+        Map<String, UserScheduleDto> scheduleMap = userScheduleDtos
+                .stream()
+                .collect(Collectors.toMap(
+                        UserScheduleDto::getName,
+                        Function.identity()
+                ));
 
         // 처방전 이미지 파싱
         List<OcrParsedDto> parseData=ocrService.sendOcrRequest(file);
@@ -321,6 +330,7 @@ public class RoutineBusiness {
         String analysis=aiService.analysis(parseData);
         log.info("gemini 요청 완료");
 
+        // TODO aiResponseDTO에서 나온 schedule_count에 따라서
         AiResponseDto aiResponseDto=aiService.parseGeminiResponse(analysis);
         log.info("추출 데이터 파싱 완료, api token 비용: {}", aiResponseDto.getTotalTokenCount());
 
@@ -329,13 +339,16 @@ public class RoutineBusiness {
             MedicineDocument medicineDocument=medicineDocumentService.findMedicineByEdiCodeAndItemName(doseDto.getEdiCode(), doseDto.getName(), 1)
                     .getFirst();
 
+            List<UserScheduleDto> recommendedUserScheduleDtos=recommendScheduleByScheduleCount(scheduleMap, doseDto.getScheduleCount());
+
+
             return RoutinePrescriptionResponse.builder()
                     .medicineId(medicineDocument.getId())
                     .imageUrl(medicineDocument.getItemImage())
                     .medicineName(medicineDocument.getItemName())
                     .dose(doseDto.getDose())
                     .totalQuantity(doseDto.getTotalDays()*doseDto.getDose()*doseDto.getScheduleCount())
-                    .userSchedules(userSchedules)
+                    .userSchedules(recommendedUserScheduleDtos)
                     .dayOfWeeks(List.of(1,2,3,4,5,6,7))
                     .totalDays(doseDto.getTotalDays())
                     .entpName(medicineDocument.getEntpName())
@@ -354,26 +367,22 @@ public class RoutineBusiness {
      *
      * TODO 루틴 등록시에는 약을 먹는 시기를 명시하지만, 처방전 등록시에는 자동으로 설정하던, 미리 설정 값을 입력받는 쪽으로 구현
      * */
-    @Deprecated
-    private List<String> convertTypeCountToTypes(int typeCount) {
+    private List<UserScheduleDto> recommendScheduleByScheduleCount(Map<String, UserScheduleDto> scheduleMap, int scheduleCount) {
+        List<MedicationTime> medicationTimes;
 
-        if(typeCount==1){
-            return List.of("LUNCH");
+        if(scheduleCount==1){
+            medicationTimes = List.of(MedicationTime.LUNCH);
+        } else if (scheduleCount==2){
+            medicationTimes = List.of(MedicationTime.MORNING, MedicationTime.DINNER);
+        } else if (scheduleCount==3) {
+            medicationTimes = List.of(MedicationTime.MORNING, MedicationTime.LUNCH, MedicationTime.DINNER);
+        } else if (scheduleCount==4){
+            medicationTimes = List.of(MedicationTime.MORNING, MedicationTime.LUNCH, MedicationTime.DINNER, MedicationTime.BED_TIME);
+        } else {
+            throw new ApiException(SchedulerError.BAD_REQEUST, "지원하는 스케줄 외 요청");
         }
 
-        if(typeCount==2){
-            return List.of("MORNING", "DINNER");
-        }
-
-        if(typeCount==3){
-            return List.of("MORNING", "LUNCH", "DINNER");
-        }
-
-        if(typeCount==4){
-            return List.of("MORNING", "LUNCH", "DINNER", "BEDTIME");
-        }
-
-        throw new ApiException(ErrorCode.BAD_REQEUST, "잘못된 type count 입력");
+        return userScheduleConverter.toDtoListFromMedicationTimes(scheduleMap, medicationTimes);
     }
 
     /**

@@ -16,4 +16,7 @@ public class UserScheduleDto {
     private String name;
 
     private LocalTime takeTime;
+
+    // 값을 지정하지 않을 때 false
+    private boolean isRecommended;
 }
