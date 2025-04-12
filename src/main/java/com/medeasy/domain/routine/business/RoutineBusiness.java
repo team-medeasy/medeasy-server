@@ -25,7 +25,9 @@ import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.MedicationTime;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,6 +59,10 @@ public class RoutineBusiness {
 
     private final RoutineQueryRepository routineQueryRepository;
     private final RoutineConverter routineConverter;
+    private final UserScheduleService userScheduleService;
+
+    private final RoutineCalculator routineCalculator;
+    private final RoutineCreator routineBasicCreator;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
@@ -70,7 +76,10 @@ public class RoutineBusiness {
             UserScheduleConverter userScheduleConverter,
             RoutineRepository routineRepository,
             RoutineQueryRepository routineQueryRepository,
-            RoutineConverter routineConverter) {
+            RoutineConverter routineConverter, UserScheduleService userScheduleService,
+            RoutineCalculator routineCalculator,
+            @Qualifier("routineBasicCreator") RoutineCreator routineBasicCreator
+    ) {
         this.routineService = routineService;
         this.routineGroupService = routineGroupService;
         this.userService = userService;
@@ -82,6 +91,9 @@ public class RoutineBusiness {
         this.routineRepository = routineRepository;
         this.routineQueryRepository = routineQueryRepository;
         this.routineConverter = routineConverter;
+        this.userScheduleService = userScheduleService;
+        this.routineCalculator = routineCalculator;
+        this.routineBasicCreator = routineBasicCreator;
     }
     /**
      * 단일 약 루틴 저장
@@ -103,50 +115,22 @@ public class RoutineBusiness {
                 .filter(userScheduleEntity -> routineRegisterRequest.getUserScheduleIds().contains(userScheduleEntity.getId()))
                 .toList();
 
+        // 요청에 들어간 user_schedule_id가 존재하지 않을 경우 예외 발생
         if(registerUserScheduleEntities.size() != routineRegisterRequest.getUserScheduleIds().size()){
             throw new ApiException(SchedulerError.NOT_FOUND);
         }
 
-        String nickname=routineRegisterRequest.getNickname() == null ? medicineDocument.getItemName() : routineRegisterRequest.getNickname();
-        int dose = routineRegisterRequest.getDose();
-
-        int quantity=0;
-
-        // 오늘 날짜의 복용 루틴 저장
-        LocalDate currentDate = LocalDate.now();
-        List<LocalDate> routineDates=calculateRoutineDates(routineRegisterRequest);
-
         List<RoutineEntity> routineEntities = new ArrayList<>();
 
-        // 사용할 루틴 미리 조회 및 생성
-        if(routineDates.contains(currentDate)) {
-            for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
-                if (LocalTime.now().isAfter(userScheduleEntity.getTakeTime())) {
-                    continue;
-                }
-                quantity += dose;
-                if (quantity > routineRegisterRequest.getTotalQuantity()) break;
+        if(routineRegisterRequest.getRoutineStartDate() == null && routineRegisterRequest.getStartUserScheduleId() == null) {
+            routineEntities = routineBasicCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
+        } else if (routineRegisterRequest.getRoutineStartDate().isBefore(LocalDate.now())) {
+            // TODO 루틴에 과거 일자가 섞여 있는 경우
 
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(currentDate, nickname, userEntity, userScheduleEntity, routineRegisterRequest);
-                routineEntities.add(routineEntity);
-            }
-
-            // 오늘 날짜 등록 후 리스트 제외
-            routineDates.remove(currentDate);
-        }
-
-        // 오늘 날짜를 제외한 루틴 생성
-        for (LocalDate localDate : routineDates) {
-            for (UserScheduleEntity userScheduleEntity : registerUserScheduleEntities) {
-                quantity += dose;
-                if (quantity > routineRegisterRequest.getTotalQuantity()) break;
-
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, nickname, userEntity, userScheduleEntity, routineRegisterRequest);
-                routineEntities.add(routineEntity);
-            }
         }
 
         routineRepository.saveAll(routineEntities);
+        // TODO routine_group_mapping 테이블 삭제
         routineGroupService.mappingRoutineGroup(medicineDocument.getId(), routineEntities);
     }
 
@@ -158,30 +142,6 @@ public class RoutineBusiness {
         });
     }
 
-    /**
-     * 3/16
-     * 약을 복용할 날짜 구하기
-     * */
-    public List<LocalDate> calculateRoutineDates(RoutineRegisterRequest routineRegisterRequest) {
-        int dailyDose=routineRegisterRequest.getUserScheduleIds().size()*routineRegisterRequest.getDose();
-
-        int requiredDays=(int) Math.ceil((double) routineRegisterRequest.getTotalQuantity()/dailyDose); // 반올림
-
-        List<LocalDate> dates = new ArrayList<>();
-        LocalDate currentDate = LocalDate.now();
-
-        while(dates.size() < requiredDays) {
-            int todayDayValue = currentDate.getDayOfWeek().getValue();
-
-            if(routineRegisterRequest.getDayOfWeeks().contains(todayDayValue)) {
-                dates.add(currentDate);
-            }
-
-            currentDate = currentDate.plusDays(1);
-        }
-
-        return dates;
-    }
 
     public List<LocalDate> calculateRoutineDatesByTotalDays(RoutineRegisterRequestByTotalDays routineRegisterRequest) {
         List<LocalDate> dates = new ArrayList<>();
