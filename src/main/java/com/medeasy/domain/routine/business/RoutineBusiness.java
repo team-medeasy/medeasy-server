@@ -63,7 +63,8 @@ public class RoutineBusiness {
 
     private final RoutineCalculator routineCalculator;
     private final RoutineCreator routineBasicCreator;
-    private final RoutineContainPastCreator routineContainPastCreator;
+    private final RoutineCreator routineContainPastCreator;
+    private final RoutineCreator routineFutureCreator;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
@@ -80,7 +81,9 @@ public class RoutineBusiness {
             RoutineConverter routineConverter, UserScheduleService userScheduleService,
             RoutineCalculator routineCalculator,
             @Qualifier("routineBasicCreator") RoutineCreator routineBasicCreator,
-            RoutineContainPastCreator routineContainPastCreator) {
+            @Qualifier("routineContainPastCreator") RoutineCreator routineContainPastCreator,
+            @Qualifier("routineFutureCreator") RoutineCreator routineFutureCreator
+    ) {
         this.routineService = routineService;
         this.routineGroupService = routineGroupService;
         this.userService = userService;
@@ -96,6 +99,7 @@ public class RoutineBusiness {
         this.routineCalculator = routineCalculator;
         this.routineBasicCreator = routineBasicCreator;
         this.routineContainPastCreator = routineContainPastCreator;
+        this.routineFutureCreator = routineFutureCreator;
     }
     /**
      * 단일 약 루틴 저장
@@ -124,11 +128,18 @@ public class RoutineBusiness {
 
         List<RoutineEntity> routineEntities = new ArrayList<>();
 
+        // 전략 패턴 이용 상황에 따른 루틴 등록
         if(routineRegisterRequest.getRoutineStartDate() == null && routineRegisterRequest.getStartUserScheduleId() == null) {
+            // 루틴에 시작날짜, 시간 명시하지 않은 경우 (제일 기본)
             routineEntities = routineBasicCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
+
         } else if (routineRegisterRequest.getRoutineStartDate().isBefore(LocalDate.now())) {
-            // TODO 루틴에 과거 일자가 섞여 있는 경우
-            routineContainPastCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
+            // 루틴에 과거 일자가 포함되어있는 경우
+            routineEntities = routineContainPastCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
+
+        } else if (routineRegisterRequest.getRoutineStartDate().isAfter(LocalDate.now())) {
+            // 루틴을 미리 등록할 경우
+            routineEntities = routineFutureCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
         }
 
         routineRepository.saveAll(routineEntities);
