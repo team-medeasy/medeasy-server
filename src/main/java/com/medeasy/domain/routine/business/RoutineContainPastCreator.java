@@ -28,7 +28,9 @@ public class RoutineContainPastCreator implements RoutineCreator{
     public List<RoutineEntity> createRoutines(RoutineRegisterRequest request, UserEntity userEntity, List<UserScheduleEntity> userScheduleEntities) {
         // 루틴 시작 날짜
         LocalDate startDate = request.getRoutineStartDate();
+        LocalDate today = LocalDate.now();
         LocalTime startTime;
+        LocalTime currentTime = LocalTime.now();
 
         /**
          * 루틴 시작 시간 계산
@@ -53,15 +55,18 @@ public class RoutineContainPastCreator implements RoutineCreator{
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());
         String nickname=request.getNickname() == null ? medicineDocument.getItemName() : request.getNickname();
 
-        // 과거 날짜와 현재, 미래 날짜 분리
+        // 날짜 분리
         List<LocalDate> pastDates = new ArrayList<>();
-        List<LocalDate> futureOrTodayDates = new ArrayList<>();
+        List<LocalDate> todayDates = new ArrayList<>();
+        List<LocalDate> futureDates = new ArrayList<>();
 
         for (LocalDate date : routineDates) {
-            if (date.isBefore(LocalDate.now())) {
+            if (date.isBefore(today)) {
                 pastDates.add(date);
+            } else if (date.isEqual(today)) {
+                todayDates.add(date);
             } else {
-                futureOrTodayDates.add(date);
+                futureDates.add(date);
             }
         }
 
@@ -83,7 +88,6 @@ public class RoutineContainPastCreator implements RoutineCreator{
             pastDates.remove(startDate);
         }
 
-        // 오늘 날짜를 제외한 루틴 생성
         for (LocalDate localDate : pastDates) {
             for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
                 quantity += dose;
@@ -95,8 +99,27 @@ public class RoutineContainPastCreator implements RoutineCreator{
             }
         }
 
-        // TODO 현재, 미래 날짜 복용 스케줄
-        for (LocalDate localDate : futureOrTodayDates) {
+        // 현재 날짜 루틴 스케줄
+        if (!todayDates.isEmpty()) {
+            LocalDate todayDate = todayDates.get(0);  // 무조건 1개만 있으니
+
+            for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
+                quantity += dose;
+                if (quantity > request.getTotalQuantity()) break;
+
+                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(todayDate, nickname, userEntity, userScheduleEntity, request);
+
+                // 현재 시간이 복용 시간 이후면 isTaken = true
+                if (currentTime.isAfter(userScheduleEntity.getTakeTime())) {
+                    routineEntity.setIsTaken(true);
+                }
+
+                routineEntities.add(routineEntity);
+            }
+        }
+
+        // 미래 날짜 복용 스케줄
+        for (LocalDate localDate : futureDates) {
             for (UserScheduleEntity userScheduleEntity : userScheduleEntities) {
                 quantity += dose;
                 if (quantity > request.getTotalQuantity()) break;
