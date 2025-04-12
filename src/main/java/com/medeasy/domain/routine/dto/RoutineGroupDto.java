@@ -43,6 +43,8 @@ public class RoutineGroupDto {
             private Long routineId;
             private String nickname;
             private Boolean isTaken;
+            private int dose;
+            private String medicineId;
         }
     }
 }
