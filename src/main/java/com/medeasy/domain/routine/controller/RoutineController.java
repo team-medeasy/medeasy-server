@@ -27,7 +27,19 @@ public class RoutineController {
 
     @Operation(summary = "루틴 등록 v2", description =
             """
-                루틴 등록 API: 요일과, 약을 먹는 시기를 입력하면, 오늘 날짜를 기준으로 루틴들을 등록
+                루틴 등록 API: 요일과, 약을 먹는 시기를 입력하면, 입력한 날짜를 기준으로 루틴들을 등록
+                
+                1. 시작 날짜와, 시작 스케줄을 입력하지 않았을 때 -> 기존 루틴 등록과 동일 
+                
+                오늘 날짜의 시간이 지나지 않은 스케줄부터 차례로 루틴 등록 
+                
+                2. 시작 날짜가 과거일 때 -> 시작 날짜 nullable = false, 시작 스케줄 nullable = true (null일 경우 가장 빠른 시간의 스케줄)
+                
+                과거인 루틴들에 대해서 생성 후 자동 복용 체크, 이후에 복용할 루틴에 대해서는 기존과 동일 
+                
+                3. 시작 날짜가 미래일 때 -> 시작 날짜 nullable = false, 시작 스케줄 nullable = true (null일 경우 가장 빠른 시간의 스케줄)
+                
+                미래 날짜의 정해진 시간부터 차례로 루틴 생성 
             
             필드 설명:
             
@@ -41,7 +53,11 @@ public class RoutineController {
              
             user_schedule_ids: 약을 먹고자 하는 사용자 스케줄 배열 입력
             
-            마지막 업데이트 3/16
+            routine_start_date: 약을 먹기 시작하는 날짜, null 일시 오늘 날짜 
+            
+            start_user_schedule_id: 약 복용 시작 스케줄, null 일시 제일 빠른 스케줄
+            
+            마지막 업데이트 4/12
              
             """
     )
@@ -156,9 +172,11 @@ public class RoutineController {
                 
             - take_time: 약 복용 시간 
             
+            - is_recommended: 추천 스케줄 유무 
+            
             day_of_weeks: 추천하는 약 복용 요일
             
-            마지막 업데이트 3/16
+            마지막 업데이트 4/11
             """
     )
     @PostMapping(

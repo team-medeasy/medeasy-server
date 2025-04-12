@@ -77,6 +77,8 @@ public class RoutineService {
                             .routineId(routineEntity.getId())
                             .nickname(routineEntity.getNickname())
                             .isTaken(routineEntity.getIsTaken())
+                            .dose(routineEntity.getDose())
+                            .medicineId(routineEntity.getMedicineId())
                             .build();
 
             scheduleDto.getRoutineDtos().add(routineDto);
