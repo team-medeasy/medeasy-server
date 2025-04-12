@@ -29,7 +29,7 @@ public class RoutineBasicCreator implements RoutineCreator{
         LocalDate startDate = LocalDate.now();
         LocalTime startTime = LocalTime.now();
         List<RoutineEntity> routineEntities = new ArrayList<>();
-        List<LocalDate> routineDates=routineCalculator.calculateRoutineDates(request);
+        List<LocalDate> routineDates=routineCalculator.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
         int dose = request.getDose();
         int quantity = 0;
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());

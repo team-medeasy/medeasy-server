@@ -13,13 +13,13 @@ public class RoutineCalculator {
      * 3/16
      * 약을 복용할 날짜 구하기
      * */
-    public List<LocalDate> calculateRoutineDates(RoutineRegisterRequest routineRegisterRequest) {
-        int dailyDose=routineRegisterRequest.getUserScheduleIds().size()*routineRegisterRequest.getDose();
+    public List<LocalDate> calculateRoutineDates(LocalDate startDate, int scheduleSize, RoutineRegisterRequest routineRegisterRequest) {
+        int dailyDose=scheduleSize * routineRegisterRequest.getDose();
 
         int requiredDays=(int) Math.ceil((double) routineRegisterRequest.getTotalQuantity()/dailyDose); // 반올림
 
         List<LocalDate> dates = new ArrayList<>();
-        LocalDate currentDate = LocalDate.now();
+        LocalDate currentDate = startDate;
 
         while(dates.size() < requiredDays) {
             int todayDayValue = currentDate.getDayOfWeek().getValue();

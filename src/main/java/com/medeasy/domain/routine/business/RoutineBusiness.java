@@ -63,6 +63,7 @@ public class RoutineBusiness {
 
     private final RoutineCalculator routineCalculator;
     private final RoutineCreator routineBasicCreator;
+    private final RoutineContainPastCreator routineContainPastCreator;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
@@ -78,8 +79,8 @@ public class RoutineBusiness {
             RoutineQueryRepository routineQueryRepository,
             RoutineConverter routineConverter, UserScheduleService userScheduleService,
             RoutineCalculator routineCalculator,
-            @Qualifier("routineBasicCreator") RoutineCreator routineBasicCreator
-    ) {
+            @Qualifier("routineBasicCreator") RoutineCreator routineBasicCreator,
+            RoutineContainPastCreator routineContainPastCreator) {
         this.routineService = routineService;
         this.routineGroupService = routineGroupService;
         this.userService = userService;
@@ -94,6 +95,7 @@ public class RoutineBusiness {
         this.userScheduleService = userScheduleService;
         this.routineCalculator = routineCalculator;
         this.routineBasicCreator = routineBasicCreator;
+        this.routineContainPastCreator = routineContainPastCreator;
     }
     /**
      * 단일 약 루틴 저장
@@ -104,7 +106,7 @@ public class RoutineBusiness {
      * */
     @Transactional
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
-        // Entity 값 가져오기
+        // Entity 값 가져오기 user_schedule.time 은 오름차순
         UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
 
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
@@ -126,7 +128,7 @@ public class RoutineBusiness {
             routineEntities = routineBasicCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
         } else if (routineRegisterRequest.getRoutineStartDate().isBefore(LocalDate.now())) {
             // TODO 루틴에 과거 일자가 섞여 있는 경우
-
+            routineContainPastCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
         }
 
         routineRepository.saveAll(routineEntities);
