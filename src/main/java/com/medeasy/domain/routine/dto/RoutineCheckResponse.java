@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 public class RoutineCheckResponse {
 
-    private Long routineMedicineId;
+    private Long routine_id;
 
     private Boolean beforeIsTaken;
 
