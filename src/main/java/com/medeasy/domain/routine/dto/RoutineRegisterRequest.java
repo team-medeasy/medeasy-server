@@ -38,4 +38,7 @@ public class RoutineRegisterRequest {
 
 //    @Schema(description = "새 약을 복용할 시기 ", example = "[MORNING, LUNCH, DINNER, BEDTIME]")
 //    private String typeDescription;
+
+    @Schema(description = "복용 날짜 간격", example = "1")
+    private Long intervalDays;
 }

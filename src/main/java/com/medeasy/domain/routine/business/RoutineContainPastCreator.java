@@ -9,6 +9,7 @@ import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -17,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
-@Service
+@Component
 public class RoutineContainPastCreator implements RoutineCreator{
-    private final RoutineCalculator routineCalculator;
+    private final RoutineCalculatorByDayOfWeeks routineCalculatorByDayOfWeeks;
     private final RoutineConverter routineConverter;
     private final MedicineDocumentService medicineDocumentService;
     private final UserScheduleService userScheduleService;
@@ -49,7 +50,7 @@ public class RoutineContainPastCreator implements RoutineCreator{
         List<RoutineEntity> routineEntities = new ArrayList<>();
 
         // 복용 날짜 계산
-        List<LocalDate> routineDates=routineCalculator.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
+        List<LocalDate> routineDates= routineCalculatorByDayOfWeeks.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
         int dose = request.getDose();
         int quantity = 0;
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());

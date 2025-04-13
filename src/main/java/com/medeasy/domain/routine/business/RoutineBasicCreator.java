@@ -1,7 +1,6 @@
 package com.medeasy.domain.routine.business;
 
 import com.medeasy.domain.medicine.db.MedicineDocument;
-import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import com.medeasy.domain.medicine.service.MedicineDocumentService;
 import com.medeasy.domain.routine.converter.RoutineConverter;
 import com.medeasy.domain.routine.db.RoutineEntity;
@@ -9,18 +8,18 @@ import com.medeasy.domain.routine.dto.RoutineRegisterRequest;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class RoutineBasicCreator implements RoutineCreator{
 
-    private final RoutineCalculator routineCalculator;
+    private final RoutineCalculatorByDayOfWeeks routineCalculatorByDayOfWeeks;
     private final RoutineConverter routineConverter;
     private final MedicineDocumentService medicineDocumentService;
 
@@ -29,7 +28,7 @@ public class RoutineBasicCreator implements RoutineCreator{
         LocalDate startDate = LocalDate.now();
         LocalTime startTime = LocalTime.now();
         List<RoutineEntity> routineEntities = new ArrayList<>();
-        List<LocalDate> routineDates=routineCalculator.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
+        List<LocalDate> routineDates= routineCalculatorByDayOfWeeks.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
         int dose = request.getDose();
         int quantity = 0;
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());
