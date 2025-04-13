@@ -9,6 +9,8 @@ import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,16 +18,16 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
-@Service
+@Component
 public class RoutineContainPastCreator implements RoutineCreator{
-    private final RoutineCalculator routineCalculator;
     private final RoutineConverter routineConverter;
     private final MedicineDocumentService medicineDocumentService;
     private final UserScheduleService userScheduleService;
 
     @Override
-    public List<RoutineEntity> createRoutines(RoutineRegisterRequest request, UserEntity userEntity, List<UserScheduleEntity> userScheduleEntities) {
+    public List<RoutineEntity> createRoutines(RoutineCalculator routineCalculator, RoutineRegisterRequest request, UserEntity userEntity, List<UserScheduleEntity> userScheduleEntities) {
         // 루틴 시작 날짜
         LocalDate startDate = request.getRoutineStartDate();
         LocalDate today = LocalDate.now();
@@ -49,7 +51,9 @@ public class RoutineContainPastCreator implements RoutineCreator{
         List<RoutineEntity> routineEntities = new ArrayList<>();
 
         // 복용 날짜 계산
-        List<LocalDate> routineDates=routineCalculator.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
+        List<LocalDate> routineDates= routineCalculator.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
+        log.info("날짜 계산 디버깅 로그: {}", routineDates);
+
         int dose = request.getDose();
         int quantity = 0;
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());

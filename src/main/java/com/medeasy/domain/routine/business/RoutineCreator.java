@@ -8,5 +8,5 @@ import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import java.util.List;
 
 public interface RoutineCreator {
-    public List<RoutineEntity> createRoutines(RoutineRegisterRequest request, UserEntity userEntity, List<UserScheduleEntity> userScheduleEntities);
+    public List<RoutineEntity> createRoutines(RoutineCalculator routineCalculator, RoutineRegisterRequest request, UserEntity userEntity, List<UserScheduleEntity> userScheduleEntities);
 }
