@@ -40,6 +40,10 @@ public class RoutineController {
                 3. 시작 날짜가 미래일 때 -> 시작 날짜 nullable = false, 시작 스케줄 nullable = true (null일 경우 가장 빠른 시간의 스케줄)
                 
                 미래 날짜의 정해진 시간부터 차례로 루틴 생성 
+                
+                추가 4/13
+                
+                기존 루틴 날짜 계산 방식 변경: 선택한 요일에 해당하는 날짜 -> 날짜 간격
             
             필드 설명:
             
@@ -57,7 +61,9 @@ public class RoutineController {
             
             start_user_schedule_id: 약 복용 시작 스케줄, null 일시 제일 빠른 스케줄
             
-            마지막 업데이트 4/12
+            interval_days: 약 복용 날짜 간격, 1-> 매일 7-> 일주일에 한번 
+            
+            마지막 업데이트 4/13
              
             """
     )

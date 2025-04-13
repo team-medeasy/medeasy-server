@@ -133,18 +133,27 @@ public class RoutineBusiness {
 
         List<RoutineEntity> routineEntities = new ArrayList<>();
 
+        RoutineCalculator routineCalculator;
+
+        // TODO 루틴 등록 프론트에서 간격으로 적용 완료시 삭제 필요 버전 호환성 코드
+        if(routineRegisterRequest.getIntervalDays() == null){
+            routineCalculator=routineCalculatorByDayOfWeeks;
+        }else {
+            routineCalculator=routineCalculatorByInterval;
+        }
+
         // 전략 패턴 이용 상황에 따른 루틴 등록
         if(routineRegisterRequest.getRoutineStartDate() == null && routineRegisterRequest.getStartUserScheduleId() == null) {
             // 루틴에 시작날짜, 시간 명시하지 않은 경우 (제일 기본)
-            routineEntities = routineBasicCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
+            routineEntities = routineBasicCreator.createRoutines(routineCalculator, routineRegisterRequest, userEntity, registerUserScheduleEntities);
 
         } else if (routineRegisterRequest.getRoutineStartDate().isBefore(LocalDate.now())) {
             // 루틴에 과거 일자가 포함되어있는 경우
-            routineEntities = routineContainPastCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
+            routineEntities = routineContainPastCreator.createRoutines(routineCalculator, routineRegisterRequest, userEntity, registerUserScheduleEntities);
 
         } else if (routineRegisterRequest.getRoutineStartDate().isAfter(LocalDate.now())) {
             // 루틴을 미리 등록할 경우
-            routineEntities = routineFutureCreator.createRoutines(routineRegisterRequest, userEntity, registerUserScheduleEntities);
+            routineEntities = routineFutureCreator.createRoutines(routineCalculator, routineRegisterRequest, userEntity, registerUserScheduleEntities);
         }
 
         routineRepository.saveAll(routineEntities);

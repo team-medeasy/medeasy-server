@@ -20,13 +20,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class RoutineFutureCreator implements RoutineCreator{
-    private final RoutineCalculatorByDayOfWeeks routineCalculatorByDayOfWeeks;
     private final RoutineConverter routineConverter;
     private final MedicineDocumentService medicineDocumentService;
     private final UserScheduleService userScheduleService;
 
     @Override
-    public List<RoutineEntity> createRoutines(RoutineRegisterRequest request, UserEntity userEntity, List<UserScheduleEntity> userScheduleEntities) {
+    public List<RoutineEntity> createRoutines(RoutineCalculator routineCalculator, RoutineRegisterRequest request, UserEntity userEntity, List<UserScheduleEntity> userScheduleEntities) {
         // 루틴 시작 날짜
         LocalDate startDate = request.getRoutineStartDate();
         LocalTime startTime;
@@ -48,7 +47,7 @@ public class RoutineFutureCreator implements RoutineCreator{
         List<RoutineEntity> routineEntities = new ArrayList<>();
 
         // 복용 날짜 계산
-        List<LocalDate> routineDates= routineCalculatorByDayOfWeeks.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
+        List<LocalDate> routineDates= routineCalculator.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
         int dose = request.getDose();
         int quantity = 0;
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());

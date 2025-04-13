@@ -19,16 +19,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoutineBasicCreator implements RoutineCreator{
 
-    private final RoutineCalculatorByDayOfWeeks routineCalculatorByDayOfWeeks;
     private final RoutineConverter routineConverter;
     private final MedicineDocumentService medicineDocumentService;
 
     @Override
-    public List<RoutineEntity> createRoutines(RoutineRegisterRequest request, UserEntity userEntity, List<UserScheduleEntity> userScheduleEntities) {
+    public List<RoutineEntity> createRoutines(RoutineCalculator routineCalculator, RoutineRegisterRequest request, UserEntity userEntity, List<UserScheduleEntity> userScheduleEntities) {
         LocalDate startDate = LocalDate.now();
         LocalTime startTime = LocalTime.now();
         List<RoutineEntity> routineEntities = new ArrayList<>();
-        List<LocalDate> routineDates= routineCalculatorByDayOfWeeks.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
+        List<LocalDate> routineDates= routineCalculator.calculateRoutineDates(startDate, userScheduleEntities.size(), request);
         int dose = request.getDose();
         int quantity = 0;
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());

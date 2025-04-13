@@ -24,7 +24,7 @@ public class RoutineRegisterRequest {
     @Schema(description = "총 약의 개수", example = "30")
     private int totalQuantity;
 
-    @Schema(description = "약 복용 요일, 월요일~일요일 -> 1~7", example = "[1, 2, 3]")
+    @Schema(description = "약 복용 요일, 월요일~일요일 -> 1~7", example = "[1, 2, 3]", nullable = true)
     private List<Integer> dayOfWeeks;
 
     @Schema(description = "약을 복용할 사용자 스케줄 리스트", example = "[1, 2, 3]")
@@ -39,6 +39,6 @@ public class RoutineRegisterRequest {
 //    @Schema(description = "새 약을 복용할 시기 ", example = "[MORNING, LUNCH, DINNER, BEDTIME]")
 //    private String typeDescription;
 
-    @Schema(description = "복용 날짜 간격", example = "1")
+    @Schema(description = "복용 날짜 간격", example = "1", nullable = true)
     private Long intervalDays;
 }
