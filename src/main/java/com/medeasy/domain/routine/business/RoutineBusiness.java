@@ -197,7 +197,7 @@ public class RoutineBusiness {
         routineEntity.setIsTaken(isTaken);
 
         return RoutineCheckResponse.builder()
-                .routineMedicineId(routineId)
+                .routine_id(routineId)
                 .afterIsTaken(isTaken)
                 .beforeIsTaken(beforeTaken)
                 .build()
