@@ -1,6 +1,6 @@
 package com.medeasy.domain.routine_group.db;
 
-import com.medeasy.domain.routine_group_mapping.db.RoutineGroupMappingEntity;
+import com.medeasy.domain.routine.db.RoutineEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,5 +30,5 @@ public class RoutineGroupEntity {
 
     @OneToMany(mappedBy = "routineGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default
-    private List<RoutineGroupMappingEntity> routineGroupMappings=new ArrayList<>();
+    private List<RoutineEntity> routines=new ArrayList<>();
 }
