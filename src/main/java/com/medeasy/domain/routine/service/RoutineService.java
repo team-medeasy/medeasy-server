@@ -92,6 +92,10 @@ public class RoutineService {
         return routineRepository.findById(id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
     }
 
+    public RoutineEntity getUserRoutineById(Long userId, Long id) {
+        return routineRepository.findByUserIdAndId(userId, id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
+    }
+
     public void deleteRoutineByUserIdAndId(Long userId, Long routineId) {
         routineRepository.deleteByUserIdAndId(userId, routineId);
     }
@@ -172,4 +176,6 @@ public class RoutineService {
     public List<String> getDistinctRoutineByUserId(Long userId) {
         return routineRepository.findDistinctMeidicneIdByUserId(userId);
     }
+
+
 }

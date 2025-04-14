@@ -218,6 +218,26 @@ public class RoutineController {
         return Api.OK(null);
     }
 
+    @Operation(summary = "전체 루틴 삭제 api", description =
+            """
+                전체 루틴 삭제 api 
+            
+            요청: 
+            
+            routine id 를 입력하여 같은 그룹의 루틴들도 전체 삭제 
+            """
+    )
+    @DeleteMapping("/group/{routine_id}")
+    public Api<Object> deleteGroupRoutine(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @Parameter(description = "삭제 하려는 루틴 id", required = true)
+            @PathVariable("routine_id") Long routineId
+    ) {
+        routineBusiness.deleteGroupRoutine(userId, routineId);
+        log.info("루틴 삭제 완료 사용자: {}", userId);
+        return Api.OK(null);
+    }
+
     @PatchMapping("")
     public Api<Object> updateRoutineMedicine(
             @Parameter(hidden = true) @UserSession Long userId,
