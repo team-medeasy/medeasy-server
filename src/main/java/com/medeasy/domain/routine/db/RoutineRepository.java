@@ -33,10 +33,10 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             @Param("takeDates") List<LocalDate> takeDates
     );
 
-    @Query("SELECT new com.medeasy.domain.routine.dto.RoutineGroupDateRangeDto(rgm.routineGroup.id, MIN(r.takeDate), MAX(r.takeDate)) " +
-            "FROM RoutineEntity r JOIN r.routineGroupMappings rgm " +
+    @Query("SELECT new com.medeasy.domain.routine.dto.RoutineGroupDateRangeDto(rg.id, MIN(r.takeDate), MAX(r.takeDate)) " +
+            "FROM RoutineEntity r JOIN r.routineGroup rg " +
             "WHERE r.user.id = :userId " +
-            "GROUP BY rgm.routineGroup.id")
+            "GROUP BY rg.id")
     List<RoutineGroupDateRangeDto> findStartAndEndDateRangeByGroup(Long userId);
 
     void deleteByUserIdAndId(Long userId, Long id);

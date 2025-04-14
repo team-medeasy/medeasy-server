@@ -1,9 +1,11 @@
 package com.medeasy.domain.routine_group.db;
 
-import com.medeasy.domain.routine_group_mapping.db.RoutineGroupMappingEntity;
+import com.medeasy.domain.routine.db.RoutineEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,10 +27,11 @@ public class RoutineGroupEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "routine_group_seq_generator")
     private Long id;
 
-    @Column(nullable = false, length = 50)
-    private String medicineId;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "routineGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default
-    private List<RoutineGroupMappingEntity> routineGroupMappings=new ArrayList<>();
+    private List<RoutineEntity> routines=new ArrayList<>();
 }

@@ -1,14 +1,12 @@
 package com.medeasy.domain.routine.db;
 
-import com.medeasy.domain.routine_group_mapping.db.RoutineGroupMappingEntity;
+import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Entity
@@ -52,9 +50,9 @@ public class RoutineEntity {
     @Column(nullable = false)
     private Boolean isTaken;
 
-    @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    @Builder.Default
-    private List<RoutineGroupMappingEntity> routineGroupMappings=new ArrayList<>();
+    @JoinColumn(name = "routine_group_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private RoutineGroupEntity routineGroup;
 
     /*
     * CascadeType.ALL 부모 엔티티의 업데이트를 자식에서도 따라감.

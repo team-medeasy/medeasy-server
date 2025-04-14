@@ -2,7 +2,7 @@ package com.medeasy.domain.routine.db;
 
 import com.medeasy.domain.routine.dto.RoutineFlatDto;
 import com.medeasy.domain.routine.dto.RoutineGroupDateRangeDto;
-import com.medeasy.domain.routine_group_mapping.db.QRoutineGroupMappingEntity;
+import com.medeasy.domain.routine_group.db.QRoutineGroupEntity;
 import com.medeasy.domain.user_schedule.db.QUserScheduleEntity;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
@@ -26,8 +26,7 @@ public class RoutineQueryRepository {
             Long userId, LocalDate startDate, LocalDate endDate) {
 
         QRoutineEntity r = QRoutineEntity.routineEntity;
-        QRoutineGroupMappingEntity rgm = QRoutineGroupMappingEntity.routineGroupMappingEntity;
-
+        QRoutineGroupEntity rg = QRoutineGroupEntity.routineGroupEntity;
         BooleanBuilder where = new BooleanBuilder();
         where.and(r.user.id.eq(userId));
 
@@ -40,26 +39,26 @@ public class RoutineQueryRepository {
         return queryFactory
                 .select(Projections.constructor(
                         RoutineGroupDateRangeDto.class,
-                        rgm.routineGroup.id,
+                        rg.id,
                         r.takeDate.min(),
                         r.takeDate.max()
                 ))
                 .from(r)
-                .join(r.routineGroupMappings, rgm)
+                .join(r.routineGroup, rg)
                 .where(where)
-                .groupBy(rgm.routineGroup.id)
+                .groupBy(rg.id)
                 .having(r.takeDate.max().goe(today)) // max_date가 오늘날짜와 같거나 큰경우
                 .fetch();
     }
 
     /**
-     * 현재 복용 중인 약 루틴의 복용기간 즉 시작 날짜와 마지막날짜를 반환
+     * 과거 복용 중인 약 루틴의 복용기간 즉 시작 날짜와 마지막날짜를 반환
      * */
     public List<RoutineGroupDateRangeDto> findPastRoutineStartAndEndDateRangeByGroup(
             Long userId, LocalDate startDate, LocalDate endDate) {
 
         QRoutineEntity r = QRoutineEntity.routineEntity;
-        QRoutineGroupMappingEntity rgm = QRoutineGroupMappingEntity.routineGroupMappingEntity;
+        QRoutineGroupEntity rg = QRoutineGroupEntity.routineGroupEntity;
 
         BooleanBuilder where = new BooleanBuilder();
         where.and(r.user.id.eq(userId));
@@ -73,15 +72,16 @@ public class RoutineQueryRepository {
         return queryFactory
                 .select(Projections.constructor(
                         RoutineGroupDateRangeDto.class,
-                        rgm.routineGroup.id,
+                        rg.id,
                         r.takeDate.min(),
                         r.takeDate.max()
                 ))
                 .from(r)
-                .join(r.routineGroupMappings, rgm)
+                .join(r.routineGroup, rg)
                 .where(where)
-                .groupBy(rgm.routineGroup.id)
-                .having(r.takeDate.max().lt(today)) // max_date가 오늘날짜와 같거나 큰경우
+                .groupBy(rg.id)
+                .having(r.takeDate.max().lt(today)) // max_date가 오늘날짜보다 작은경우
+                // TODO 오늘날짜여도 약을 다 먹은 경우에는 표시
                 .fetch();
     }
 
@@ -91,12 +91,12 @@ public class RoutineQueryRepository {
     public List<RoutineFlatDto> findRoutineInfoByUserIdAndGroupIds(Long userId, List<Long> routineGroupIds) {
         QRoutineEntity r = QRoutineEntity.routineEntity;
         QUserScheduleEntity us = QUserScheduleEntity.userScheduleEntity;
-        QRoutineGroupMappingEntity rgm = QRoutineGroupMappingEntity.routineGroupMappingEntity;
+        QRoutineGroupEntity rg = QRoutineGroupEntity.routineGroupEntity;
 
         return queryFactory
                 .select(Projections.constructor(
                         RoutineFlatDto.class,
-                        rgm.routineGroup.id,
+                        rg.id,
                         r.takeDate,
                         us.id,
                         r.medicineId,
@@ -105,12 +105,12 @@ public class RoutineQueryRepository {
                 ))
                 .from(r)
                 .join(r.userSchedule, us)
-                .join(r.routineGroupMappings, rgm)
+                .join(r.routineGroup, rg)
                 .where(
                         r.user.id.eq(userId),
-                        rgm.routineGroup.id.in(routineGroupIds)
+                        rg.id.in(routineGroupIds)
                 )
-                .orderBy(rgm.routineGroup.id.asc())
+                .orderBy(rg.id.asc())
                 .fetch();
     }
 }
