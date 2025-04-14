@@ -156,9 +156,8 @@ public class RoutineBusiness {
             routineEntities = routineFutureCreator.createRoutines(routineCalculator, routineRegisterRequest, userEntity, registerUserScheduleEntities);
         }
 
-        routineRepository.saveAll(routineEntities);
-        // TODO routine_group_mapping 테이블 삭제
         routineGroupService.mappingRoutineGroup(routineEntities);
+        routineRepository.saveAll(routineEntities);
     }
 
 
