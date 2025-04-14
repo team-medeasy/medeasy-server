@@ -280,6 +280,18 @@ public class RoutineBusiness {
      * TODO 루틴 등록시에는 약을 먹는 시기를 명시하지만, 처방전 등록시에는 자동으로 설정하던, 미리 설정 값을 입력받는 쪽으로 구현
      * */
     private List<UserScheduleDto> recommendScheduleByScheduleCount(Map<String, UserScheduleDto> scheduleMap, int scheduleCount) {
+        // 하나의 약마다 개별적인 스케줄 제공을 위한 map 복사
+        Map<String, UserScheduleDto> copiedMap = scheduleMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> UserScheduleDto.builder()
+                                .userScheduleId(entry.getValue().getUserScheduleId())
+                                .name(entry.getValue().getName())
+                                .takeTime(entry.getValue().getTakeTime())
+                                .isRecommended(false) // 기본 false로 설정
+                                .build()
+                ));
+
         List<MedicationTime> medicationTimes;
 
         if(scheduleCount==1){
@@ -294,7 +306,7 @@ public class RoutineBusiness {
             throw new ApiException(SchedulerError.BAD_REQEUST, "지원하는 스케줄 외 요청");
         }
 
-        return userScheduleConverter.toDtoListFromMedicationTimes(scheduleMap, medicationTimes);
+        return userScheduleConverter.toDtoListFromMedicationTimes(copiedMap, medicationTimes);
     }
 
     /**
