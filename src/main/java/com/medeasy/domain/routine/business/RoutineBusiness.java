@@ -150,12 +150,13 @@ public class RoutineBusiness {
             routineCalculator=routineCalculatorByInterval;
         }
 
+        // TODO start date가 오늘인 경우 추가
         // 전략 패턴 이용 상황에 따른 루틴 등록
         if(routineRegisterRequest.getRoutineStartDate() == null && routineRegisterRequest.getStartUserScheduleId() == null) {
             // 루틴에 시작날짜, 시간 명시하지 않은 경우 (제일 기본)
             routineEntities = routineBasicCreator.createRoutines(routineCalculator, routineRegisterRequest, userEntity, registerUserScheduleEntities);
 
-        } else if (routineRegisterRequest.getRoutineStartDate().isBefore(LocalDate.now())) {
+        } else if (routineRegisterRequest.getRoutineStartDate().isBefore(LocalDate.now()) || routineRegisterRequest.getRoutineStartDate().isEqual(LocalDate.now())) {
             // 루틴에 과거 일자가 포함되어있는 경우
             routineEntities = routineContainPastCreator.createRoutines(routineCalculator, routineRegisterRequest, userEntity, registerUserScheduleEntities);
 
