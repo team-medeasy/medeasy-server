@@ -45,4 +45,6 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             "FROM RoutineEntity r " +
             "WHERE r.user.id = :userId ")
     List<String> findDistinctMeidicneIdByUserId(Long userId);
+
+    Optional<RoutineEntity> findByUserIdAndId(Long userId, Long id);
 }

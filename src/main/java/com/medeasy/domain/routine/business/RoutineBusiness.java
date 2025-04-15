@@ -17,6 +17,8 @@ import com.medeasy.domain.routine.db.RoutineQueryRepository;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
+import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
+import com.medeasy.domain.routine_group.db.RoutineGroupRepository;
 import com.medeasy.domain.routine_group.service.RoutineDateRangeStrategy;
 import com.medeasy.domain.routine_group.service.RoutineGroupService;
 import com.medeasy.domain.user.db.UserEntity;
@@ -55,6 +57,7 @@ public class RoutineBusiness {
 
     private final UserScheduleConverter userScheduleConverter;
     private final RoutineRepository routineRepository;
+    private final RoutineGroupRepository routineGroupRepository;
 
     private final RoutineQueryRepository routineQueryRepository;
     private final RoutineConverter routineConverter;
@@ -79,6 +82,7 @@ public class RoutineBusiness {
             UserScheduleConverter userScheduleConverter,
             RoutineRepository routineRepository,
             RoutineQueryRepository routineQueryRepository,
+            RoutineGroupRepository routineGroupRepository,
             RoutineConverter routineConverter, UserScheduleService userScheduleService,
             @Qualifier("routineCalculatorByDayOfWeeks") RoutineCalculator routineCalculatorByDayOfWeeks,
             @Qualifier("routineCalculatorByInterval") RoutineCalculator routineCalculatorByInterval,
@@ -93,9 +97,13 @@ public class RoutineBusiness {
         this.ocrService = ocrService;
         this.aiService = aiService;
         this.objectMapper = objectMapper;
+
         this.userScheduleConverter = userScheduleConverter;
+
         this.routineRepository = routineRepository;
         this.routineQueryRepository = routineQueryRepository;
+        this.routineGroupRepository = routineGroupRepository;
+
         this.routineConverter = routineConverter;
         this.userScheduleService = userScheduleService;
 
@@ -142,12 +150,13 @@ public class RoutineBusiness {
             routineCalculator=routineCalculatorByInterval;
         }
 
+        // TODO start date가 오늘인 경우 추가
         // 전략 패턴 이용 상황에 따른 루틴 등록
         if(routineRegisterRequest.getRoutineStartDate() == null && routineRegisterRequest.getStartUserScheduleId() == null) {
             // 루틴에 시작날짜, 시간 명시하지 않은 경우 (제일 기본)
             routineEntities = routineBasicCreator.createRoutines(routineCalculator, routineRegisterRequest, userEntity, registerUserScheduleEntities);
 
-        } else if (routineRegisterRequest.getRoutineStartDate().isBefore(LocalDate.now())) {
+        } else if (routineRegisterRequest.getRoutineStartDate().isBefore(LocalDate.now()) || routineRegisterRequest.getRoutineStartDate().isEqual(LocalDate.now())) {
             // 루틴에 과거 일자가 포함되어있는 경우
             routineEntities = routineContainPastCreator.createRoutines(routineCalculator, routineRegisterRequest, userEntity, registerUserScheduleEntities);
 
@@ -415,5 +424,12 @@ public class RoutineBusiness {
      * */
     public void updateRoutine(Long userId, RoutineUpdateRequest request) {
 
+    }
+
+    @Transactional
+    public void deleteGroupRoutine(Long userId, Long routineId) {
+        RoutineEntity routineEntity=routineService.getUserRoutineById(userId, routineId);
+        RoutineGroupEntity routineGroupEntity=routineEntity.getRoutineGroup();
+        routineGroupRepository.delete(routineGroupEntity);
     }
 }

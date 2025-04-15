@@ -1,15 +1,12 @@
 package com.medeasy.domain.routine.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.error.RoutineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
-import com.medeasy.domain.routine.db.RoutineQueryRepository;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
-import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -92,6 +89,10 @@ public class RoutineService {
         return routineRepository.findById(id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
     }
 
+    public RoutineEntity getUserRoutineById(Long userId, Long id) {
+        return routineRepository.findByUserIdAndId(userId, id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
+    }
+
     public void deleteRoutineByUserIdAndId(Long userId, Long routineId) {
         routineRepository.deleteByUserIdAndId(userId, routineId);
     }
@@ -172,4 +173,6 @@ public class RoutineService {
     public List<String> getDistinctRoutineByUserId(Long userId) {
         return routineRepository.findDistinctMeidicneIdByUserId(userId);
     }
+
+
 }

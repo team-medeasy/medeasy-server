@@ -17,7 +17,7 @@ import java.util.List;
 public class RoutineUpdateRequest {
 
     @Schema(description = "수정하려는 루틴 약 Id", example = "12", nullable = false)
-    private Long routineMedicineId;
+    private Long routineId;
 
     @Schema(description = "약 별칭", example = "감기약", nullable = true)
     private String nickname;
