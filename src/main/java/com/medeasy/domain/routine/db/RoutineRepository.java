@@ -42,8 +42,9 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
 
     void deleteByUserIdAndId(Long userId, Long id);
 
-    @Query("SELECT DISTINCT r.medicineId " +
-            "FROM RoutineEntity r " +
+    @Query("SELECT DISTINCT rg.medicineId " +
+            "FROM RoutineGroupEntity rg " +
+            "JOIN rg.routines r " +
             "WHERE r.user.id = :userId ")
     List<String> findDistinctMeidicneIdByUserId(Long userId);
 

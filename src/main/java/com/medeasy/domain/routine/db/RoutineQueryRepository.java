@@ -99,9 +99,9 @@ public class RoutineQueryRepository {
                         rg.id,
                         r.takeDate,
                         us.id,
-                        r.medicineId,
-                        r.nickname,
-                        r.dose
+                        rg.medicineId,
+                        rg.nickname,
+                        rg.dose
                 ))
                 .from(r)
                 .join(r.userSchedule, us)
