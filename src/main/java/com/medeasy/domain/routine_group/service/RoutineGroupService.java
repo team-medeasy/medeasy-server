@@ -20,9 +20,7 @@ public class RoutineGroupService {
     /**
      * 루틴 등록시 RoutineGroup과 Routine의 연관관계 매핑
      * */
-    public void mappingRoutineGroup(List<RoutineEntity> routineEntities) {
-
-        RoutineGroupEntity routineGroupEntity= new RoutineGroupEntity();
+    public void mappingRoutineGroup(RoutineGroupEntity routineGroupEntity, List<RoutineEntity> routineEntities) {
         routineGroupRepository.save(routineGroupEntity);
 
         routineEntities.forEach(r -> r.setRoutineGroup(routineGroupEntity));
