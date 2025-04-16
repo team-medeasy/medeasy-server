@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Converter
 public class RoutineConverter {
 
-    public RoutineEntity toEntityFromRequest(LocalDate takeDate, String nickname, UserEntity userEntity, UserScheduleEntity userScheduleEntity, RoutineRegisterRequest request) {
+    public RoutineEntity toEntityFromRequest(LocalDate takeDate, UserEntity userEntity, UserScheduleEntity userScheduleEntity) {
         return RoutineEntity.builder()
                 .takeDate(takeDate)
                 .userSchedule(userScheduleEntity)
