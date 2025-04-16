@@ -39,15 +39,6 @@ public class RoutineEntity {
     private UserScheduleEntity userSchedule;
 
     @Column(nullable = false)
-    private String nickname;
-
-    @Column(nullable = false)
-    private String medicineId;
-
-    @Column(nullable = false)
-    private int dose;
-
-    @Column(nullable = false)
     private Boolean isTaken;
 
     @JoinColumn(name = "routine_group_id")

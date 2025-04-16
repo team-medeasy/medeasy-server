@@ -31,6 +31,15 @@ public class RoutineGroupEntity {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
+    private String nickname;
+
+    @Column(nullable = false)
+    private String medicineId;
+
+    @Column(nullable = false)
+    private int dose;
+
     @OneToMany(mappedBy = "routineGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default
     private List<RoutineEntity> routines=new ArrayList<>();

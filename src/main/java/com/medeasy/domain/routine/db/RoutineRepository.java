@@ -14,6 +14,7 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
 
     @Query("SELECT r FROM RoutineEntity r " +
             "JOIN FETCH r.userSchedule us " +
+            "JOIN FETCH r.routineGroup rg " +
             "WHERE r.user.id = :userId " +
             "AND r.takeDate BETWEEN :startDate AND :endDate " +
             "ORDER BY r.takeDate ASC, us.takeTime ASC")

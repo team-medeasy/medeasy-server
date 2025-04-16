@@ -5,6 +5,8 @@ import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
+import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
+import com.medeasy.domain.routine_group.service.RoutineGroupService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
@@ -21,6 +23,7 @@ public class RoutineService {
 
     private final RoutineRepository routineRepository;
     private final UserService userService;
+    private final RoutineGroupService routineGroupService;
 
 
     public RoutineEntity save(RoutineEntity routineEntity) {
@@ -37,6 +40,7 @@ public class RoutineService {
 
         for(RoutineEntity routineEntity: routineEntities) {
             LocalDate takeDate=routineEntity.getTakeDate();
+            RoutineGroupEntity routineGroupEntity = routineEntity.getRoutineGroup();
 
             // 날짜 기준 그룹 생성
             routineMap.putIfAbsent(takeDate, RoutineGroupDto.builder()
@@ -72,10 +76,10 @@ public class RoutineService {
             RoutineGroupDto.UserScheduleGroupDto.RoutineDto routineDto =
                     RoutineGroupDto.UserScheduleGroupDto.RoutineDto.builder()
                             .routineId(routineEntity.getId())
-                            .nickname(routineEntity.getNickname())
+                            .nickname(routineGroupEntity.getNickname())
                             .isTaken(routineEntity.getIsTaken())
-                            .dose(routineEntity.getDose())
-                            .medicineId(routineEntity.getMedicineId())
+                            .dose(routineGroupEntity.getDose())
+                            .medicineId(routineGroupEntity.getMedicineId())
                             .build();
 
             scheduleDto.getRoutineDtos().add(routineDto);
