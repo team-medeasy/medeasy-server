@@ -7,7 +7,6 @@ import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.RoutineGroupDto;
 import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
 import com.medeasy.domain.routine_group.service.RoutineGroupService;
-import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import lombok.RequiredArgsConstructor;
@@ -94,72 +93,11 @@ public class RoutineService {
     }
 
     public RoutineEntity getUserRoutineById(Long userId, Long id) {
-        return routineRepository.findByUserIdAndId(userId, id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
+        return routineRepository.findRoutineByUserIdAndId(userId, id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
     }
 
     public void deleteRoutineByUserIdAndId(Long userId, Long routineId) {
         routineRepository.deleteByUserIdAndId(userId, routineId);
-    }
-
-    /**
-     * 사용자의 날짜, 시간대가 같은 루틴을 조회
-     * 있다면 routine을 반환하여 하나의 routine의 여러개의 routine medicine 등록
-     * 없다면 새로 등록.
-     * */
-    public RoutineEntity getRoutineByUserScheduleAndTakeDate(UserEntity userEntity, UserScheduleEntity userScheduleEntity, LocalDate takeDate) {
-        return routineRepository.findByUserScheduleIdAndTakeDate(userScheduleEntity.getId(), takeDate)
-                .orElseGet(() -> {
-                    RoutineEntity newRoutineEntity = RoutineEntity.builder()
-                            .user(userEntity)
-                            .userSchedule(userScheduleEntity)
-                            .takeDate(takeDate)
-                            .build();
-                    return routineRepository.save(newRoutineEntity);
-                });
-    }
-
-    /**
-     * 루틴 조회 및 필요 시 배치 생성
-     */
-    public List<RoutineEntity> getOrCreateRoutines(
-            Long userId,
-            List<UserScheduleEntity> userScheduleEntities,
-            List<LocalDate> takeDates
-    ) {
-        UserEntity userEntity = userService.getUserById(userId);
-        List<Long> userScheduleIds = userScheduleEntities.stream()
-                .map(UserScheduleEntity::getId)
-                .toList();
-
-        List<RoutineEntity> existingRoutines = routineRepository
-                .findAllByByUserIdUserScheduleIdsAndTakeDates(userId, userScheduleIds, takeDates);
-        List<RoutineEntity> newRoutines = new ArrayList<>();
-
-        Set<String> existingKeys = existingRoutines.stream()
-                .map(r -> r.getUserSchedule().getId() + "_" + r.getTakeDate())
-                .collect(Collectors.toSet());
-
-        for (UserScheduleEntity schedule : userScheduleEntities) {
-            for (LocalDate takeDate : takeDates) {
-                String key = schedule.getId() + "_" + takeDate;
-                if (!existingKeys.contains(key)) {
-                    RoutineEntity newRoutine = RoutineEntity.builder()
-                            .user(userEntity)
-                            .userSchedule(schedule)
-                            .takeDate(takeDate)
-                            .build();
-                    newRoutines.add(newRoutine);
-                    existingKeys.add(key);
-                    existingRoutines.add(newRoutine); // 최종 결과 리스트에 추가
-                }
-            }
-        }
-
-        if (!newRoutines.isEmpty()) {
-            routineRepository.saveAll(newRoutines);
-        }
-
-        return existingRoutines;
     }
 
 

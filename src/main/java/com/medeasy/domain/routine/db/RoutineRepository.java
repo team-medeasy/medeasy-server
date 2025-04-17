@@ -1,6 +1,5 @@
 package com.medeasy.domain.routine.db;
 
-import com.medeasy.domain.routine.dto.RoutineGroupDateRangeDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,12 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
-    Optional<RoutineEntity> findByUserScheduleIdAndTakeDate(Long userScheduleId, LocalDate takeDate);
-
     @Query("SELECT r FROM RoutineEntity r " +
             "JOIN FETCH r.userSchedule us " +
             "JOIN FETCH r.routineGroup rg " +
-            "WHERE r.user.id = :userId " +
+            "WHERE rg.user.id = :userId " +
             "AND r.takeDate BETWEEN :startDate AND :endDate " +
             "ORDER BY r.takeDate ASC, us.takeTime ASC")
     List<RoutineEntity> findGroupedRoutinesByDate(
@@ -24,29 +21,21 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             @Param("endDate") LocalDate endDate
     );
 
-    @Query(value = "SELECT r from RoutineEntity r " +
-            "where r.user.id=:userId " +
-            "and r.userSchedule.id in :userScheduleIds " +
-            "and r.takeDate in :takeDates")
-    List<RoutineEntity> findAllByByUserIdUserScheduleIdsAndTakeDates(
-            @Param("userId") Long userId,
-            @Param("userScheduleIds") List<Long> userScheduleIds,
-            @Param("takeDates") List<LocalDate> takeDates
-    );
-
     @Query("SELECT new com.medeasy.domain.routine.dto.RoutineGroupDateRangeDto(rg.id, MIN(r.takeDate), MAX(r.takeDate)) " +
             "FROM RoutineEntity r JOIN r.routineGroup rg " +
-            "WHERE r.user.id = :userId " +
+            "WHERE rg.user.id = :userId " +
             "GROUP BY rg.id")
-    List<RoutineGroupDateRangeDto> findStartAndEndDateRangeByGroup(Long userId);
-
     void deleteByUserIdAndId(Long userId, Long id);
 
     @Query("SELECT DISTINCT rg.medicineId " +
             "FROM RoutineGroupEntity rg " +
             "JOIN rg.routines r " +
-            "WHERE r.user.id = :userId ")
+            "WHERE rg.user.id = :userId ")
     List<String> findDistinctMeidicneIdByUserId(Long userId);
 
-    Optional<RoutineEntity> findByUserIdAndId(Long userId, Long id);
+    @Query("SELECT r FROM RoutineEntity r " +
+            "JOIN FETCH r.routineGroup rg " +
+            "WHERE rg.user.id=:userId " +
+            "AND r.id= :id ")
+    Optional<RoutineEntity> findRoutineByUserIdAndId(Long userId, Long id);
 }

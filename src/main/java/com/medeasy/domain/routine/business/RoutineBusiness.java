@@ -175,6 +175,7 @@ public class RoutineBusiness {
         }
 
         RoutineGroupEntity routineGroupEntity = routineGroupConverter.toEntityByRequest(routineRegisterRequest);
+        routineGroupEntity.setUser(userEntity);
         routineGroupService.mappingRoutineGroup(routineGroupEntity, routineEntities);
         routineRepository.saveAll(routineEntities);
     }

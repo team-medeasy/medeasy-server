@@ -28,7 +28,7 @@ public class RoutineQueryRepository {
         QRoutineEntity r = QRoutineEntity.routineEntity;
         QRoutineGroupEntity rg = QRoutineGroupEntity.routineGroupEntity;
         BooleanBuilder where = new BooleanBuilder();
-        where.and(r.user.id.eq(userId));
+        where.and(rg.user.id.eq(userId));
 
         if (startDate != null && endDate != null) {
             where.and(r.takeDate.between(startDate, endDate));
@@ -61,7 +61,7 @@ public class RoutineQueryRepository {
         QRoutineGroupEntity rg = QRoutineGroupEntity.routineGroupEntity;
 
         BooleanBuilder where = new BooleanBuilder();
-        where.and(r.user.id.eq(userId));
+        where.and(rg.user.id.eq(userId));
 
         if (startDate != null && endDate != null) {
             where.and(r.takeDate.between(startDate, endDate));
@@ -107,7 +107,7 @@ public class RoutineQueryRepository {
                 .join(r.userSchedule, us)
                 .join(r.routineGroup, rg)
                 .where(
-                        r.user.id.eq(userId),
+                        rg.user.id.eq(userId),
                         rg.id.in(routineGroupIds)
                 )
                 .orderBy(rg.id.asc())
