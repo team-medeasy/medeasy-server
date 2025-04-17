@@ -433,7 +433,14 @@ public class RoutineBusiness {
      * 3. routine_medicine false list 전부 delete
      * 4. 투여일수에 현재 복용한 일수를 제외한 일수에 대해서 수정 요청 데이터를 반영하여 routine_medicine 저장
      * */
+    @Transactional
     public void updateRoutine(Long userId, RoutineUpdateRequest request) {
+        // nickname만 변경 요청하였을 경우
+        if (request.getNickname() != null && request.getUserScheduleIds() == null) {
+            RoutineGroupEntity routineGroupEntity = routineGroupService.findByRoutineIdAndUserId(request.getRoutineId(), userId);
+            routineGroupEntity.setNickname(request.getNickname());
+        }
+
 
     }
 

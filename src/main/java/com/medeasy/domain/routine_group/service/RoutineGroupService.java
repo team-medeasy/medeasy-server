@@ -1,5 +1,7 @@
 package com.medeasy.domain.routine_group.service;
 
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
@@ -24,5 +26,14 @@ public class RoutineGroupService {
         routineGroupRepository.save(routineGroupEntity);
 
         routineEntities.forEach(r -> r.setRoutineGroup(routineGroupEntity));
+    }
+
+    public RoutineGroupEntity findByRoutineIdAndUserId(Long routineId, Long userId) {
+        return routineGroupRepository.findByRoutineIdAndUserId(routineId, userId).orElseThrow(()->new ApiException(ErrorCode.BAD_REQEUST, "루틴 그룹이 존재하지 않습니다."));
+    }
+
+    public RoutineGroupEntity findRoutineGroupContainsRoutineIdByUserId(Long userId, Long routineId) {
+        return routineGroupRepository.findRoutineGroupContainsRoutineIdByUserId(userId, routineId)
+                .orElseThrow(()->new ApiException(ErrorCode.BAD_REQEUST, "루틴 그룹이 존재하지 않습니다"));
     }
 }
