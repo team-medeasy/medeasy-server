@@ -1,6 +1,7 @@
 package com.medeasy.domain.user.db;
 
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
 import com.medeasy.domain.user_care_mapping.db.UserCareMappingEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import jakarta.persistence.*;
@@ -60,7 +61,7 @@ public class UserEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<RoutineEntity> routines= new ArrayList<>();
+    private List<RoutineGroupEntity> routineGroups= new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)

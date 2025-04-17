@@ -62,7 +62,7 @@ public class RoutineFutureCreator implements RoutineCreator{
                 quantity += dose;
                 if (quantity > request.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(startDate, nickname, userEntity, userScheduleEntity, request);
+                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(startDate, userEntity, userScheduleEntity);
                 routineEntities.add(routineEntity);
             }
 
@@ -76,7 +76,7 @@ public class RoutineFutureCreator implements RoutineCreator{
                 quantity += dose;
                 if (quantity > request.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, nickname, userEntity, userScheduleEntity, request);
+                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, userEntity, userScheduleEntity);
                 routineEntities.add(routineEntity);
             }
         }
