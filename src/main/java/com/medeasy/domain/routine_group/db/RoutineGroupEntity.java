@@ -1,6 +1,7 @@
 package com.medeasy.domain.routine_group.db;
 
 import com.medeasy.domain.routine.db.RoutineEntity;
+import com.medeasy.domain.user.db.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,12 +18,11 @@ import java.util.List;
 @Entity
 @Table(name = "routine_group")
 @SequenceGenerator(
-        name = "routine_group_seq_generator",
-        sequenceName = "routine_group_id_seq",
-        allocationSize = 10
+    name = "routine_group_seq_generator",
+    sequenceName = "routine_group_id_seq",
+    allocationSize = 10
 )
 public class RoutineGroupEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "routine_group_seq_generator")
     private Long id;
@@ -39,6 +39,10 @@ public class RoutineGroupEntity {
 
     @Column(nullable = false)
     private int dose;
+
+    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UserEntity user;
 
     @OneToMany(mappedBy = "routineGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default

@@ -30,10 +30,6 @@ public class RoutineEntity {
     @Column(nullable = false)
     private LocalDate takeDate;
 
-    @JoinColumn(name = "user_id")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private UserEntity user;
-
     @JoinColumn(name = "user_schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserScheduleEntity userSchedule;
