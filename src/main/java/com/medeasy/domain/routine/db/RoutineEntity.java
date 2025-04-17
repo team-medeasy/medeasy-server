@@ -30,22 +30,9 @@ public class RoutineEntity {
     @Column(nullable = false)
     private LocalDate takeDate;
 
-    @JoinColumn(name = "user_id")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private UserEntity user;
-
     @JoinColumn(name = "user_schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserScheduleEntity userSchedule;
-
-    @Column(nullable = false)
-    private String nickname;
-
-    @Column(nullable = false)
-    private String medicineId;
-
-    @Column(nullable = false)
-    private int dose;
 
     @Column(nullable = false)
     private Boolean isTaken;

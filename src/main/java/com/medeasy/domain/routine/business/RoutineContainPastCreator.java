@@ -83,7 +83,7 @@ public class RoutineContainPastCreator implements RoutineCreator{
                 quantity += dose;
                 if (quantity > request.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(startDate, nickname, userEntity, userScheduleEntity, request);
+                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(startDate, userEntity, userScheduleEntity);
                 routineEntity.setIsTaken(true);
                 routineEntities.add(routineEntity);
             }
@@ -97,7 +97,7 @@ public class RoutineContainPastCreator implements RoutineCreator{
                 quantity += dose;
                 if (quantity > request.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, nickname, userEntity, userScheduleEntity, request);
+                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, userEntity, userScheduleEntity);
                 routineEntity.setIsTaken(true);
                 routineEntities.add(routineEntity);
             }
@@ -111,7 +111,7 @@ public class RoutineContainPastCreator implements RoutineCreator{
                 quantity += dose;
                 if (quantity > request.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(todayDate, nickname, userEntity, userScheduleEntity, request);
+                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(todayDate, userEntity, userScheduleEntity);
 
                 // 현재 시간이 복용 시간 이후면 isTaken = true
                 if (currentTime.isAfter(userScheduleEntity.getTakeTime())) {
@@ -128,7 +128,7 @@ public class RoutineContainPastCreator implements RoutineCreator{
                 quantity += dose;
                 if (quantity > request.getTotalQuantity()) break;
 
-                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, nickname, userEntity, userScheduleEntity, request);
+                RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, userEntity, userScheduleEntity);
                 routineEntities.add(routineEntity);
             }
         }

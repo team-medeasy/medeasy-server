@@ -17,6 +17,7 @@ import com.medeasy.domain.routine.db.RoutineQueryRepository;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine.service.RoutineService;
+import com.medeasy.domain.routine_group.converter.RoutineGroupConverter;
 import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
 import com.medeasy.domain.routine_group.db.RoutineGroupRepository;
 import com.medeasy.domain.routine_group.service.RoutineDateRangeStrategy;
@@ -52,6 +53,8 @@ public class RoutineBusiness {
     private final RoutineGroupService routineGroupService;
     private final MedicineDocumentService medicineDocumentService;
 
+    private final RoutineGroupConverter routineGroupConverter;
+
     private final OcrServiceByMultipart ocrService;
     private final AiService aiService;
 
@@ -76,10 +79,15 @@ public class RoutineBusiness {
             RoutineGroupService routineGroupService,
             UserService userService,
             MedicineDocumentService medicineDocumentService,
+
             OcrServiceByMultipart ocrService,
             AiService aiService,
+
             ObjectMapper objectMapper,
+
             UserScheduleConverter userScheduleConverter,
+            RoutineGroupConverter routineGroupConverter,
+
             RoutineRepository routineRepository,
             RoutineQueryRepository routineQueryRepository,
             RoutineGroupRepository routineGroupRepository,
@@ -99,6 +107,7 @@ public class RoutineBusiness {
         this.objectMapper = objectMapper;
 
         this.userScheduleConverter = userScheduleConverter;
+        this.routineGroupConverter = routineGroupConverter;
 
         this.routineRepository = routineRepository;
         this.routineQueryRepository = routineQueryRepository;
@@ -165,7 +174,9 @@ public class RoutineBusiness {
             routineEntities = routineFutureCreator.createRoutines(routineCalculator, routineRegisterRequest, userEntity, registerUserScheduleEntities);
         }
 
-        routineGroupService.mappingRoutineGroup(routineEntities);
+        RoutineGroupEntity routineGroupEntity = routineGroupConverter.toEntityByRequest(routineRegisterRequest);
+        routineGroupEntity.setUser(userEntity);
+        routineGroupService.mappingRoutineGroup(routineGroupEntity, routineEntities);
         routineRepository.saveAll(routineEntities);
     }
 
