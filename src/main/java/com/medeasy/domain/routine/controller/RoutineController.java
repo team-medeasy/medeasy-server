@@ -246,6 +246,6 @@ public class RoutineController {
     ) {
         routineBusiness.putRoutineGroup(userId, request);
 
-        return null;
+        return Api.OK(null);
     }
 }

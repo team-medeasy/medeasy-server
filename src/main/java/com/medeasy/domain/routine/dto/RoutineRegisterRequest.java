@@ -36,9 +36,6 @@ public class RoutineRegisterRequest {
     @Schema(description = "복용 시작 스케줄 default: 지나지 않은 스케줄 중 가장 가까운 시간", example = "37", nullable = true)
     private Long startUserScheduleId;
 
-//    @Schema(description = "새 약을 복용할 시기 ", example = "[MORNING, LUNCH, DINNER, BEDTIME]")
-//    private String typeDescription;
-
     @Schema(description = "복용 날짜 간격", example = "1", nullable = true)
-    private Long intervalDays;
+    private Integer intervalDays;
 }
