@@ -36,4 +36,8 @@ public class RoutineGroupService {
         return routineGroupRepository.findRoutineGroupContainsRoutineIdByUserId(userId, routineId)
                 .orElseThrow(()->new ApiException(ErrorCode.BAD_REQEUST, "루틴 그룹이 존재하지 않습니다"));
     }
+
+    public void delete(RoutineGroupEntity routineGroupEntity) {
+        routineGroupRepository.delete(routineGroupEntity);
+    }
 }

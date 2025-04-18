@@ -47,4 +47,11 @@ public class RoutineGroupEntity {
     @OneToMany(mappedBy = "routineGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default
     private List<RoutineEntity> routines=new ArrayList<>();
+
+    public RoutineGroupEntity mappingWithRoutines(List<RoutineEntity> routines) {
+        this.routines = routines;
+        routines.forEach(r->r.setRoutineGroup(this));
+
+        return this;
+    }
 }

@@ -36,10 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -159,7 +156,6 @@ public class RoutineBusiness {
             routineCalculator=routineCalculatorByInterval;
         }
 
-        // TODO start date가 오늘인 경우 추가
         // 전략 패턴 이용 상황에 따른 루틴 등록
         if(routineRegisterRequest.getRoutineStartDate() == null && routineRegisterRequest.getStartUserScheduleId() == null) {
             // 루틴에 시작날짜, 시간 명시하지 않은 경우 (제일 기본)
@@ -434,14 +430,79 @@ public class RoutineBusiness {
      * 4. 투여일수에 현재 복용한 일수를 제외한 일수에 대해서 수정 요청 데이터를 반영하여 routine_medicine 저장
      * */
     @Transactional
-    public void updateRoutine(Long userId, RoutineUpdateRequest request) {
-        // nickname만 변경 요청하였을 경우
-        if (request.getNickname() != null && request.getUserScheduleIds() == null) {
-            RoutineGroupEntity routineGroupEntity = routineGroupService.findByRoutineIdAndUserId(request.getRoutineId(), userId);
-            routineGroupEntity.setNickname(request.getNickname());
+    public void putRoutineGroup(Long userId, RoutineUpdateRequest request) {
+        // 사용자와 스케줄 관련 처리
+        UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
+        List<UserScheduleEntity> userScheduleEntities = userEntity.getUserSchedules();
+
+        // request 에 포함된 schedule 정보 가져오기
+        List<UserScheduleEntity> registerUserScheduleEntities = userScheduleEntities.stream()
+                .filter(userScheduleEntity -> request.getUserScheduleIds().contains(userScheduleEntity.getId()))
+                .sorted(Comparator.comparing(UserScheduleEntity::getTakeTime))
+                .toList();
+
+        // 요청에 들어간 user_schedule_id가 존재하지 않을 경우 예외 발생
+        if(registerUserScheduleEntities.size() != request.getUserScheduleIds().size()){
+            throw new ApiException(SchedulerError.NOT_FOUND);
         }
 
+        // 루틴 관련 처리
+        RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, request.getRoutineId());
+        List<RoutineEntity> routineEntities=routineGroupEntity.getRoutines();
 
+        // 복용한 일정과 하지 않은 엔티티 분리
+        List<RoutineEntity> takenRoutines = routineEntities.stream()
+                .filter(r -> Boolean.TRUE.equals(r.getIsTaken()))
+                .toList();
+
+        List<RoutineEntity> notTakenRoutines = routineEntities.stream()
+                .filter(r -> Boolean.FALSE.equals(r.getIsTaken()))
+                .toList();
+
+        int remainingDoseTotal = (int) (routineGroupEntity.getDose() * notTakenRoutines.size());
+
+        // 복용하지 않은 루틴 삭제
+        routineService.deleteRoutines(notTakenRoutines);
+
+        /**
+         * 새로 등록할 루틴의 시작 날짜와 시작 스케줄
+         *
+         * 마지막날 먹은 약의 개수 비교
+         * last Taken >= request 다음날 부터 루틴 생성
+         * last Taken < request 마지막날 루틴 추가 생성
+         * */
+        RoutineEntity lastTakenRoutine=takenRoutines.getLast();
+        LocalDate lastTakenDate = lastTakenRoutine.getTakeDate();
+
+        // 마지막 날 루틴 조회
+        List<RoutineEntity> routinesOnLastTakenDate = takenRoutines.stream()
+                .filter(r -> lastTakenDate.equals(r.getTakeDate()))
+                .toList();
+
+        int lastTakenDateDose=routineGroupEntity.getDose()*routinesOnLastTakenDate.size();
+        int requestDateDose=request.getUserScheduleIds().size()*request.getDose();
+
+        LocalDate startDate;
+        Long startUserScheduleId;
+
+        // 시작 날짜 계산
+        if(lastTakenDateDose >= requestDateDose){
+            startDate=lastTakenDate;
+            startUserScheduleId=request.getUserScheduleIds().getFirst();
+        }else{
+            startDate=lastTakenDate.plusDays(request.getIntervalDays());
+            int plusSchedule=(lastTakenDateDose-requestDateDose)/request.getDose();
+
+            // dose=1인 경우에 lastTakenDateDose = 2  requestDateDose = 3 -> 스케줄 하나 추가 -> 리스트 중에서 마지막 요소 즉 2
+            startUserScheduleId=registerUserScheduleEntities.get(registerUserScheduleEntities.size()-plusSchedule).getId();
+        }
+
+        RoutineRegisterRequest routineRegisterRequest=routineConverter.toRoutineRegisterRequestFromContext(userId, startDate, startUserScheduleId, routineGroupEntity, request, remainingDoseTotal);
+
+        List<RoutineEntity> newRoutineEntities=routineFutureCreator.createRoutines(routineCalculatorByInterval, routineRegisterRequest, userEntity, userScheduleEntities);
+
+        routineService.saveAll(newRoutineEntities);
+        routineGroupEntity.mappingWithRoutines(newRoutineEntities);
     }
 
     @Transactional
@@ -450,4 +511,11 @@ public class RoutineBusiness {
         RoutineGroupEntity routineGroupEntity=routineEntity.getRoutineGroup();
         routineGroupRepository.delete(routineGroupEntity);
     }
+
+    @Transactional
+    public void patchRoutineNickname(Long userId, Long routineId, String newNickname) {
+        RoutineGroupEntity routineGroupEntity = routineGroupService.findByRoutineIdAndUserId(routineId, userId);
+        routineGroupEntity.setNickname(newNickname);
+    }
+
 }

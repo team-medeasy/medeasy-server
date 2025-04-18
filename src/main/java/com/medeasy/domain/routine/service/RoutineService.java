@@ -11,6 +11,7 @@ import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -116,5 +117,8 @@ public class RoutineService {
         return routineRepository.findDistinctMeidicneIdByUserId(userId);
     }
 
-
+    @Transactional
+    public void deleteRoutines(List<RoutineEntity> routines) {
+        routineRepository.deleteAll(routines);
+    }
 }

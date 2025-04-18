@@ -30,10 +30,10 @@ public class RoutineRegisterRequest {
     @Schema(description = "약을 복용할 사용자 스케줄 리스트", example = "[1, 2, 3]")
     private List<Long> userScheduleIds;
 
-    @Schema(description = "약을 복용 시작 날짜 default: 오늘", example = "2025-04-11")
+    @Schema(description = "약을 복용 시작 날짜 default: 오늘", example = "2025-04-11", nullable = true)
     private LocalDate routineStartDate;
 
-    @Schema(description = "복용 시작 스케줄 default: 지나지 않은 스케줄 중 가장 가까운 시간", example = "37")
+    @Schema(description = "복용 시작 스케줄 default: 지나지 않은 스케줄 중 가장 가까운 시간", example = "37", nullable = true)
     private Long startUserScheduleId;
 
 //    @Schema(description = "새 약을 복용할 시기 ", example = "[MORNING, LUNCH, DINNER, BEDTIME]")

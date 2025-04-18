@@ -18,6 +18,7 @@ public interface RoutineGroupRepository extends JpaRepository<RoutineGroupEntity
             "JOIN FETCH rg.routines r " +
             "JOIN FETCH r.userSchedule us " +
             "WHERE us.user.id=:userId " +
-            "AND r.id = :routineId ")
+            "AND r.id = :routineId " +
+            "ORDER BY r.takeDate ASC, us.takeTime ASC ")
     Optional<RoutineGroupEntity> findRoutineGroupContainsRoutineIdByUserId(@Param("userId") Long userId, @Param("routineId") Long routineId);
 }

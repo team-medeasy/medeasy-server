@@ -4,6 +4,7 @@ import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.routine.business.RoutineBusiness;
 import com.medeasy.domain.routine.dto.*;
+import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
@@ -238,12 +239,12 @@ public class RoutineController {
         return Api.OK(null);
     }
 
-    @PatchMapping("")
+    @PutMapping("")
     public Api<Object> updateRoutineMedicine(
             @Parameter(hidden = true) @UserSession Long userId,
             @Valid @RequestBody RoutineUpdateRequest request
     ) {
-        routineBusiness.updateRoutine(userId, request);
+        routineBusiness.putRoutineGroup(userId, request);
 
         return null;
     }

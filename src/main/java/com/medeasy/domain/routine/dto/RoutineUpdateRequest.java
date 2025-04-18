@@ -33,4 +33,7 @@ public class RoutineUpdateRequest {
 
     @Schema(description = "약 총 투여일수", example = "3", nullable = true)
     private int totalDays;
+
+    @Schema(description = "복용 날짜 간격", example = "3", nullable = true)
+    private Long intervalDays;
 }
