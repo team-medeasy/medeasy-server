@@ -239,6 +239,35 @@ public class RoutineController {
         return Api.OK(null);
     }
 
+    @Operation(summary = "루틴 업데이트 api", description =
+            """
+                루틴 업데이트 API
+                
+                배경: 복용 루틴을 등록하게 되면 복용 일정에 대해서 그룹으로 묶게 된다.
+                
+                루틴 ID와 수정 내용들을 입력하여 요청을 보내면 
+                
+                아직 복용하지 않은 루틴들에 대해서 일정을 재배치한다.
+            
+            요청: 
+            
+            routine_id는 필수 값, 나머지 값들은 null로 입력할시 이전 설정 값 유지 
+            
+            routine_id: routine 식별자 (not null)
+                    
+            medicine_id: 약 id - 루틴의 약품을 변경할 때 입력 (nullable)
+                    
+            nickname: 루틴 별칭 (nullable)
+                    
+            userScheduleIds: 사용자 스케줄 Ids (nullable)
+                    
+            dose: 약 복용량 (nullable)
+                    
+            total_quantity: 남은 약 개수 - null로 값을 입력하면 루틴의 남은 약 개수로 재등록 (nullable)
+                    
+            interval_days: 약 복용 날짜 간격 (nullable)
+            """
+    )
     @PutMapping("")
     public Api<Object> updateRoutineMedicine(
             @Parameter(hidden = true) @UserSession Long userId,

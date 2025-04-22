@@ -433,8 +433,6 @@ public class RoutineBusiness {
      * 2. routine_group_id에 속해있는 routine_medicine list 조회 -> is_taken false
      * 3. routine_medicine false list 전부 delete
      * 4. 투여일수에 현재 복용한 일수를 제외한 일수에 대해서 수정 요청 데이터를 반영하여 routine_medicine 저장
-     *
-     * TODO 예외처리 추가 takenRoutineList가 비어있는경우 request값 Null 처리
      * */
     @Transactional
     public void putRoutineGroup(Long userId, RoutineUpdateRequest routineUpdateRequest) {
