@@ -441,13 +441,16 @@ public class RoutineBusiness {
         // 사용자와 스케줄 관련 처리
         UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
         List<UserScheduleEntity> userScheduleEntities = userEntity.getUserSchedules();
-
-        // request 에 포함된 schedule 정보 가져오기
-        List<UserScheduleEntity> registerUserScheduleEntities = userScheduleBusiness.validationRequest(userScheduleEntities, routineUpdateRequest.getUserScheduleIds());
-
         // 루틴 관련 처리
         RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, routineUpdateRequest.getRoutineId());
         List<RoutineEntity> routineEntities=routineGroupEntity.getRoutines();
+
+        // request 에 포함된 schedule 정보 가져오기
+        List<Long> pastUserScheduleIds = userScheduleBusiness.getDistinctUserScheduleIds(routineEntities);
+        log.info("루티 업데이트 디버깅: 과거 스케줄 개수: {}", pastUserScheduleIds.size());
+
+        List<Long> userScheduleIds = routineUpdateRequest.getUserScheduleIds() != null ? routineUpdateRequest.getUserScheduleIds() : pastUserScheduleIds;
+        List<UserScheduleEntity> registerUserScheduleEntities = userScheduleBusiness.validationRequest(userScheduleEntities, userScheduleIds);
 
         List<LocalDate> sortedTakeDates = routineEntities.stream()
                 .map(RoutineEntity::getTakeDate)
@@ -457,7 +460,6 @@ public class RoutineBusiness {
 
         int pastIntervalDays = calculateIntervalDays(sortedTakeDates);
 
-        List<Long> pastUserScheduleIds = userScheduleBusiness.getDistinctUserScheduleIds(routineEntities);
 
         // 복용한 일정과 하지 않은 엔티티 분리
         List<RoutineEntity> takenRoutines = routineEntities.stream()
@@ -474,8 +476,9 @@ public class RoutineBusiness {
         String nickname = routineUpdateRequest.getNickname() != null ? routineUpdateRequest.getNickname() : routineGroupEntity.getNickname();
         int dose = routineUpdateRequest.getDose() != null ? routineUpdateRequest.getDose() : routineGroupEntity.getDose();
         int totalQuantity = routineUpdateRequest.getTotalQuantity() != null ? routineUpdateRequest.getTotalQuantity() : remainingDoseTotal;
-        List<Long> userScheduleIds = routineUpdateRequest.getUserScheduleIds() != null ? routineUpdateRequest.getUserScheduleIds() : pastUserScheduleIds;
         int intervalDays = routineUpdateRequest.getIntervalDays() != null ? routineUpdateRequest.getIntervalDays() : pastIntervalDays;
+
+        log.info("루티 업데이트 디버깅: 약 개수: {}", remainingDoseTotal);
 
 
         /**
@@ -485,7 +488,7 @@ public class RoutineBusiness {
          * last Taken >= request 다음날 부터 루틴 생성
          * last Taken < request 마지막날 루틴 추가 생성
          * */
-        RoutineEntity lastTakenRoutine=takenRoutines.getLast() != null ? takenRoutines.getLast() : notTakenRoutines.getFirst();
+        RoutineEntity lastTakenRoutine=getLastTakenRoutine(takenRoutines, notTakenRoutines);
         LocalDate lastTakenDate = lastTakenRoutine.getTakeDate();
 
         // 마지막 날 루틴 조회
@@ -493,19 +496,22 @@ public class RoutineBusiness {
                 .filter(r -> lastTakenDate.equals(r.getTakeDate()))
                 .toList();
 
+        List<Long> updateUserScheduleIds = routineUpdateRequest.getUserScheduleIds() != null ? routineUpdateRequest.getUserScheduleIds() : pastUserScheduleIds;
+        log.info("루티 업데이트 디버깅: 스케줄 개수: {}", updateUserScheduleIds.size());
+
         int lastTakenDateDose=routineGroupEntity.getDose()*routinesOnLastTakenDate.size();
-        int requestDateDose=routineUpdateRequest.getUserScheduleIds().size()*routineUpdateRequest.getDose();
+        int requestDateDose=updateUserScheduleIds.size()*dose;
 
         LocalDate startDate;
         Long startUserScheduleId;
 
         // 시작 날짜 계산
-        if(lastTakenDateDose >= requestDateDose){
-            startDate=lastTakenDate;
-            startUserScheduleId=routineUpdateRequest.getUserScheduleIds().getFirst();
+        if(lastTakenDateDose >= requestDateDose){ // 마지막 날 복용량을 다 채운 경우
+            startDate=lastTakenDate.plusDays(intervalDays);
+            startUserScheduleId=updateUserScheduleIds.getFirst(); // TODO routineUpdateRequest의 userScheduleIds take time 순서 보장
         }else{
-            startDate=lastTakenDate.plusDays(routineUpdateRequest.getIntervalDays());
-            int plusSchedule=(lastTakenDateDose-requestDateDose)/routineUpdateRequest.getDose();
+            startDate=lastTakenDate;
+            int plusSchedule=(requestDateDose-lastTakenDateDose)/dose;
 
             // dose=1인 경우에 lastTakenDateDose = 2  requestDateDose = 3 -> 스케줄 하나 추가 -> 리스트 중에서 마지막 요소 즉 2
             startUserScheduleId=registerUserScheduleEntities.get(registerUserScheduleEntities.size()-plusSchedule).getId();
@@ -514,12 +520,18 @@ public class RoutineBusiness {
         RoutineRegisterRequest routineRegisterRequest=new RoutineRegisterRequest(medicineId, nickname, dose, totalQuantity, null, userScheduleIds, startDate, startUserScheduleId, intervalDays);
         List<RoutineEntity> newRoutineEntities=routineFutureCreator.createRoutines(routineCalculatorByInterval, routineRegisterRequest, userEntity, userScheduleEntities);
 
+        log.info("루티 업데이트 디버깅: 새로 추가된 루틴 개수: {}", newRoutineEntities.size());
+        log.info("루티 업데이트 디버깅: 삭제되는 루틴 개수: {}", notTakenRoutines.size());
+
         // 복용하지 않은 루틴 삭제
-        routineService.deleteRoutines(notTakenRoutines);
+        routineGroupEntity.getRoutines().removeAll(notTakenRoutines);
 
         // 새 루틴 저장 및 매핑
-        routineService.saveAll(newRoutineEntities);
         routineGroupEntity.mappingWithRoutines(newRoutineEntities);
+        routineGroupEntity.updateRoutine(nickname, medicineId, dose);
+
+        routineService.saveAll(newRoutineEntities);
+//        routineService.deleteRoutines(notTakenRoutines); // deleteAll 쿼리를 날렸지만, 컬렉션에는 여전히 남아있기 때문에 지워지지 않음
     }
 
     @Transactional
@@ -544,5 +556,13 @@ public class RoutineBusiness {
             );
         }
         return intervalDays;
+    }
+
+    public RoutineEntity getLastTakenRoutine(List<RoutineEntity> takenRoutines, List<RoutineEntity> notTakenRoutines) {
+        if(takenRoutines.isEmpty()){
+            return notTakenRoutines.getFirst();
+        }
+
+        return takenRoutines.getLast();
     }
 }

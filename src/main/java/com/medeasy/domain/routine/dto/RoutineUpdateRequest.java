@@ -19,7 +19,7 @@ public class RoutineUpdateRequest {
     @Schema(description = "수정하려는 루틴 ID", example = "12", nullable = false)
     private Long routineId;
 
-    @Schema(description = "수정하려는 약 ID", example = "12", nullable = false)
+    @Schema(description = "수정하려는 약 ID", example = "12", nullable = true)
     private String medicineId;
 
     @Schema(description = "약 별칭", example = "감기약", nullable = true)
