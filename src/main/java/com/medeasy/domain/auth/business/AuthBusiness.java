@@ -3,13 +3,11 @@ package com.medeasy.domain.auth.business;
 import com.medeasy.common.annotation.Business;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
-import com.medeasy.domain.auth.dto.LoginRequest;
-import com.medeasy.domain.auth.dto.TokenDto;
-import com.medeasy.domain.auth.dto.TokenResponse;
+import com.medeasy.domain.auth.dto.*;
+import com.medeasy.domain.auth.service.KakaoService;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.dto.UserDto;
-import com.medeasy.domain.auth.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
 import com.medeasy.domain.user.service.UserConverter;
 import com.medeasy.domain.user.service.UserService;
@@ -33,6 +31,7 @@ public class AuthBusiness {
     private final TokenHelperIfs jwtTokenHelper; ;
     private final UserScheduleBusiness userScheduleBusiness;
     private final StringRedisTemplate redisTemplateForJwt;
+    private final KakaoService kakaoService;
 
     public AuthBusiness(
             UserService userService,
@@ -40,7 +39,8 @@ public class AuthBusiness {
             UserConverter userConverter,
             TokenHelperIfs jwtTokenHelper,
             UserScheduleBusiness userScheduleBusiness,
-            @Qualifier("redisTemplateForJwt") StringRedisTemplate redisTemplateForJwt
+            @Qualifier("redisTemplateForJwt") StringRedisTemplate redisTemplateForJwt,
+            KakaoService kakaoService
     ) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
@@ -48,6 +48,7 @@ public class AuthBusiness {
         this.jwtTokenHelper = jwtTokenHelper;
         this.userScheduleBusiness = userScheduleBusiness;
         this.redisTemplateForJwt = redisTemplateForJwt;
+        this.kakaoService = kakaoService;
     }
 
 
@@ -87,9 +88,9 @@ public class AuthBusiness {
 
 
     // 토큰 발급
-    public TokenResponse issueToken(UserDto userDto) {
+    public TokenResponse issueToken(Long userId) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userDto.getId());
+        claims.put("userId", userId);
 
         TokenDto accessToken = jwtTokenHelper.issueAcessToken(claims);
         TokenDto refreshToken = jwtTokenHelper.issueRefreshToken(claims);
@@ -124,5 +125,18 @@ public class AuthBusiness {
         }catch (Exception e){
             log.error("사용자 {} 로그인 중 fcm token 저장 오류 발생: {}", userId, e.getMessage());
         }
+    }
+
+    /**
+     * 카카오를 통한 로그인
+     * */
+    public TokenResponse loginByKakao(KaKaoLoginRequest request) {
+        KakaoUserProfile kakaoUserProfile=kakaoService.getUserInfo(request.getAccessToken());
+        String userEmail=kakaoUserProfile.getKakao_account().getEmail();
+
+        // 사용자를 찾은 경우 -> 로그인 -> jwt 토큰 발급
+        // 사용자가 존재하지 않은 경우 -> 예외처리 -> 먼저 회원가입 하도록 유도
+        UserEntity userEntity = userService.getUserByEmail(userEmail);
+        return issueToken(userEntity.getId());
     }
 }
