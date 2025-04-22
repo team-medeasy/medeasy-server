@@ -558,6 +558,11 @@ public class RoutineBusiness {
         return intervalDays;
     }
 
+    /**
+     * 복용한 루틴 리스트 중 가장 마지막 루틴 반환
+     *
+     * 복용한 루틴이 없다면 복용하지 않은 것 중 첫번째 요소 반환
+     * */
     public RoutineEntity getLastTakenRoutine(List<RoutineEntity> takenRoutines, List<RoutineEntity> notTakenRoutines) {
         if(takenRoutines.isEmpty()){
             return notTakenRoutines.getFirst();
