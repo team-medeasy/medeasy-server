@@ -2,11 +2,9 @@ package com.medeasy.domain.auth.controller;
 
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.auth.business.AuthBusiness;
-import com.medeasy.domain.auth.dto.LoginRequest;
-import com.medeasy.domain.auth.dto.RefreshRequest;
-import com.medeasy.domain.auth.dto.TokenResponse;
+import com.medeasy.domain.auth.dto.*;
+import com.medeasy.domain.auth.service.KakaoService;
 import com.medeasy.domain.user.dto.UserDto;
-import com.medeasy.domain.auth.dto.UserRegisterRequest;
 import com.medeasy.domain.user.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -21,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthBusiness authBusiness;
+    private final KakaoService kakaoService;
 
     @PostMapping("/sign_up")
     @Operation(summary = "회원가입", description =
@@ -53,7 +52,7 @@ public class AuthController {
             @RequestBody LoginRequest request
     ) {
         UserDto user=authBusiness.validateUser(request);
-        TokenResponse tokenResponse=authBusiness.issueToken(user);
+        TokenResponse tokenResponse=authBusiness.issueToken(user.getId());
         authBusiness.saveFcmToken(user.getId(), request.getFcmToken());
         log.info("사용자 로그인 완료: {}", user.getId());
 
@@ -71,5 +70,21 @@ public class AuthController {
 
         log.info("사용자 refresh token 재발급 완료");
         return Api.OK(tokenResponse);
+    }
+
+    @Operation(summary = "카카오 token을 통한 로그인", description = """
+                        카카오 로그인 후 받은 access_token을 통해 서버 인증
+                        
+                        이전에 회원가입하지 않은 사용자인 경우 오류 발생 -> 서비스 회원가입 유도 
+                        
+                        추후 카카오로부터 비즈니스 승인을 받게 되면 자동 회원가입 기능 추가 
+                    
+                    """)
+    @PostMapping("/kakao")
+    public Api<Object> kakaoLogin(
+        @RequestBody KaKaoLoginRequest request
+    ) {
+        authBusiness.loginByKakao(request);
+        return Api.OK(null);
     }
 }
