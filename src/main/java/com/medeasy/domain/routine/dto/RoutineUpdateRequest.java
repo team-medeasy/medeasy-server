@@ -16,21 +16,24 @@ import java.util.List;
 @AllArgsConstructor
 public class RoutineUpdateRequest {
 
-    @Schema(description = "수정하려는 루틴 약 Id", example = "12", nullable = false)
+    @Schema(description = "수정하려는 루틴 ID", example = "12", nullable = false)
     private Long routineId;
+
+    @Schema(description = "수정하려는 약 ID", example = "12", nullable = true)
+    private String medicineId;
 
     @Schema(description = "약 별칭", example = "감기약", nullable = true)
     private String nickname;
-
-    @Schema(description = "복용 주기", example = "1, 2, 3", nullable = true)
-    private List<Long> dayOfWeeks;
 
     @Schema(description = "복용 스케줄", example = "1, 2, 3", nullable = true)
     private List<Long> userScheduleIds;
 
     @Schema(description = "약 1회 투여량", example = "1", nullable = true)
-    private int dose;
+    private Integer dose;
 
-    @Schema(description = "약 총 투여일수", example = "3", nullable = true)
-    private int totalDays;
+    @Schema(description = "약 총 개수", example = "30", nullable = true)
+    private Integer totalQuantity;
+
+    @Schema(description = "복용 날짜 간격", example = "3", nullable = true)
+    private Integer intervalDays;
 }

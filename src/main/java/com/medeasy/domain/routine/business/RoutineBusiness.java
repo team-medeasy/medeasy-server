@@ -24,6 +24,7 @@ import com.medeasy.domain.routine_group.service.RoutineDateRangeStrategy;
 import com.medeasy.domain.routine_group.service.RoutineGroupService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
+import com.medeasy.domain.user_schedule.business.UserScheduleBusiness;
 import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.MedicationTime;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
@@ -36,10 +37,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -72,6 +71,7 @@ public class RoutineBusiness {
     private final RoutineCreator routineBasicCreator;
     private final RoutineCreator routineContainPastCreator;
     private final RoutineCreator routineFutureCreator;
+    private final UserScheduleBusiness userScheduleBusiness;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
@@ -96,14 +96,16 @@ public class RoutineBusiness {
             @Qualifier("routineCalculatorByInterval") RoutineCalculator routineCalculatorByInterval,
             @Qualifier("routineBasicCreator") RoutineCreator routineBasicCreator,
             @Qualifier("routineContainPastCreator") RoutineCreator routineContainPastCreator,
-            @Qualifier("routineFutureCreator") RoutineCreator routineFutureCreator
-    ) {
+            @Qualifier("routineFutureCreator") RoutineCreator routineFutureCreator,
+            UserScheduleBusiness userScheduleBusiness) {
         this.routineService = routineService;
         this.routineGroupService = routineGroupService;
         this.userService = userService;
         this.medicineDocumentService = medicineDocumentService;
         this.ocrService = ocrService;
         this.aiService = aiService;
+
+        this.userScheduleBusiness = userScheduleBusiness;
         this.objectMapper = objectMapper;
 
         this.userScheduleConverter = userScheduleConverter;
@@ -159,7 +161,6 @@ public class RoutineBusiness {
             routineCalculator=routineCalculatorByInterval;
         }
 
-        // TODO start date가 오늘인 경우 추가
         // 전략 패턴 이용 상황에 따른 루틴 등록
         if(routineRegisterRequest.getRoutineStartDate() == null && routineRegisterRequest.getStartUserScheduleId() == null) {
             // 루틴에 시작날짜, 시간 명시하지 않은 경우 (제일 기본)
@@ -433,8 +434,102 @@ public class RoutineBusiness {
      * 3. routine_medicine false list 전부 delete
      * 4. 투여일수에 현재 복용한 일수를 제외한 일수에 대해서 수정 요청 데이터를 반영하여 routine_medicine 저장
      * */
-    public void updateRoutine(Long userId, RoutineUpdateRequest request) {
+    @Transactional
+    public void putRoutineGroup(Long userId, RoutineUpdateRequest routineUpdateRequest) {
+        // 사용자와 스케줄 관련 처리
+        UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
+        List<UserScheduleEntity> userScheduleEntities = userEntity.getUserSchedules();
+        // 루틴 관련 처리
+        RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, routineUpdateRequest.getRoutineId());
+        List<RoutineEntity> routineEntities=routineGroupEntity.getRoutines();
 
+        // request 에 포함된 schedule 정보 가져오기
+        List<Long> pastUserScheduleIds = userScheduleBusiness.getDistinctUserScheduleIds(routineEntities);
+        log.info("루티 업데이트 디버깅: 과거 스케줄 개수: {}", pastUserScheduleIds.size());
+
+        List<Long> userScheduleIds = routineUpdateRequest.getUserScheduleIds() != null ? routineUpdateRequest.getUserScheduleIds() : pastUserScheduleIds;
+        List<UserScheduleEntity> registerUserScheduleEntities = userScheduleBusiness.validationRequest(userScheduleEntities, userScheduleIds);
+
+        List<LocalDate> sortedTakeDates = routineEntities.stream()
+                .map(RoutineEntity::getTakeDate)
+                .distinct()
+                .sorted()
+                .toList();
+
+        int pastIntervalDays = calculateIntervalDays(sortedTakeDates);
+
+
+        // 복용한 일정과 하지 않은 엔티티 분리
+        List<RoutineEntity> takenRoutines = routineEntities.stream()
+                .filter(r -> Boolean.TRUE.equals(r.getIsTaken()))
+                .toList();
+
+        List<RoutineEntity> notTakenRoutines = routineEntities.stream()
+                .filter(r -> Boolean.FALSE.equals(r.getIsTaken()))
+                .toList();
+
+        int remainingDoseTotal = (int) (routineGroupEntity.getDose() * notTakenRoutines.size());
+
+        String medicineId = routineUpdateRequest.getMedicineId() != null ? routineUpdateRequest.getMedicineId() : routineGroupEntity.getMedicineId();
+        String nickname = routineUpdateRequest.getNickname() != null ? routineUpdateRequest.getNickname() : routineGroupEntity.getNickname();
+        int dose = routineUpdateRequest.getDose() != null ? routineUpdateRequest.getDose() : routineGroupEntity.getDose();
+        int totalQuantity = routineUpdateRequest.getTotalQuantity() != null ? routineUpdateRequest.getTotalQuantity() : remainingDoseTotal;
+        int intervalDays = routineUpdateRequest.getIntervalDays() != null ? routineUpdateRequest.getIntervalDays() : pastIntervalDays;
+
+        log.info("루티 업데이트 디버깅: 약 개수: {}", remainingDoseTotal);
+
+
+        /**
+         * 새로 등록할 루틴의 시작 날짜와 시작 스케줄
+         *
+         * 마지막날 먹은 약의 개수 비교
+         * last Taken >= request 다음날 부터 루틴 생성
+         * last Taken < request 마지막날 루틴 추가 생성
+         * */
+        RoutineEntity lastTakenRoutine=getLastTakenRoutine(takenRoutines, notTakenRoutines);
+        LocalDate lastTakenDate = lastTakenRoutine.getTakeDate();
+
+        // 마지막 날 루틴 조회
+        List<RoutineEntity> routinesOnLastTakenDate = takenRoutines.stream()
+                .filter(r -> lastTakenDate.equals(r.getTakeDate()))
+                .toList();
+
+        List<Long> updateUserScheduleIds = routineUpdateRequest.getUserScheduleIds() != null ? routineUpdateRequest.getUserScheduleIds() : pastUserScheduleIds;
+        log.info("루티 업데이트 디버깅: 스케줄 개수: {}", updateUserScheduleIds.size());
+
+        int lastTakenDateDose=routineGroupEntity.getDose()*routinesOnLastTakenDate.size();
+        int requestDateDose=updateUserScheduleIds.size()*dose;
+
+        LocalDate startDate;
+        Long startUserScheduleId;
+
+        // 시작 날짜 계산
+        if(lastTakenDateDose >= requestDateDose){ // 마지막 날 복용량을 다 채운 경우
+            startDate=lastTakenDate.plusDays(intervalDays);
+            startUserScheduleId=updateUserScheduleIds.getFirst(); // TODO routineUpdateRequest의 userScheduleIds take time 순서 보장
+        }else{
+            startDate=lastTakenDate;
+            int plusSchedule=(requestDateDose-lastTakenDateDose)/dose;
+
+            // dose=1인 경우에 lastTakenDateDose = 2  requestDateDose = 3 -> 스케줄 하나 추가 -> 리스트 중에서 마지막 요소 즉 2
+            startUserScheduleId=registerUserScheduleEntities.get(registerUserScheduleEntities.size()-plusSchedule).getId();
+        }
+
+        RoutineRegisterRequest routineRegisterRequest=new RoutineRegisterRequest(medicineId, nickname, dose, totalQuantity, null, userScheduleIds, startDate, startUserScheduleId, intervalDays);
+        List<RoutineEntity> newRoutineEntities=routineFutureCreator.createRoutines(routineCalculatorByInterval, routineRegisterRequest, userEntity, userScheduleEntities);
+
+        log.info("루티 업데이트 디버깅: 새로 추가된 루틴 개수: {}", newRoutineEntities.size());
+        log.info("루티 업데이트 디버깅: 삭제되는 루틴 개수: {}", notTakenRoutines.size());
+
+        // 복용하지 않은 루틴 삭제
+        routineGroupEntity.getRoutines().removeAll(notTakenRoutines);
+
+        // 새 루틴 저장 및 매핑
+        routineGroupEntity.mappingWithRoutines(newRoutineEntities);
+        routineGroupEntity.updateRoutine(nickname, medicineId, dose);
+
+        routineService.saveAll(newRoutineEntities);
+//        routineService.deleteRoutines(notTakenRoutines); // deleteAll 쿼리를 날렸지만, 컬렉션에는 여전히 남아있기 때문에 지워지지 않음
     }
 
     @Transactional
@@ -442,5 +537,35 @@ public class RoutineBusiness {
         RoutineEntity routineEntity=routineService.getUserRoutineById(userId, routineId);
         RoutineGroupEntity routineGroupEntity=routineEntity.getRoutineGroup();
         routineGroupRepository.delete(routineGroupEntity);
+    }
+
+    @Transactional
+    public void patchRoutineNickname(Long userId, Long routineId, String newNickname) {
+        RoutineGroupEntity routineGroupEntity = routineGroupService.findByRoutineIdAndUserId(routineId, userId);
+        routineGroupEntity.setNickname(newNickname);
+    }
+
+    public int calculateIntervalDays(List<LocalDate> dates) {
+        int intervalDays = 1;
+        if(dates.size() != 1 ){
+            intervalDays = (int) ChronoUnit.DAYS.between(
+                    dates.get(0),
+                    dates.get(1)
+            );
+        }
+        return intervalDays;
+    }
+
+    /**
+     * 복용한 루틴 리스트 중 가장 마지막 루틴 반환
+     *
+     * 복용한 루틴이 없다면 복용하지 않은 것 중 첫번째 요소 반환
+     * */
+    public RoutineEntity getLastTakenRoutine(List<RoutineEntity> takenRoutines, List<RoutineEntity> notTakenRoutines) {
+        if(takenRoutines.isEmpty()){
+            return notTakenRoutines.getFirst();
+        }
+
+        return takenRoutines.getLast();
     }
 }
