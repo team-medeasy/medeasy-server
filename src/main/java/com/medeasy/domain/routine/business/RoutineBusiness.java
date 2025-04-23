@@ -556,6 +556,20 @@ public class RoutineBusiness {
         return intervalDays;
     }
 
+    public int calculateRemainQuantity(List<RoutineEntity> routineEntities, int dose){
+        // 복용한 일정과 하지 않은 엔티티 분리
+        List<RoutineEntity> takenRoutines = routineEntities.stream()
+                .filter(r -> Boolean.TRUE.equals(r.getIsTaken()))
+                .toList();
+
+        List<RoutineEntity> notTakenRoutines = routineEntities.stream()
+                .filter(r -> Boolean.FALSE.equals(r.getIsTaken()))
+                .toList();
+
+        int remainingDoseTotal = (int) (dose * notTakenRoutines.size());
+        return remainingDoseTotal;
+    }
+
     /**
      * 복용한 루틴 리스트 중 가장 마지막 루틴 반환
      *
@@ -567,5 +581,46 @@ public class RoutineBusiness {
         }
 
         return takenRoutines.getLast();
+    }
+
+    @Transactional
+    public RoutineGroupInfoResponse getRoutineGroupInfo(Long userId, Long routineId) {
+        UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
+        List<UserScheduleEntity> userScheduleEntities = userEntity.getUserSchedules();
+
+        RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, routineId);
+        List<RoutineEntity> routineEntities = routineGroupEntity.getRoutines();
+
+        List<LocalDate> takeDates = routineEntities.stream().map(RoutineEntity::getTakeDate).toList();
+        int intervalDays = calculateIntervalDays(takeDates);
+        int remainQuantity=calculateRemainQuantity(routineEntities, routineGroupEntity.getDose());
+        List<Long> routineGroupUserScheduleIds=userScheduleBusiness.getDistinctUserScheduleIds(routineEntities);
+
+        List<RoutineGroupInfoResponse.ScheduleResponse> scheduleResponses=userScheduleEntities.stream().map(userScheduleEntity -> {
+                    boolean isSelected = false;
+
+                    if(routineGroupUserScheduleIds.contains(userScheduleEntity.getId())){
+                        isSelected=true;
+                    }
+
+                    return RoutineGroupInfoResponse.ScheduleResponse.builder()
+                            .name(userScheduleEntity.getName())
+                            .userScheduleId(userScheduleEntity.getId())
+                            .takeTime(userScheduleEntity.getTakeTime())
+                            .isSelected(isSelected)
+                            .build()
+                            ;
+        }).toList();
+
+        return RoutineGroupInfoResponse.builder()
+                .routineGroupId(routineGroupEntity.getId())
+                .nickname(routineGroupEntity.getNickname())
+                .dose(routineGroupEntity.getDose())
+                .medicineId(routineGroupEntity.getMedicineId())
+                .intervalDays(intervalDays)
+                .remainingQuantity(remainQuantity)
+                .scheduleResponses(scheduleResponses)
+                .build()
+                ;
     }
 }
