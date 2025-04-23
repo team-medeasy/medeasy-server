@@ -259,7 +259,7 @@ public class RoutineController {
                     
             nickname: 루틴 별칭 (nullable)
                     
-            userScheduleIds: 사용자 스케줄 Ids (nullable)
+            user_schedule_ids: 사용자 스케줄 Ids (nullable)
                     
             dose: 약 복용량 (nullable)
                     
@@ -276,5 +276,50 @@ public class RoutineController {
         routineBusiness.putRoutineGroup(userId, request);
 
         return Api.OK(null);
+    }
+
+    @Operation(summary = "루틴 그룹 조회 api", description =
+            """
+                루틴 그룹 조회: 
+                
+                루틴을 포함하는 루틴 그룹(복용 일정 등록할 때 생기는 일정들을 전체적으로 관리하는 개념)의 정보를 반환  
+                
+            요청: 
+            
+            routine_id: 루틴 식별자 
+            
+            응답: 
+            
+            routine_group_id: 루틴이 포함된 루틴 그룹 식별자
+                        
+            medicine_id: 약 식별자
+            
+            nickname: 루틴 별칭 
+            
+            interval_days: 복용 날짜 간격 
+            
+            schedule_responses: 스케줄 정보 
+                
+                 user_schedule_id: 스케줄 식별자
+                         
+                 name: 스케줄 이름 
+         
+                 take_time: 스케줄 시간 
+         
+                 is_selected: 루틴을 등록했을 때 지정한 스케줄 여부
+            
+            dose: 복용량 
+            
+            total_quantity: 남은 약의 개수 
+            
+            """
+    )
+    @GetMapping("/group/{routine_id}")
+    public Api<Object> getRoutineGroup(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @PathVariable(name = "routine_id") Long routineId
+    ) {
+        RoutineGroupInfoResponse response = routineBusiness.getRoutineGroupInfo(userId, routineId);
+        return Api.OK(response);
     }
 }

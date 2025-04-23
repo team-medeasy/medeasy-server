@@ -439,13 +439,17 @@ public class RoutineBusiness {
         // 사용자와 스케줄 관련 처리
         UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
         List<UserScheduleEntity> userScheduleEntities = userEntity.getUserSchedules();
-        // 루틴 관련 처리
+
+        // 루틴 그룹 조회
         RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, routineUpdateRequest.getRoutineId());
         List<RoutineEntity> routineEntities=routineGroupEntity.getRoutines();
 
-        // request 에 포함된 schedule 정보 가져오기
-        List<Long> pastUserScheduleIds = userScheduleBusiness.getDistinctUserScheduleIds(routineEntities);
-        log.info("루티 업데이트 디버깅: 과거 스케줄 개수: {}", pastUserScheduleIds.size());
+        routineEntities.forEach(routineEntity -> {
+            log.info("루틴 그룹 정렬 확인 -> 날짜: {}, 시간: {}", routineEntity.getTakeDate(), routineEntity.getUserSchedule().getTakeTime());
+        });
+
+        // 과거 스케줄 리스트 조회
+        List<Long> pastUserScheduleIds = userScheduleBusiness.getDistinctUserScheduleIds(routineEntities, routineGroupEntity.getUpdatedAt().toLocalDate(), routineGroupEntity.getUpdatedAt().toLocalTime());
 
         List<Long> userScheduleIds = routineUpdateRequest.getUserScheduleIds() != null ? routineUpdateRequest.getUserScheduleIds() : pastUserScheduleIds;
         List<UserScheduleEntity> registerUserScheduleEntities = userScheduleBusiness.validationRequest(userScheduleEntities, userScheduleIds);
@@ -476,8 +480,6 @@ public class RoutineBusiness {
         int totalQuantity = routineUpdateRequest.getTotalQuantity() != null ? routineUpdateRequest.getTotalQuantity() : remainingDoseTotal;
         int intervalDays = routineUpdateRequest.getIntervalDays() != null ? routineUpdateRequest.getIntervalDays() : pastIntervalDays;
 
-        log.info("루티 업데이트 디버깅: 약 개수: {}", remainingDoseTotal);
-
 
         /**
          * 새로 등록할 루틴의 시작 날짜와 시작 스케줄
@@ -495,10 +497,10 @@ public class RoutineBusiness {
                 .toList();
 
         List<Long> updateUserScheduleIds = routineUpdateRequest.getUserScheduleIds() != null ? routineUpdateRequest.getUserScheduleIds() : pastUserScheduleIds;
-        log.info("루티 업데이트 디버깅: 스케줄 개수: {}", updateUserScheduleIds.size());
+        List<Long> sortedUserScheduleIds=userScheduleBusiness.sortUserScheduleIdsByTakeTimeAsc(updateUserScheduleIds);
 
         int lastTakenDateDose=routineGroupEntity.getDose()*routinesOnLastTakenDate.size();
-        int requestDateDose=updateUserScheduleIds.size()*dose;
+        int requestDateDose=sortedUserScheduleIds.size()*dose;
 
         LocalDate startDate;
         Long startUserScheduleId;
@@ -506,7 +508,7 @@ public class RoutineBusiness {
         // 시작 날짜 계산
         if(lastTakenDateDose >= requestDateDose){ // 마지막 날 복용량을 다 채운 경우
             startDate=lastTakenDate.plusDays(intervalDays);
-            startUserScheduleId=updateUserScheduleIds.getFirst(); // TODO routineUpdateRequest의 userScheduleIds take time 순서 보장
+            startUserScheduleId=sortedUserScheduleIds.getFirst(); // TODO routineUpdateRequest의 userScheduleIds take time 순서 보장
         }else{
             startDate=lastTakenDate;
             int plusSchedule=(requestDateDose-lastTakenDateDose)/dose;
@@ -516,10 +518,8 @@ public class RoutineBusiness {
         }
 
         RoutineRegisterRequest routineRegisterRequest=new RoutineRegisterRequest(medicineId, nickname, dose, totalQuantity, null, userScheduleIds, startDate, startUserScheduleId, intervalDays);
-        List<RoutineEntity> newRoutineEntities=routineFutureCreator.createRoutines(routineCalculatorByInterval, routineRegisterRequest, userEntity, userScheduleEntities);
+        List<RoutineEntity> newRoutineEntities=routineFutureCreator.createRoutines(routineCalculatorByInterval, routineRegisterRequest, userEntity, registerUserScheduleEntities);
 
-        log.info("루티 업데이트 디버깅: 새로 추가된 루틴 개수: {}", newRoutineEntities.size());
-        log.info("루티 업데이트 디버깅: 삭제되는 루틴 개수: {}", notTakenRoutines.size());
 
         // 복용하지 않은 루틴 삭제
         routineGroupEntity.getRoutines().removeAll(notTakenRoutines);
@@ -556,6 +556,20 @@ public class RoutineBusiness {
         return intervalDays;
     }
 
+    public int calculateRemainQuantity(List<RoutineEntity> routineEntities, int dose){
+        // 복용한 일정과 하지 않은 엔티티 분리
+        List<RoutineEntity> takenRoutines = routineEntities.stream()
+                .filter(r -> Boolean.TRUE.equals(r.getIsTaken()))
+                .toList();
+
+        List<RoutineEntity> notTakenRoutines = routineEntities.stream()
+                .filter(r -> Boolean.FALSE.equals(r.getIsTaken()))
+                .toList();
+
+        int remainingDoseTotal = (int) (dose * notTakenRoutines.size());
+        return remainingDoseTotal;
+    }
+
     /**
      * 복용한 루틴 리스트 중 가장 마지막 루틴 반환
      *
@@ -567,5 +581,46 @@ public class RoutineBusiness {
         }
 
         return takenRoutines.getLast();
+    }
+
+    @Transactional
+    public RoutineGroupInfoResponse getRoutineGroupInfo(Long userId, Long routineId) {
+        UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
+        List<UserScheduleEntity> userScheduleEntities = userEntity.getUserSchedules();
+
+        RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, routineId);
+        List<RoutineEntity> routineEntities = routineGroupEntity.getRoutines();
+
+        List<LocalDate> takeDates = routineEntities.stream().map(RoutineEntity::getTakeDate).toList();
+        int intervalDays = calculateIntervalDays(takeDates);
+        int remainQuantity=calculateRemainQuantity(routineEntities, routineGroupEntity.getDose());
+        List<Long> routineGroupUserScheduleIds=userScheduleBusiness.getDistinctUserScheduleIds(routineEntities, routineGroupEntity.getUpdatedAt().toLocalDate(), routineGroupEntity.getUpdatedAt().toLocalTime());
+
+        List<RoutineGroupInfoResponse.ScheduleResponse> scheduleResponses=userScheduleEntities.stream().map(userScheduleEntity -> {
+                    boolean isSelected = false;
+
+                    if(routineGroupUserScheduleIds.contains(userScheduleEntity.getId())){
+                        isSelected=true;
+                    }
+
+                    return RoutineGroupInfoResponse.ScheduleResponse.builder()
+                            .name(userScheduleEntity.getName())
+                            .userScheduleId(userScheduleEntity.getId())
+                            .takeTime(userScheduleEntity.getTakeTime())
+                            .isSelected(isSelected)
+                            .build()
+                            ;
+        }).toList();
+
+        return RoutineGroupInfoResponse.builder()
+                .routineGroupId(routineGroupEntity.getId())
+                .nickname(routineGroupEntity.getNickname())
+                .dose(routineGroupEntity.getDose())
+                .medicineId(routineGroupEntity.getMedicineId())
+                .intervalDays(intervalDays)
+                .remainingQuantity(remainQuantity)
+                .scheduleResponses(scheduleResponses)
+                .build()
+                ;
     }
 }

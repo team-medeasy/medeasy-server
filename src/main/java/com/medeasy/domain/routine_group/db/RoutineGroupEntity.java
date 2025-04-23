@@ -5,6 +5,7 @@ import com.medeasy.domain.user.db.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +32,10 @@ public class RoutineGroupEntity {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false, updatable = false)
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
     @Column(nullable = false)
     private String nickname;
 
@@ -46,6 +51,7 @@ public class RoutineGroupEntity {
 
     @OneToMany(mappedBy = "routineGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default
+    @OrderBy("takeDate ASC")
     private List<RoutineEntity> routines=new ArrayList<>();
 
     public RoutineGroupEntity mappingWithRoutines(List<RoutineEntity> routines) {
