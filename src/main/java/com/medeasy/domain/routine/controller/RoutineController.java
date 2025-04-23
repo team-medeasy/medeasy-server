@@ -298,7 +298,15 @@ public class RoutineController {
             
             interval_days: 복용 날짜 간격 
             
-            user_schedule_ids: 복용 중인 스케줄 ids 
+            schedule_responses: 스케줄 정보 
+                
+                 user_schedule_id: 스케줄 식별자
+                         
+                 name: 스케줄 이름 
+         
+                 take_time: 스케줄 시간 
+         
+                 is_selected: 루틴을 등록했을 때 지정한 스케줄 여부
             
             dose: 복용량 
             
@@ -311,6 +319,7 @@ public class RoutineController {
             @Parameter(hidden = true) @UserSession Long userId,
             @PathVariable(name = "routine_id") Long routineId
     ) {
-        routineBusiness.getRoutineGroupInfo(userId, routineId);
+        RoutineGroupInfoResponse response = routineBusiness.getRoutineGroupInfo(userId, routineId);
+        return Api.OK(response);
     }
 }
