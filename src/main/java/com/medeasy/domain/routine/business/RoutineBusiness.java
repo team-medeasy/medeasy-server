@@ -508,7 +508,7 @@ public class RoutineBusiness {
         // 시작 날짜 계산
         if(lastTakenDateDose >= requestDateDose){ // 마지막 날 복용량을 다 채운 경우
             startDate=lastTakenDate.plusDays(intervalDays);
-            startUserScheduleId=sortedUserScheduleIds.getFirst(); // TODO routineUpdateRequest의 userScheduleIds take time 순서 보장
+            startUserScheduleId=sortedUserScheduleIds.getFirst();
         }else{
             startDate=lastTakenDate;
             int plusSchedule=(requestDateDose-lastTakenDateDose)/dose;
