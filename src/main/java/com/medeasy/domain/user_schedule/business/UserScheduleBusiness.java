@@ -10,9 +10,12 @@ import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 @Business
 @RequiredArgsConstructor
@@ -61,13 +64,46 @@ public class UserScheduleBusiness {
 
     /**
      * 루틴 리스트를 기반으로 복용 스케줄 조회
+     *
+     * 업데이트 시간 이후로 조회
      * */
-    public List<Long> getDistinctUserScheduleIds(List<RoutineEntity> routineEntities) {
-        return routineEntities.stream()
+    public List<Long> getDistinctUserScheduleIds(List<RoutineEntity> routineEntities, LocalDate updateDate, LocalTime updateTime) {
+        // routine list를 updateDate와 같을 경우 그 이후까지에 대해서 리스트 자르기
+        // takeDate가 updateDate보다 크거나 같은 첫 index를 찾기
+        int startIndex = 0;
+        for (int i = 0; i < routineEntities.size(); i++) {
+            LocalDate takeDate = routineEntities.get(i).getTakeDate();
+            if (takeDate != null && !takeDate.isBefore(updateDate)) {
+                startIndex = i;
+                break;
+            }
+        }
+        List<RoutineEntity> filterTakeDateRoutines=routineEntities.subList(startIndex, routineEntities.size());
+
+        // routine의 user_schedule.take_time이 updateDate보다 이후인 경우 그 이후에대해서 리스트자르기
+        startIndex = 0;
+        for (int i = 0; i < routineEntities.size(); i++) {
+            LocalTime takeTime = routineEntities.get(i).getUserSchedule().getTakeTime();
+            if (takeTime != null && !takeTime.isBefore(updateTime)) {
+                startIndex = i;
+                break;
+            }
+        }
+        List<RoutineEntity> filterTakeDateAndTakeTimeRoutines= filterTakeDateRoutines.subList(startIndex, filterTakeDateRoutines.size());
+
+        return filterTakeDateAndTakeTimeRoutines.stream()
                 .map(RoutineEntity::getUserSchedule)
                 .filter(Objects::nonNull)
                 .distinct() // 중복된 UserScheduleEntity 제거
                 .sorted(Comparator.comparing(UserScheduleEntity::getTakeTime)) // takeTime 기준 오름차순
+                .map(UserScheduleEntity::getId)
+                .toList();
+    }
+
+    public List<Long> sortUserScheduleIdsByTakeTimeAsc(List<Long> userScheduleIds) {
+        return userScheduleIds.stream().map(userScheduleService::findById)
+                .toList()
+                .stream().sorted(Comparator.comparing(UserScheduleEntity::getTakeTime))
                 .map(UserScheduleEntity::getId)
                 .toList();
     }
