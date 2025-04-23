@@ -314,7 +314,7 @@ public class RoutineController {
             
             """
     )
-    @GetMapping("/{routine_id}/group")
+    @GetMapping("/group/{routine_id}")
     public Api<Object> getRoutineGroup(
             @Parameter(hidden = true) @UserSession Long userId,
             @PathVariable(name = "routine_id") Long routineId

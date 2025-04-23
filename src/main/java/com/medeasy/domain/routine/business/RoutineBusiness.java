@@ -439,11 +439,12 @@ public class RoutineBusiness {
         // 사용자와 스케줄 관련 처리
         UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
         List<UserScheduleEntity> userScheduleEntities = userEntity.getUserSchedules();
-        // 루틴 관련 처리
+
+        // 루틴 그룹 조회
         RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, routineUpdateRequest.getRoutineId());
         List<RoutineEntity> routineEntities=routineGroupEntity.getRoutines();
 
-        // request 에 포함된 schedule 정보 가져오기
+        // 과거 스케줄 리스트 조회
         List<Long> pastUserScheduleIds = userScheduleBusiness.getDistinctUserScheduleIds(routineEntities);
         log.info("루티 업데이트 디버깅: 과거 스케줄 개수: {}", pastUserScheduleIds.size());
 
@@ -516,7 +517,7 @@ public class RoutineBusiness {
         }
 
         RoutineRegisterRequest routineRegisterRequest=new RoutineRegisterRequest(medicineId, nickname, dose, totalQuantity, null, userScheduleIds, startDate, startUserScheduleId, intervalDays);
-        List<RoutineEntity> newRoutineEntities=routineFutureCreator.createRoutines(routineCalculatorByInterval, routineRegisterRequest, userEntity, userScheduleEntities);
+        List<RoutineEntity> newRoutineEntities=routineFutureCreator.createRoutines(routineCalculatorByInterval, routineRegisterRequest, userEntity, registerUserScheduleEntities);
 
         log.info("루티 업데이트 디버깅: 새로 추가된 루틴 개수: {}", newRoutineEntities.size());
         log.info("루티 업데이트 디버깅: 삭제되는 루틴 개수: {}", notTakenRoutines.size());

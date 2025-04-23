@@ -9,6 +9,7 @@ import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class RoutineFutureCreator implements RoutineCreator{
@@ -39,9 +41,10 @@ public class RoutineFutureCreator implements RoutineCreator{
             Long startUserScheduleId= request.getStartUserScheduleId();
             UserScheduleEntity startUserScheduleEntity = userScheduleService.findById(startUserScheduleId);
             startTime = startUserScheduleEntity.getTakeTime();
-
+            log.info("루틴 시작 스케줄 id: {}, 시간: {}", startUserScheduleId, startDate);
         } else{
             startTime = userScheduleEntities.getFirst().getTakeTime();
+            log.info("루틴 시작 스케줄 명시 x 첫 스케줄부터 등록 스케줄id: {}, 시간: {}", userScheduleEntities.getFirst().getId(), userScheduleEntities.getFirst().getTakeTime());
         }
 
         List<RoutineEntity> routineEntities = new ArrayList<>();
@@ -78,6 +81,8 @@ public class RoutineFutureCreator implements RoutineCreator{
 
                 RoutineEntity routineEntity = routineConverter.toEntityFromRequest(localDate, userEntity, userScheduleEntity);
                 routineEntities.add(routineEntity);
+
+                log.info("루틴 업데이트 디버깅 루틴 생성 부분 user_schedule_id: {}, quantity: {}", userScheduleEntity.getId(), quantity);
             }
         }
 
