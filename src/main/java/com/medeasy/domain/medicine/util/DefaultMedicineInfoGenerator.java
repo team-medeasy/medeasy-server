@@ -1,7 +1,10 @@
 package com.medeasy.domain.medicine.util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
+@Component
 public class DefaultMedicineInfoGenerator extends MedicineInfoGenerator{
     @Override
     String generateMedicineInfoTitleScript(String medicineName) {
