@@ -49,6 +49,15 @@ jobs:
         with:
           ref: '${{ github.head_ref }}'
 
+      # 1) Secret 에 저장된 JSON을 파일로 출력
+      - name: Write GCP credentials
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" > gcp-key.json
+
+      # 2) GOOGLE_APPLICATION_CREDENTIALS 환경변수 설정
+      - name: Set GOOGLE_APPLICATION_CREDENTIALS
+        run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/gcp-key.json" >> $GITHUB_ENV
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
