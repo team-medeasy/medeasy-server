@@ -41,6 +41,7 @@ jobs:
       GMAIL_PASSWORD: ${{secrets.GMAIL_PASSWORD}}
 
       KAKAO_USER_INFO_URI: ${{secrets.KAKAO_USER_INFO_URI}}
+      TTS_OUTPUT_DIR: ${{secrets.TTS_OUTPUT_DIR}}
 
     steps:
       - name: Checkout Source Code
