@@ -111,6 +111,9 @@ public class MedicineDocument {
 
     @Field(name = "is_pill", type = FieldType.Long)
     private Long isPill; // 정제 여부 (0,1)
+
+    @Field(name = "audio_url", type = FieldType.Keyword)
+    private String audioUrl; // 음성 데이터
 }
 
 
