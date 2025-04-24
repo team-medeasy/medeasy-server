@@ -24,14 +24,8 @@ public class Mp3Service {
             Files.createDirectories(dir);
         }
 
-        // 2) 실제 저장할 Path 결정
         Path filePath = dir.resolve(fileName);
-
-        // 3) 파일이 이미 있으면 덮어쓰거나 에러 처리할지 결정 (여기서는 신규 생성)
         Files.write(filePath, audioBytes, StandardOpenOption.CREATE_NEW);
-
-        // 4) JVM 종료 시 파일 자동 삭제 옵션 (필요 시)
-        filePath.toFile().deleteOnExit();
 
         return filePath.toFile();
     }
