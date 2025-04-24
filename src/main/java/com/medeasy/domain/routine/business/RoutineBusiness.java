@@ -625,4 +625,7 @@ public class RoutineBusiness {
                 ;
     }
 
+    public Long getRoutineId(Long userId, String medicineId) {
+        return routineGroupService.findUserRoutineGroupByMedicineId(userId, medicineId);
+    }
 }

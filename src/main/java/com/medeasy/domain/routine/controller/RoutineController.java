@@ -315,13 +315,13 @@ public class RoutineController {
             
             """
     )
-    @GetMapping("/group/{medicine_id}")
+    @GetMapping("/group/medicine_id/{medicine_id}") // TODO 성능 최적화 필요
     public Api<Object> getRoutineGroupByMedicineId(
             @Parameter(hidden = true) @UserSession Long userId,
-            @PathVariable(name = "medicine_id") Long medicineId
+            @PathVariable(name = "medicine_id") String medicineId
     ) {
-
-        RoutineGroupInfoResponse response = routineBusiness.getRoutineGroupInfo(userId, medicineId);
+        Long routineId = routineBusiness.getRoutineId(userId, medicineId);
+        RoutineGroupInfoResponse response = routineBusiness.getRoutineGroupInfo(userId, routineId);
         return Api.OK(response);
     }
 
