@@ -24,6 +24,9 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.MultiGetItem;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.document.Document;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.query.UpdateQuery;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -282,6 +285,18 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
         }catch (Exception e){
             throw new ApiException(ErrorCode.SERVER_ERROR);
         }
+    }
+
+    /**
+     * medicine_data document에 audio_url 업데이트
+     * */
+    @Override
+    public void updateMedicineAudioUrl(String medicineId, String audioUrl) {
+        UpdateQuery updateQuery = UpdateQuery.builder(medicineId)
+                .withDocument(Document.create().append("audio_url", audioUrl))
+                .build();
+
+        elasticsearchOperations.update(updateQuery, IndexCoordinates.of("medicine_data"));
     }
 
 }

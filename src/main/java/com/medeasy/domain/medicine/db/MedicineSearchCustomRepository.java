@@ -18,4 +18,6 @@ public interface MedicineSearchCustomRepository {
     List<MedicineDocument> findMedicinesByIds(List<String> ids);
 
     List<MedicineDocument> findMedicinesByMget(List<String> ids);
+
+    void updateMedicineAudioUrl(String medicineId, String audioUrl);
 }
