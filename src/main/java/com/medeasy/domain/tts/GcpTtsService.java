@@ -3,7 +3,6 @@ package com.medeasy.domain.tts;
 import com.google.cloud.texttospeech.v1.*;
 import com.medeasy.common.error.TtsErrorCode;
 import com.medeasy.common.exception.ApiException;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

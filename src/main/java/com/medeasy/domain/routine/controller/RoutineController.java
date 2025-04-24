@@ -278,6 +278,53 @@ public class RoutineController {
         return Api.OK(null);
     }
 
+    // TODO 작성 필요
+    @Operation(summary = "medicine_id를 통한 루틴 그룹 조회 api", description =
+            """
+                medicine_id 루틴 그룹 조회: 
+                
+                약 검색에서 해당 약품이 현재 루틴으로 등록된 약일 경우 복용 중인 루틴 그룹 정보 제공 
+                                
+            요청: 
+            
+            medicine_id: 약 식별자 
+            
+            응답: 
+            
+            routine_group_id: 루틴이 포함된 루틴 그룹 식별자
+                        
+            medicine_id: 약 식별자
+            
+            nickname: 루틴 별칭 
+            
+            interval_days: 복용 날짜 간격 
+            
+            schedule_responses: 스케줄 정보 
+                
+                 user_schedule_id: 스케줄 식별자
+                         
+                 name: 스케줄 이름 
+         
+                 take_time: 스케줄 시간 
+         
+                 is_selected: 루틴을 등록했을 때 지정한 스케줄 여부
+            
+            dose: 복용량 
+            
+            total_quantity: 남은 약의 개수 
+            
+            """
+    )
+    @GetMapping("/group/{medicine_id}")
+    public Api<Object> getRoutineGroupByMedicineId(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @PathVariable(name = "medicine_id") Long medicineId
+    ) {
+
+        RoutineGroupInfoResponse response = routineBusiness.getRoutineGroupInfo(userId, medicineId);
+        return Api.OK(response);
+    }
+
     @Operation(summary = "루틴 그룹 조회 api", description =
             """
                 루틴 그룹 조회: 

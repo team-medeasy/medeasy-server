@@ -1,24 +1,26 @@
 package com.medeasy.domain.medicine.business;
 
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
 import com.medeasy.common.annotation.Business;
-import com.medeasy.common.logging.SaveLogToTxt;
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.medicine.converter.MedicineConverter;
 import com.medeasy.domain.medicine.db.*;
-import com.medeasy.domain.medicine.dto.MedicineRequest;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
-import com.medeasy.domain.medicine.dto.MedicineUpdateRequest;
 import com.medeasy.domain.medicine.service.MedicineDocumentService;
-import com.medeasy.domain.medicine.service.MedicineService;
+import com.medeasy.domain.medicine.util.MedicineInfoGenerator;
+import com.medeasy.domain.mp3.Mp3Service;
+import com.medeasy.domain.tts.TtsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 
 @Slf4j
@@ -28,6 +30,11 @@ public class MedicineBusiness {
 
     private final MedicineDocumentService medicineDocumentService;
     private final MedicineConverter medicineConverter;
+
+    private final MedicineInfoGenerator medicineInfoGenerator;
+    private final TtsService ttsService;
+    private final Mp3Service mp3Service;
+    private final Storage storage;
 
     public String combineColors(String color1, String color2) {
         // 컬러 값 결합 로직
@@ -82,5 +89,34 @@ public class MedicineBusiness {
         List<MedicineDocument> medicineDocuments=medicineDocumentService.getMedicinesByIds(medicineIds);
 
         return medicineDocuments.stream().map(medicineConverter::toResponseWithDocument).toList();
+    }
+
+    /**
+     * 약 음성 파일 생성 및 GCP Bucket에 저장
+     * */
+    public String getMedicineInfoMp3FileUri(String medicineId) {
+        // 약 정보 조회
+        MedicineDocument medicineDocument=medicineDocumentService.findMedicineDocumentById(medicineId);
+
+        // 약 정보 텍스트 스크립트
+        String medicineInfoScript=medicineInfoGenerator.generateScriptMedicineInfo(medicineDocument);
+
+        // 바이트 데이터
+        byte[] audioBytes= ttsService.convertTextToSpeech(medicineInfoScript);
+        log.info("약 정보 음성 데이터 변환 완료");
+
+        String fileName = medicineDocument.getItemName()+"_음성정보"+".mp3";
+        String bucketName = "medeasy-mp3";
+
+        // 2) GCS에 업로드
+        BlobId blobId = BlobId.of(bucketName, fileName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType("audio/mpeg")
+                .build();
+        storage.create(blobInfo, audioBytes);
+        log.info("gcs 버킷 저장 완료");
+
+        // 3) 퍼블릭 URL 혹은 Signed URL 반환
+        return String.format("https://storage.googleapis.com/%s/%s", bucketName, fileName);
     }
 }

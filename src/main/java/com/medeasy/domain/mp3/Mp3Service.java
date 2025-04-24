@@ -1,5 +1,7 @@
 package com.medeasy.domain.mp3;
 
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,16 +19,21 @@ public class Mp3Service {
         this.ttsOutputDir = ttsOutputDir;
     }
 
-    public File createMp3File(byte[] audioBytes, String fileName) throws IOException {
-        Path dir = Paths.get(ttsOutputDir);
+    public File createMp3File(byte[] audioBytes, String fileName) {
 
-        if (Files.notExists(dir)) {
-            Files.createDirectories(dir);
+        try {
+            Path dir = Paths.get(ttsOutputDir);
+
+            if (Files.notExists(dir)) {
+                Files.createDirectories(dir);
+            }
+
+            Path filePath = dir.resolve(fileName);
+            Files.write(filePath, audioBytes, StandardOpenOption.CREATE_NEW);
+
+            return filePath.toFile();
+        } catch (IOException e) {
+            throw new ApiException(ErrorCode.SERVER_ERROR, "음성 파일 생성 중 오류 발생");
         }
-
-        Path filePath = dir.resolve(fileName);
-        Files.write(filePath, audioBytes, StandardOpenOption.CREATE_NEW);
-
-        return filePath.toFile();
     }
 }

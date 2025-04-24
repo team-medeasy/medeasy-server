@@ -8,12 +8,18 @@ import com.medeasy.domain.medicine.db.MedicineShape;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
+import com.nimbusds.jose.util.Resource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.util.List;
 
 @Slf4j
@@ -139,6 +145,22 @@ public class MedicineController {
     ) {
         List<MedicineResponse> response=medicineBusiness.getMedicineListByIds(medicineIds);
         log.info("약 리스트 조회 완료 사용자: {}", userId);
+
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "약 음성 파일 조회 api", description =
+            """
+                약 정보 음성 제공 
+                
+                medicine_id에 해당하는 약의 효능, 복용 방법, 주의사항, 부작용에 대해서 음성 정보 제공 
+            """)
+    @GetMapping("/mp3/{medicine_id}")
+    public Api<String> getMedicineInfoMp3File(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @PathVariable(name = "medicine_id") String medicineId
+    ) {
+        var response=medicineBusiness.getMedicineInfoMp3FileUri(medicineId);
 
         return Api.OK(response);
     }
