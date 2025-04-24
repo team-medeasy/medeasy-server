@@ -22,4 +22,12 @@ public interface RoutineGroupRepository extends JpaRepository<RoutineGroupEntity
             ") " +
             "ORDER BY r.takeDate ASC, us.takeTime ASC")
     Optional<RoutineGroupEntity> findRoutineGroupContainsRoutineIdByUserId(@Param("userId") Long userId, @Param("routineId") Long routineId);
+
+    @Query("SELECT r.id FROM RoutineGroupEntity rg " +
+            "JOIN rg.routines r " +
+            "WHERE rg.user.id=:userId " +
+            "AND rg.medicineId=:medicineId " +
+            "ORDER BY rg.createdAt DESC " +
+            "LIMIT 1")
+    Optional<Long> findFirstRoutineIdByUserIdAndMedicineId(@Param("userId") Long userId, @Param("medicineId") String medicineId);
 }

@@ -65,6 +65,13 @@ dependencies {
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 	// mail
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// tts
+	implementation platform('com.google.cloud:google-cloud-texttospeech-bom:2.61.0')
+	implementation 'com.google.cloud:google-cloud-texttospeech'
+
+	// GCS Java 클라이언트 라이브러리
+	implementation 'com.google.cloud:google-cloud-storage:2.50.0'
 }
 
 tasks.named('test') {

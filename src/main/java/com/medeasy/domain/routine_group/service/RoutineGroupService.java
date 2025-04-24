@@ -1,6 +1,7 @@
 package com.medeasy.domain.routine_group.service;
 
 import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.RoutineErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.db.RoutineRepository;
@@ -39,5 +40,10 @@ public class RoutineGroupService {
 
     public void delete(RoutineGroupEntity routineGroupEntity) {
         routineGroupRepository.delete(routineGroupEntity);
+    }
+
+    public Long findUserRoutineGroupByMedicineId(Long userId, String medicineId) {
+        return routineGroupRepository.findFirstRoutineIdByUserIdAndMedicineId(userId, medicineId)
+                .orElseThrow(()-> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE, "해당 약을 복용하고 있는 루틴 그룹이 존재하지 않습니다."));
     }
 }

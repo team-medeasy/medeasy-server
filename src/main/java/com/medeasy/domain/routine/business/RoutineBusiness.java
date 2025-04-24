@@ -591,7 +591,8 @@ public class RoutineBusiness {
         RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, routineId);
         List<RoutineEntity> routineEntities = routineGroupEntity.getRoutines();
 
-        List<LocalDate> takeDates = routineEntities.stream().map(RoutineEntity::getTakeDate).toList();
+        List<LocalDate> takeDates = routineEntities.stream().map(RoutineEntity::getTakeDate).distinct().sorted().toList();
+
         int intervalDays = calculateIntervalDays(takeDates);
         int remainQuantity=calculateRemainQuantity(routineEntities, routineGroupEntity.getDose());
         List<Long> routineGroupUserScheduleIds=userScheduleBusiness.getDistinctUserScheduleIds(routineEntities, routineGroupEntity.getUpdatedAt().toLocalDate(), routineGroupEntity.getUpdatedAt().toLocalTime());
@@ -622,5 +623,9 @@ public class RoutineBusiness {
                 .scheduleResponses(scheduleResponses)
                 .build()
                 ;
+    }
+
+    public Long getRoutineId(Long userId, String medicineId) {
+        return routineGroupService.findUserRoutineGroupByMedicineId(userId, medicineId);
     }
 }
