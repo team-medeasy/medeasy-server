@@ -42,6 +42,7 @@ jobs:
 
       KAKAO_USER_INFO_URI: ${{secrets.KAKAO_USER_INFO_URI}}
       TTS_OUTPUT_DIR: ${{secrets.TTS_OUTPUT_DIR}}
+      KAKAO_APP_KEY: ${{secrets.KAKAO_APP_KEY}}
 
     steps:
       - name: Checkout Source Code
