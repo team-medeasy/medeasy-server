@@ -1,6 +1,8 @@
 package com.medeasy.domain.tts;
 
 import com.google.cloud.texttospeech.v1.*;
+import com.medeasy.common.error.TtsErrorCode;
+import com.medeasy.common.exception.ApiException;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,9 +30,9 @@ public class GcpTtsService implements TtsService{
         this.ttsOutputDir = ttsOutputDir;
     }
 
-    @PostConstruct
+//    @PostConstruct
     public void test() {
-        try (TextToSpeechClient client = TextToSpeechClient.create()) {
+        try  {
             // 1) 변환할 텍스트 설정
             SynthesisInput input = SynthesisInput.newBuilder()
                     .setText("안녕하세요, Google Cloud Text-to-Speech 예제입니다.")
@@ -77,6 +79,31 @@ public class GcpTtsService implements TtsService{
 
     @Override
     public byte[] convertTextToSpeech(String text) {
-        throw new UnsupportedOperationException("convertTextToSpeech 구현 필요");
+
+        // 반환 텍스트 설정
+        SynthesisInput input = SynthesisInput.newBuilder()
+                .setText(text)
+                .build();
+
+        // 음성 옵션 선택 (언어, 성별 등)
+        VoiceSelectionParams voice = VoiceSelectionParams.newBuilder()
+                .setLanguageCode("ko-KR")
+                .setSsmlGender(SsmlVoiceGender.MALE)
+                .build();
+
+        // 출력 오디오 포맷 설정
+        AudioConfig audioConfig = AudioConfig.newBuilder()
+                .setAudioEncoding(AudioEncoding.MP3)
+                .build();
+
+        SynthesizeSpeechResponse response;
+
+        try {
+            response = client.synthesizeSpeech(input, voice, audioConfig);
+        }catch (Exception e){
+            throw new ApiException(TtsErrorCode.GCP_TTS_REQUEST_ERROR);
+        }
+
+        return response.getAudioContent().toByteArray();
     }
 }
