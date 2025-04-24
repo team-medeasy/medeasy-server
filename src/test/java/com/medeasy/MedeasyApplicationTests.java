@@ -6,9 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.main.allow-bean-definition-overriding=true")
 class MedeasyApplicationTests {
-
 	@TestConfiguration
 	static class TestStorageConfig {
 		@Bean
@@ -18,8 +17,8 @@ class MedeasyApplicationTests {
 	}
 
 	@Test
-	void contextLoads() {
-		// storage 가 목이기 때문에 자격증명 오류 없이 컨텍스트 로드
-	}
+	void contextLoads() {}
 }
+
+
 
