@@ -82,3 +82,6 @@ gemini:
 kakao:
   api:
     user-info-uri: ${KAKAO_USER_INFO_URI}
+
+tts:
+  output-dir: ${TTS_OUTPUT_DIR}
