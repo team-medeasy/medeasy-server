@@ -1,5 +1,6 @@
 package com.medeasy.domain.medicine.business;
 
+import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
@@ -97,6 +98,17 @@ public class MedicineBusiness {
     public String getMedicineInfoMp3FileUri(String medicineId) {
         // 약 정보 조회
         MedicineDocument medicineDocument=medicineDocumentService.findMedicineDocumentById(medicineId);
+        String fileName = medicineDocument.getItemName()+"_음성정보"+".mp3";
+        String bucketName = "medeasy-mp3";
+
+        String audioUrl=String.format("https://storage.googleapis.com/%s/%s", bucketName, fileName);
+
+        // 스토리지에 파일이 존재하는지 조회
+        Blob blob = storage.get(BlobId.of(bucketName, fileName));
+        if (blob != null && blob.exists()) {
+            log.info("GCS에 이미 존재하는 파일입니다: {}", fileName);
+            return audioUrl;
+        }
 
         // 약 정보 텍스트 스크립트
         String medicineInfoScript=medicineInfoGenerator.generateScriptMedicineInfo(medicineDocument);
@@ -104,9 +116,6 @@ public class MedicineBusiness {
         // 바이트 데이터
         byte[] audioBytes= ttsService.convertTextToSpeech(medicineInfoScript);
         log.info("약 정보 음성 데이터 변환 완료");
-
-        String fileName = medicineDocument.getItemName()+"_음성정보"+".mp3";
-        String bucketName = "medeasy-mp3";
 
         // 2) GCS에 업로드
         BlobId blobId = BlobId.of(bucketName, fileName);
@@ -116,7 +125,8 @@ public class MedicineBusiness {
         storage.create(blobInfo, audioBytes);
         log.info("gcs 버킷 저장 완료");
 
-        // 3) 퍼블릭 URL 혹은 Signed URL 반환
-        return String.format("https://storage.googleapis.com/%s/%s", bucketName, fileName);
+        medicineDocumentService.updateMedicineAudioUrl(medicineId, audioUrl);
+
+        return audioUrl;
     }
 }

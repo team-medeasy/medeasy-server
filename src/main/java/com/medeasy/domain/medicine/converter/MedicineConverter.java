@@ -47,6 +47,7 @@ public class MedicineConverter {
                 .lengShort(document.getLengShort())
                 .thick(document.getThick())
                 .isPill(document.getIsPill())
+                .audioUrl(document.getAudioUrl())
                 .build();
     }
 

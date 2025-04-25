@@ -8,15 +8,10 @@ import com.medeasy.domain.medicine.db.MedicineShape;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
-import com.nimbusds.jose.util.Resource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -151,11 +146,13 @@ public class MedicineController {
 
     @Operation(summary = "약 음성 파일 조회 api", description =
             """
-                약 정보 음성 제공 
+                약 정보 음성 파일 url 조회  
                 
-                medicine_id에 해당하는 약의 효능, 복용 방법, 주의사항, 부작용에 대해서 음성 정보 제공 
+                medicine_id에 해당하는 약의 효능, 복용 방법, 주의사항, 부작용에 대해서 음성 정보 제공하는 파일 url을 반환한다.
+                
+                일반적으로 약 정보 조회시 음성파일 URL 필드(audio_url) 제공하지만 존재하지 않을 경우에 이 api로 요청하여 음성 파일 생성과 url 반환  
             """)
-    @GetMapping("/mp3/{medicine_id}")
+    @GetMapping("/audio-url/{medicine_id}")
     public Api<String> getMedicineInfoMp3File(
             @Parameter(hidden = true) @UserSession Long userId,
             @PathVariable(name = "medicine_id") String medicineId

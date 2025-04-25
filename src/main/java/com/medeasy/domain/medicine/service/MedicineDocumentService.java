@@ -74,4 +74,8 @@ public class MedicineDocumentService {
     public List<MedicineDocument> getMedicinesByIds(List<String> medicineIds) {
         return medicineSearchCustomRepository.findMedicinesByMget(medicineIds);
     }
+
+    public void updateMedicineAudioUrl(String medicineId, String audioUrl) {
+        medicineSearchCustomRepository.updateMedicineAudioUrl(medicineId, audioUrl);
+    }
 }

@@ -74,4 +74,6 @@ public class MedicineResponse {
     private Float thick; // 두께
 
     private Long isPill; // 정제 여부 (0,1)
+
+    private String audioUrl;
 }
