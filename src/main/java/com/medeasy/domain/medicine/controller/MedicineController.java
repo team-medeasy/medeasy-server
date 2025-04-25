@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.util.List;
 
 @Slf4j
@@ -152,7 +151,7 @@ public class MedicineController {
                 
                 일반적으로 약 정보 조회시 음성파일 URL 필드(audio_url) 제공하지만 존재하지 않을 경우에 이 api로 요청하여 음성 파일 생성과 url 반환  
             """)
-    @GetMapping("/audio-url/{medicine_id}")
+    @GetMapping("/{medicine_id}/audio-url")
     public Api<String> getMedicineInfoMp3File(
             @Parameter(hidden = true) @UserSession Long userId,
             @PathVariable(name = "medicine_id") String medicineId
