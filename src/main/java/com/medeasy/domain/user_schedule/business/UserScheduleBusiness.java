@@ -70,10 +70,12 @@ public class UserScheduleBusiness {
     public List<Long> getDistinctUserScheduleIds(List<RoutineEntity> routineEntities, LocalDate updateDate, LocalTime updateTime) {
         // routine list를 updateDate와 같을 경우 그 이후까지에 대해서 리스트 자르기
         // takeDate가 updateDate보다 크거나 같은 첫 index를 찾기
+
+
         int startIndex = 0;
         for (int i = 0; i < routineEntities.size(); i++) {
             LocalDate takeDate = routineEntities.get(i).getTakeDate();
-            if (takeDate != null && !takeDate.isBefore(updateDate)) {
+            if (takeDate != null && !takeDate.isBefore(updateDate)) { // 루틴의 복용날짜가 루틴 그룹 업데이트 날짜와 같거나 큰 경우
                 startIndex = i;
                 break;
             }
@@ -82,9 +84,9 @@ public class UserScheduleBusiness {
 
         // routine의 user_schedule.take_time이 updateDate보다 이후인 경우 그 이후에대해서 리스트자르기
         startIndex = 0;
-        for (int i = 0; i < routineEntities.size(); i++) {
-            LocalTime takeTime = routineEntities.get(i).getUserSchedule().getTakeTime();
-            if (takeTime != null && !takeTime.isBefore(updateTime)) {
+        for (int i = 0; i < filterTakeDateRoutines.size(); i++) {
+            LocalTime takeTime = filterTakeDateRoutines.get(i).getUserSchedule().getTakeTime();
+            if (takeTime != null && !takeTime.isBefore(updateTime)) { // 루틴의 복용 시간이 루틴 그룹의 업데이트 시간과 같거나 큰 경우
                 startIndex = i;
                 break;
             }
