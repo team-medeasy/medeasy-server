@@ -590,6 +590,7 @@ public class RoutineBusiness {
 
         RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, routineId);
         List<RoutineEntity> routineEntities = routineGroupEntity.getRoutines();
+        List<Long> routineIds = routineEntities.stream().map(RoutineEntity::getId).toList();
 
         List<LocalDate> takeDates = routineEntities.stream().map(RoutineEntity::getTakeDate).distinct().sorted().toList();
 
@@ -615,6 +616,7 @@ public class RoutineBusiness {
 
         return RoutineGroupInfoResponse.builder()
                 .routineGroupId(routineGroupEntity.getId())
+                .routineIds(routineIds)
                 .nickname(routineGroupEntity.getNickname())
                 .dose(routineGroupEntity.getDose())
                 .medicineId(routineGroupEntity.getMedicineId())
