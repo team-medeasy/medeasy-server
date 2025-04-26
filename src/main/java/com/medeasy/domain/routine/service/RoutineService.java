@@ -98,7 +98,9 @@ public class RoutineService {
     }
 
     public void deleteRoutineByUserIdAndId(Long userId, Long routineId) {
-        routineRepository.deleteByUserIdAndId(userId, routineId);
+        // 먼저 요청을 보낸 사용자의 루틴인지 인가처리
+        routineRepository.findRoutineByUserIdAndId(userId, routineId).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
+        routineRepository.deleteById(routineId);
     }
 
 

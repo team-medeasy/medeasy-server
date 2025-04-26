@@ -65,6 +65,7 @@ public class RoutineGroupEntity {
         this.medicineId = medicineId;
         this.dose = dose;
         this.nickname = nickname;
+        this.updatedAt = LocalDateTime.now();
 
         return this;
     }

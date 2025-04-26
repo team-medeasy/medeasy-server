@@ -3,6 +3,7 @@ package com.medeasy.domain.routine.dto;
 import lombok.*;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -13,6 +14,8 @@ import java.util.List;
 public class RoutineGroupInfoResponse {
 
     private Long routineGroupId;
+
+    private List<Long> routineIds=new ArrayList<>();
 
     private String medicineId;
 

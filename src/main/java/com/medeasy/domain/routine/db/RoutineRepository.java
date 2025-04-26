@@ -21,11 +21,7 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             @Param("endDate") LocalDate endDate
     );
 
-    @Query("SELECT new com.medeasy.domain.routine.dto.RoutineGroupDateRangeDto(rg.id, MIN(r.takeDate), MAX(r.takeDate)) " +
-            "FROM RoutineEntity r JOIN r.routineGroup rg " +
-            "WHERE rg.user.id = :userId " +
-            "GROUP BY rg.id")
-    void deleteByUserIdAndId(Long userId, Long id);
+    void deleteById(Long id);
 
     @Query("SELECT DISTINCT rg.medicineId " +
             "FROM RoutineGroupEntity rg " +

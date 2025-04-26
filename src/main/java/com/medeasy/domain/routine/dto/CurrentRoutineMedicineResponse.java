@@ -34,5 +34,5 @@ public class CurrentRoutineMedicineResponse {
 
     private int scheduleSize;
 
-    private List<Integer> dayOfWeeks;
+    private Integer intervalDays;
 }
