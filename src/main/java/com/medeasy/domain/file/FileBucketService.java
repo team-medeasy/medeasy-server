@@ -4,5 +4,7 @@ import java.io.File;
 
 public interface FileBucketService {
 
-    void saveMp3File(File mp3File);
+    String saveAudioFile(byte[] audioBytes, String bucketName, String fileName);
+
+    String getAudioFileUrl(String bucketName, String fileName);
 }

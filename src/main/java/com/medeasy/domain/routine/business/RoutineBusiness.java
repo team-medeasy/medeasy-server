@@ -536,7 +536,7 @@ public class RoutineBusiness {
         routineGroupEntity.updateRoutine(nickname, medicineId, dose);
 
         routineService.saveAll(newRoutineEntities);
-//        routineService.deleteRoutines(notTakenRoutines); // deleteAll 쿼리를 날렸지만, 컬렉션에는 여전히 남아있기 때문에 지워지지 않음
+//        routineService.deleteRoutines(notTakenRoutines); // deleteAll 쿼리를 날렸지만, routine_group 컬렉션에는 여전히 남아있기 때문에 지워지지 않음
     }
 
     @Transactional
