@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.error.AiErrorCode;
-import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.ai.dto.AiResponseDto;
 import com.medeasy.domain.ocr.dto.OcrParsedDto;
@@ -22,7 +21,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class AiService {
+public class GeminiPrescriptionAiService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;

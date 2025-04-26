@@ -6,7 +6,7 @@ import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.ai.dto.AiResponseDto;
-import com.medeasy.domain.ai.service.AiService;
+import com.medeasy.domain.ai.service.GeminiPrescriptionAiService;
 import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.service.MedicineDocumentService;
 import com.medeasy.domain.ocr.dto.OcrParsedDto;
@@ -55,7 +55,7 @@ public class RoutineBusiness {
     private final RoutineGroupConverter routineGroupConverter;
 
     private final OcrServiceByMultipart ocrService;
-    private final AiService aiService;
+    private final GeminiPrescriptionAiService geminiPrescriptionAiService;
 
     private final UserScheduleConverter userScheduleConverter;
     private final RoutineRepository routineRepository;
@@ -81,7 +81,7 @@ public class RoutineBusiness {
             MedicineDocumentService medicineDocumentService,
 
             OcrServiceByMultipart ocrService,
-            AiService aiService,
+            GeminiPrescriptionAiService geminiPrescriptionAiService,
 
             ObjectMapper objectMapper,
 
@@ -103,7 +103,7 @@ public class RoutineBusiness {
         this.userService = userService;
         this.medicineDocumentService = medicineDocumentService;
         this.ocrService = ocrService;
-        this.aiService = aiService;
+        this.geminiPrescriptionAiService = geminiPrescriptionAiService;
 
         this.userScheduleBusiness = userScheduleBusiness;
         this.objectMapper = objectMapper;
@@ -259,11 +259,11 @@ public class RoutineBusiness {
         log.info("처방전 이미지 ocr 분석 완료");
 
         // ai api를 통하여 복약 정보 추출
-        String analysis=aiService.analysis(parseData);
+        String analysis= geminiPrescriptionAiService.analysis(parseData);
         log.info("gemini 요청 완료");
 
         // TODO aiResponseDTO에서 나온 schedule_count에 따라서
-        AiResponseDto aiResponseDto=aiService.parseGeminiResponse(analysis);
+        AiResponseDto aiResponseDto= geminiPrescriptionAiService.parseGeminiResponse(analysis);
         log.info("추출 데이터 파싱 완료, api token 비용: {}", aiResponseDto.getTotalTokenCount());
 
         List<RoutinePrescriptionResponse> response=aiResponseDto.getDoseDtos().stream().map(doseDto -> {

@@ -1,6 +1,6 @@
 package com.medeasy.domain.ai.service;
 
-public interface AiServiceIfs {
+public interface PrescriptionAiServiceIfs {
 
     String analysis();
 }
