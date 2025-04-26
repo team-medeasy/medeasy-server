@@ -352,6 +352,15 @@ public class RoutineBusiness {
         }
     }
 
+    /**
+     * 현재 또는 과거 복용하였던 의약품과 routine_group정보를 같이 조회하는 메서드
+     *
+     * 현재 복용 중인 약, 과거 복용하였던 약 페이지에서 사용
+     * strategy 패턴을 통해 구현 -> 현재 복용 약, 과거 복용 약 범위 설정 가능
+     * 과거 복용 약의 경우 startDate, endDate 추가하여 조회 범위 설정 가능
+     *
+     * interval days의 경우 루틴 업데이트 날짜 이후로 조회
+     * */
     @Transactional
     public List<CurrentRoutineMedicineResponse> getRoutineList(
             Long userId,
@@ -368,11 +377,13 @@ public class RoutineBusiness {
                                 Function.identity()
                         ));
 
+        // routine group list
         List<Long> routineGroupIds = routineGroupDateRangeDtos.stream().map(RoutineGroupDateRangeDto::getRoutineGroupId).toList();
 
-        // 복용량, 복용주기
+        // batch query 루틴 정보 조회
         List<RoutineFlatDto> routineFlatDtos = routineQueryRepository.findRoutineInfoByUserIdAndGroupIds(userId, routineGroupIds);
 
+        // routine list, routine_group과 매칭
         Map<Long, List<RoutineFlatDto>> mapGroupedByGroupId = routineFlatDtos.stream()
                 .collect(Collectors.groupingBy(RoutineFlatDto::getRoutineGroupId));
 
@@ -387,7 +398,9 @@ public class RoutineBusiness {
         return routineGroupIds.stream().map(routineGroupId->{
             RoutineGroupDateRangeDto routineGroupDateRangeDto=mapGroupIdToDateRange.get(routineGroupId);
             List<RoutineFlatDto> routines=mapGroupedByGroupId.get(routineGroupId);
+
             List<LocalDate> takeDates=routines.stream().map(RoutineFlatDto::getTakeDate).toList();
+            LocalDate updatedDate=routineGroupDateRangeDto.getUpdatedAt().toLocalDate();
 
             List<Long> userScheduleIds=routines.stream().map(RoutineFlatDto::getUserScheduleId).distinct().toList();
 
@@ -397,14 +410,11 @@ public class RoutineBusiness {
             String medicineId = routineFlat.getMedicineId();
             MedicineDocument medicineDocument=medicineDocumentService.findMedicineDocumentById(medicineId);
 
-            List<Integer> dayOfWeekNumbers = takeDates.stream()
-                    .map(date -> date.getDayOfWeek().getValue()) // 1(월) ~ 7(일)
-                    .distinct()
-                    .sorted()
-                    .toList();
+            Integer intervalDays = calculateIntervalDaysAfterUpdatedAt(takeDates, updatedDate);
 
             return CurrentRoutineMedicineResponse.builder()
                     .medicineId(medicineDocument.getId())
+                    .intervalDays(intervalDays)
                     .nickname(routineFlat.getNickname())
                     .medicineName(medicineDocument.getItemName())
                     .medicineImage(medicineDocument.getItemImage())
@@ -415,7 +425,7 @@ public class RoutineBusiness {
                     .scheduleSize(userScheduleIds.size())
                     .routineStartDate(routineGroupDateRangeDto.getStartDate())
                     .routineEndDate(routineGroupDateRangeDto.getEndDate())
-                    .dayOfWeeks(dayOfWeekNumbers)
+                    .intervalDays(intervalDays)
                     .build()
                     ;
         }).toList();
@@ -433,6 +443,8 @@ public class RoutineBusiness {
      * 2. routine_group_id에 속해있는 routine_medicine list 조회 -> is_taken false
      * 3. routine_medicine false list 전부 delete
      * 4. 투여일수에 현재 복용한 일수를 제외한 일수에 대해서 수정 요청 데이터를 반영하여 routine_medicine 저장
+     *
+     * TODO 업데이트 날짜 수정
      * */
     @Transactional
     public void putRoutineGroup(Long userId, RoutineUpdateRequest routineUpdateRequest) {
@@ -443,10 +455,6 @@ public class RoutineBusiness {
         // 루틴 그룹 조회
         RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupContainsRoutineIdByUserId(userId, routineUpdateRequest.getRoutineId());
         List<RoutineEntity> routineEntities=routineGroupEntity.getRoutines();
-
-        routineEntities.forEach(routineEntity -> {
-            log.info("루틴 그룹 정렬 확인 -> 날짜: {}, 시간: {}", routineEntity.getTakeDate(), routineEntity.getUserSchedule().getTakeTime());
-        });
 
         // 과거 스케줄 리스트 조회
         List<Long> pastUserScheduleIds = userScheduleBusiness.getDistinctUserScheduleIds(routineEntities, routineGroupEntity.getUpdatedAt().toLocalDate(), routineGroupEntity.getUpdatedAt().toLocalTime());
@@ -545,12 +553,33 @@ public class RoutineBusiness {
         routineGroupEntity.setNickname(newNickname);
     }
 
+    /**
+     * 날짜 리스트를 입력받아 중복되지 않은 날짜들에 대한 간격 구하는 메서드
+     * */
     public int calculateIntervalDays(List<LocalDate> dates) {
+        List<LocalDate> sortedDates=dates.stream().distinct().sorted(Comparator.naturalOrder()).toList();
         int intervalDays = 1;
-        if(dates.size() != 1 ){
+        if(sortedDates.size() != 1 ){
             intervalDays = (int) ChronoUnit.DAYS.between(
-                    dates.get(0),
-                    dates.get(1)
+                    sortedDates.get(0),
+                    sortedDates.get(1)
+            );
+        }
+        return intervalDays;
+    }
+
+    /**
+     * 날짜 리스트를 입력받아 중복되지 않은 날짜들에 대한 간격 구하는 메서드
+     * */
+    public int calculateIntervalDaysAfterUpdatedAt(List<LocalDate> dates, LocalDate updatedAt) {
+        List<LocalDate> sortedDates=dates.stream().filter(date->{
+            return !date.isBefore(updatedAt);
+        }).distinct().sorted(Comparator.naturalOrder()).toList();
+        int intervalDays = 1;
+        if(sortedDates.size() != 1 ){
+            intervalDays = (int) ChronoUnit.DAYS.between(
+                    sortedDates.get(0),
+                    sortedDates.get(1)
             );
         }
         return intervalDays;
