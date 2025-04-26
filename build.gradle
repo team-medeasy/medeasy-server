@@ -72,6 +72,9 @@ dependencies {
 
 	// GCS Java 클라이언트 라이브러리
 	implementation 'com.google.cloud:google-cloud-storage:2.50.0'
+
+	// web socket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {
