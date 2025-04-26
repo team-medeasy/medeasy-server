@@ -48,7 +48,7 @@ public class InterestedMedicineController {
             
             """
     )
-    @PostMapping("")
+    @GetMapping("")
     public Api<Object> getInterestedMedicines(
             @Parameter(hidden = true) @UserSession Long userId,
             @RequestParam(value = "page", defaultValue = "0", required = false)
