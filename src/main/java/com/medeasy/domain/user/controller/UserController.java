@@ -88,7 +88,6 @@ public class UserController {
             @RequestBody UserScheduleUpdateRequest request
     ){
         UserScheduleDto response=userBusiness.updateRoutineSchedule(userId, request);
-        log.info("스케줄 업데이트 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -115,7 +114,6 @@ public class UserController {
             @Valid @RequestBody UserScheduleRegisterRequest request
             ) {
         userBusiness.registerRoutineSchedule(userId, request);
-        log.info("스케줄 추가 완료 사용자: {}", userId);
 
         return Api.OK(null);
     }
@@ -167,7 +165,6 @@ public class UserController {
             @UserSession Long userId
     ) {
         List<UserScheduleDto> response=userBusiness.getRoutineSchedule(userId);
-        log.info("스케줄 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -187,7 +184,6 @@ public class UserController {
             @UserSession Long userId
     ) {
         UserUsageDaysResponse response=userBusiness.getServiceUsageDays(userId);
-        log.info("서비스 이용날짜 반환 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -225,7 +221,6 @@ public class UserController {
             @Valid@RequestBody UserDeleteRequest request
     ) {
         userBusiness.unregisterUser(userId, request.getPassword());
-        log.info("회원 탈퇴 완료 사용자: {}", userId);
 
         return Api.OK(null);
     }
@@ -287,7 +282,6 @@ public class UserController {
             @UserSession Long userId
     ) {
         var response=routineBusiness.getRoutineList(userId, null, null, currentRoutineStrategy);
-        log.info("회원 현재 복용 중인 약 리스트 조회 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -339,7 +333,6 @@ public class UserController {
             @RequestParam(name = "end_date", required = false)LocalDate endDate
     ) {
         var response=routineBusiness.getRoutineList(userId, startDate, endDate, pastRoutineStrategy);
-        log.info("회원 과거 복용 중인 약 리스트 조회 사용자: {}", userId);
 
         return Api.OK(response);
     }

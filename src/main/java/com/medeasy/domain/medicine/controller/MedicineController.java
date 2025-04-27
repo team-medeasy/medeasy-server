@@ -68,7 +68,6 @@ public class MedicineController {
 
         // 약 검색
         List<MedicineResponse> medicineResponses= medicineBusiness.searchMedicinesWithColor(userId, name, colors, shapes, page, size);
-        log.info("약 검색 완료 사용자: {}", userId);
 
         return Api.OK(medicineResponses);
     }
@@ -87,7 +86,6 @@ public class MedicineController {
             @RequestParam(name = "size") int size
     ) {
         var response=medicineBusiness.getSimilarMedicineList(medicineId, page, size);
-        log.info("유사한 약 검색 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -104,7 +102,6 @@ public class MedicineController {
             @PathVariable("medicine_id") String medicineId
     ) {
         MedicineResponse response=medicineBusiness.getMedicineById(medicineId);
-        log.info("약 id 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -121,7 +118,6 @@ public class MedicineController {
             @PathVariable("item_seq") String itemSeq
     ) {
         MedicineResponse response=medicineBusiness.getMedicineByItemSeq(itemSeq);
-        log.info("약 item_seq 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -138,7 +134,6 @@ public class MedicineController {
             @RequestParam("medicine_ids") List<String> medicineIds
     ) {
         List<MedicineResponse> response=medicineBusiness.getMedicineListByIds(medicineIds);
-        log.info("약 리스트 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }

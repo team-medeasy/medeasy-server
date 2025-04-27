@@ -75,7 +75,6 @@ public class RoutineController {
             @RequestBody RoutineRegisterRequest routineRegisterRequest
     ) {
         routineBusiness.registerRoutine(userId, routineRegisterRequest);
-        log.info("루틴 등록 완료 사용자: {}", userId);
         return Api.OK(null);
     }
 
@@ -94,7 +93,6 @@ public class RoutineController {
             @RequestBody List<RoutineRegisterRequest> routinesRegisterRequest
     ) {
         routineBusiness.registerRoutineList(userId, routinesRegisterRequest);
-        log.info("루틴 리스트 등록 완료 사용자: {}", userId);
 
         return Api.OK(null);
     }
@@ -117,7 +115,6 @@ public class RoutineController {
             @Parameter(example = "2025-03-20") @RequestParam(name = "end_date", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         var response=routineBusiness.getRoutineListByDate(userId, startDate, endDate);
-        log.info("루틴 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);
     }
@@ -145,7 +142,6 @@ public class RoutineController {
     ) {
         RoutineCheckResponse response=routineBusiness.checkRoutine(routineId, isTaken);
 
-        log.info("루틴 체크 완료 사용자: {}", userId);
         return Api.OK(response);
     }
 
@@ -195,7 +191,6 @@ public class RoutineController {
             @RequestPart("image") MultipartFile image
     ) {
         var response=routineBusiness.registerRoutineByPrescription(userId, image);
-        log.info("처방전 루틴 분석 완료: {}", userId);
         return Api.OK(response);
     }
 
@@ -215,7 +210,6 @@ public class RoutineController {
             @PathVariable("routine_id") Long routineId
     ) {
         routineBusiness.deleteRoutine(userId, routineId);
-        log.info("루틴 삭제 완료 사용자: {}", userId);
         return Api.OK(null);
     }
 
@@ -235,7 +229,6 @@ public class RoutineController {
             @PathVariable("routine_id") Long routineId
     ) {
         routineBusiness.deleteGroupRoutine(userId, routineId);
-        log.info("루틴 삭제 완료 사용자: {}", userId);
         return Api.OK(null);
     }
 
@@ -278,7 +271,6 @@ public class RoutineController {
         return Api.OK(null);
     }
 
-    // TODO 작성 필요
     @Operation(summary = "medicine_id를 통한 루틴 그룹 조회 api", description =
             """
                 medicine_id 루틴 그룹 조회: 

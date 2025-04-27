@@ -20,8 +20,9 @@ public class AIController {
             """
     )
     @GetMapping("/chat")
-    public Api<Object> getRoutineListByDate(
+    public Api<Object> getChatFunctionList(
     ) {
+
         return null;
     }
 }
