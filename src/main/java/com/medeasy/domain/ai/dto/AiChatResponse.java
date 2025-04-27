@@ -1,5 +1,6 @@
 package com.medeasy.domain.ai.dto;
 
+import com.medeasy.domain.chat.request_type.RequestType;
 import lombok.*;
 
 @Getter
@@ -8,8 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class AiChatResponse {
-
-    private String chatStatus;
-
+    private RequestType requestType;
     private String message;
 }

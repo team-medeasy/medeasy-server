@@ -1,6 +1,7 @@
 package com.medeasy.domain.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.domain.chat.request_type.RequestType;
 import com.medeasy.domain.chat.status.SuperStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,48 +41,40 @@ public class ChatAiService {
 
     private String basicStatusTemplate= """
             # 행동 
-            사용자의 채팅 내용을 보고 제공할 Chat Status List 목록을 보고 가장 잘 어울리는 List를 출력하면 돼.
+            사용자의 채팅 내용을 보고 어떤 기능을 요청하는지 판별해줘.
+            판별 기준은 어떤 기능을 요청하는지 정리한 enum의 이름이 담긴 request_type과 요청 종류를 판별할 조건 condition이 아래와 같은 형태로 제공될거야.
             
-            기본 Chat Status List: %s  
+            예시:
+            request_type: "ROUTINE_REGISTER", condition: "사용자가 정확히 루틴 등록 정보를 제공하지 않고, 일반적으로 루틴을 등록하고 싶다고 할 때"
+            
+            condition을 보고 제일 알맞는 request_type을 판별하여 응답 형태에 맞게 반환하면 돼.
+            
+            request_type 리스트: %s  
             
             # 응답 형태
             응답 형태는 아래 json 형식으로 작성해줘 
             json 형태 말고는 절대 어떠한 텍스트, 아이콘 등등이 들어가면 안돼 
             
             {
-                chat_status: "routine_register",
-                message: "기본 루틴 등록, 처방전 루틴 등록, 알약 촬영 루틴 등록 중 어떤 루틴 등록을 원하시나요?"
+                "request_type": "ROUTINE_REGISTER"
+                "message": "기본 루틴 등록, 처방전 루틴 등록, 알약 촬영 루틴 등록 중 어떤 루틴 등록을 원하시나요?"
             }
             
             필드 설명
-            chat_status: 제공한 chat_status_list 중 가장 잘 맞는 status
+            request_type: request_type의 원본 데이터인 enum의 이름
             message: 클라이언트에 제공할 메시지       
-            
-            # 분석 알고리즘 
-            루틴을 등록하고 싶다와 같은 느낌의 텍스트 입력시 
-            
-            기본 루틴 등록, 처방전 루틴 등록, 알약 촬영 루틴 등록 중 원하는 루틴이 있는지 물어보는 거야 
+           
             """;
 
-    public String analysisInLoop() {
-        boolean isStop = false;
-        String context;
-
-        while (!isStop) {
-
-        }
-
-        return null;
-    }
-
-    public void generateMessage(String message){
-
-    }
 
     public String analysisType(String message){
         String url = apiUrl + apiKey;
-        List<String> intents=Arrays.stream(SuperStatus.values()).map(SuperStatus::getIntent).toList();
-        String prompt= String.format(basicStatusTemplate, intents);
+
+        List<String> requestTypes = Arrays.stream(RequestType.values())
+                .map(rt -> String.format("request_type: \"%s\", condition: \"%s\"", rt.getType(), rt.getCondition()))
+                .toList();
+
+        String prompt= String.format(basicStatusTemplate, requestTypes);
 
         String finalPrompt = systemTemplate + prompt;
 
