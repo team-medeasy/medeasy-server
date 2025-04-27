@@ -571,14 +571,14 @@ public class RoutineBusiness {
      * 날짜 리스트를 입력받아 중복되지 않은 날짜들에 대한 간격 구하는 메서드
      * */
     public int calculateIntervalDaysAfterUpdatedAt(List<LocalDate> dates, LocalDate updatedAt) {
-        List<LocalDate> sortedDates=dates.stream().filter(date->{
-            return !date.isBefore(updatedAt);
-        }).distinct().sorted(Comparator.naturalOrder()).toList();
+        List<LocalDate> sortedDates=dates.stream().distinct().sorted(Comparator.naturalOrder()).toList();
+
         int intervalDays = 1;
+
         if(sortedDates.size() != 1 ){
             intervalDays = (int) ChronoUnit.DAYS.between(
-                    sortedDates.get(0),
-                    sortedDates.get(1)
+                    sortedDates.get(sortedDates.size()-2),
+                    sortedDates.getLast()
             );
         }
         return intervalDays;
