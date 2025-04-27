@@ -1,17 +1,21 @@
 package com.medeasy.domain.chat.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.common.api.Api;
+import com.medeasy.common.error.AiChatErrorCode;
 import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.ErrorCodeIfs;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.ai.dto.AiChatResponse;
 import com.medeasy.domain.ai.service.ChatAiService;
 import com.medeasy.domain.ai.service.GeminiResponseParser;
+import com.medeasy.domain.chat.action.ClientAction;
 import com.medeasy.domain.chat.db.UserSession;
 import com.medeasy.domain.chat.dto.ChatMessage;
 import com.medeasy.domain.chat.dto.ChatResponse;
+import com.medeasy.domain.chat.message_creator.BasicMessageCreator;
 import com.medeasy.domain.chat.status.SuperStatus;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -25,7 +29,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
@@ -35,18 +38,51 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private final ChatAiService chatAiService;
     private final GeminiResponseParser geminiResponseParser;
 
+    private final BasicMessageCreator basicMessageCreator;
+
+    public ChatWebSocketHandler(
+            ObjectMapper objectMapper,
+            ChatAiService chatAiService,
+            GeminiResponseParser geminiResponseParser,
+            BasicMessageCreator basicMessageCreator
+        )
+    {
+        this.objectMapper = objectMapper;
+        this.chatAiService = chatAiService;
+        this.geminiResponseParser = geminiResponseParser;
+        this.basicMessageCreator = basicMessageCreator;
+    }
+
     @Override
     public void afterConnectionEstablished(@NonNull WebSocketSession session) {
-        // 연결 성공했을 때
-        Long userId=getUserId(session).orElseThrow(() -> new ApiException(ErrorCode.BAD_REQEUST, "userId is missing in session attributes"));
+        // 사용자 정보 조회
+        Optional<Long> userId=getUserId(session);
+
+        if(userId.isEmpty()) {
+            try {
+                sendError(session, AiChatErrorCode.SESSION_USER_NOT_FOUND);
+            } catch (IOException e) {
+                log.info("세션에 사용자 정보 존재 x ");
+            }
+        }
+
+        // 사용자 세션 저장
         UserSession userSession = UserSession.builder()
-                        .userId(userId)
+                        .userId(userId.get())
                         .session(session)
                         .chatStatus(SuperStatus.BASIC)
                         .build()
                         ;
+        userSessions.put(userId.get(), userSession);
 
-        userSessions.put(userId, userSession);
+        // 응답 생성
+        ChatResponse response = ChatResponse.builder()
+                    .clientAction(ClientAction.LIST)
+                    .message(basicMessageCreator.helloMessage(userId.get()))
+                    .build()
+                    ;
+
+        sendMessage(session, response);
     }
 
     @Override
@@ -58,7 +94,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             processMessage(chatMessage, session);
         } catch (Exception e) {
             log.error("메시지 파싱 실패: {}", payload, e);
-            sendError(session, "올바르지 않은 메시지 형식입니다.");
+            sendError(session, AiChatErrorCode.INVALID_FORMAT);
         }
     }
 
@@ -88,7 +124,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             AiChatResponse aiChatResponse = geminiResponseParser.parseGeminiResponse(aiJsonResponse);
 
             // 3. 최종 응답 구성
-            ChatResponse<AiChatResponse> chatResponse = ChatResponse.success(aiChatResponse);
+            Api<AiChatResponse> chatResponse=Api.OK(aiChatResponse);
 
             // 4. 클라이언트에 전송
             String responseJson = objectMapper.writeValueAsString(chatResponse);
@@ -100,9 +136,29 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private void sendError(WebSocketSession session, String errorMessage) throws IOException {
-        ChatResponse<String> response = ChatResponse.error(errorMessage);
+    private void sendError(WebSocketSession session, ErrorCodeIfs errorCode) throws IOException {
+        Api<Object> response = Api.ERROR(errorCode);
         session.sendMessage(new TextMessage(objectMapper.writeValueAsString(response)));
+    }
+
+    private void sendError(WebSocketSession session) throws IOException {
+        Api<Object> response = Api.ERROR(AiChatErrorCode.SERVER_ERROR);
+        session.sendMessage(new TextMessage(objectMapper.writeValueAsString(response)));
+    }
+
+    private void sendError(WebSocketSession session, String errorMessage) throws IOException {
+        Api<Object> response = Api.ERROR(AiChatErrorCode.SERVER_ERROR, errorMessage);
+        session.sendMessage(new TextMessage(objectMapper.writeValueAsString(response)));
+    }
+
+    private void sendMessage(WebSocketSession session, ChatResponse message) {
+        Api<Object> response = Api.OK(message);
+
+        try {
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(response)));
+        } catch (IOException e) {
+            log.info("메시지 전송 중 오류", e);
+        }
     }
 
     protected Optional<Long> getUserId(WebSocketSession session) {
