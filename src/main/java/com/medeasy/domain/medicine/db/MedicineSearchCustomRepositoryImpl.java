@@ -94,7 +94,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                 boolQueryBuilder.must(QueryBuilder -> QueryBuilder.match(matchQueryBuilder -> matchQueryBuilder
                         .field("item_name")
                         .query(itemName)
-                        .fuzziness("AUTO")
+                        .fuzziness("1")
                     )
                 );
             }

@@ -9,6 +9,7 @@ import com.medeasy.domain.routine_group.service.PastRoutineStrategy;
 import com.medeasy.domain.routine_group.service.RoutineDateRangeStrategy;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.UserDeleteRequest;
+import com.medeasy.domain.user.dto.UserUpdateNameRequest;
 import com.medeasy.domain.user.dto.UserUsageDaysResponse;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
@@ -241,6 +242,22 @@ public class UserController {
         log.info("회원 정보 조회 완료 사용자: {}", userId);
 
         return Api.OK(response);
+    }
+
+    @Operation(summary = "회원 이름 수정 API", description =
+            """
+                회원 이름 수정 API
+            """
+    )
+    @PatchMapping("/name")
+    public Api<Object> updateUserName(
+            @Parameter(hidden = true)
+            @UserSession Long userId,
+            @Valid@RequestBody UserUpdateNameRequest request
+    ) {
+        userBusiness.updateUserName(userId, request.getName());
+
+        return Api.OK(null);
     }
 
     @Operation(summary = "현재 복용중인 약 루틴 정보 조회 API", description =

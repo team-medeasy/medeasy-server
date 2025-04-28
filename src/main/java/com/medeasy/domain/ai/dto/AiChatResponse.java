@@ -8,8 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class AiChatResponse {
-
-    private String chatStatus;
-
+    private String  requestType;
     private String message;
 }
