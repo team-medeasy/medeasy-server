@@ -1,8 +1,7 @@
-package com.medeasy.domain.ai.service;
+package com.medeasy.domain.chat.analyzer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.domain.chat.request_type.BasicRequestType;
-import com.medeasy.domain.chat.request_type.RequestTypeIfs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -18,7 +17,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class BasicChatAiService extends ChatAiService {
+public class BasicPromptAnalyzer extends PromptAnalyzer {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
@@ -56,16 +55,25 @@ public class BasicChatAiService extends ChatAiService {
 
 
     public String analysisType(String message){
-        String url = apiUrl + apiKey;
-
-        List<String>  requestTypes = Arrays.stream(BasicRequestType.values())
-                .map(e -> (RequestTypeIfs) e) // RequestTypeIfs로 타입 캐스팅
-                .map(rt -> String.format("request_type: \"%s\", condition: \"%s\"", rt.getType(), rt.getCondition()))
+        List<String> requestTypes = Arrays.stream(BasicRequestType.values())
+                .map(rt -> String.format(
+                        "request_type: \"%s\", condition: \"%s\"",
+                        rt.getType(),
+                        rt.getCondition()
+                ))
                 .toList();
 
+        // prompt 관련
         String prompt= String.format(basicStatusTemplate, requestTypes);
-
         String finalPrompt = systemTemplate + prompt;
+
+        return requestToAi(finalPrompt);
+    }
+
+
+    @Override
+    String requestToAi(String finalPrompt) {
+        String url = apiUrl + apiKey;
 
         // 요청 헤더 설정
         HttpHeaders headers = new HttpHeaders();
@@ -84,5 +92,4 @@ public class BasicChatAiService extends ChatAiService {
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
         return restTemplate.postForObject(url, requestEntity, String.class);
     }
-
 }
