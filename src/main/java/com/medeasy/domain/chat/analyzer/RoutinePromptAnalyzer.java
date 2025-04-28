@@ -50,23 +50,27 @@ public class RoutinePromptAnalyzer extends PromptAnalyzer {
             
             필드 설명
             request_type: request_type의 원본 데이터인 enum의 이름
-            message: 클라이언트에 제공할 메시지       
-           
+            message: 클라이언트에 제공할 메시지
             """;
 
+    private String specificTemplate= """
+            # 추가 조건 
+            request_type을 정했으면, 그에 맞는 recommend_message를 응답 json필드의 message에 매칭
+            """;
 
     public String analysisType(String message){
         List<String> requestTypes = Arrays.stream(RoutineRequestType.values())
                 .map(rt -> String.format(
-                        "request_type: \"%s\", condition: \"%s\"",
+                        "request_type: \"%s\", condition: \"%s\", recommend_message: \"%s\"",
                         rt.getType(),
-                        rt.getCondition()
+                        rt.getCondition(),
+                        rt.getRecommendMessage()
                 ))
                 .toList();
 
         // prompt 관련
         String prompt= String.format(basicStatusTemplate, requestTypes);
-        String finalPrompt = systemTemplate + prompt;
+        String finalPrompt = systemTemplate + prompt + specificTemplate;
 
         return requestToAi(finalPrompt);
     }

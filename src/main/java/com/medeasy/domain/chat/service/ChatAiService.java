@@ -19,7 +19,6 @@ public class ChatAiService {
     private final GeminiResponseParser geminiResponseParser;
 
     public AiChatResponse doRequest(PromptAnalyzer promptAnalyzer, String clientMessage) {
-        AiChatResponse aiChatResponse = null;
         try {
             // 1. 사용자 메시지를 AI로 분석
             String aiJsonResponse = promptAnalyzer.analysisType(clientMessage);
