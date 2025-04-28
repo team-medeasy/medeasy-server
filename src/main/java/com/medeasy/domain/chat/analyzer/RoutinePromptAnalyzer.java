@@ -1,8 +1,8 @@
-package com.medeasy.domain.ai.service;
+package com.medeasy.domain.chat.analyzer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.medeasy.domain.chat.request_type.RequestType;
-import com.medeasy.domain.chat.status.SuperStatus;
+import com.medeasy.domain.chat.request_type.BasicRequestType;
+import com.medeasy.domain.chat.request_type.RoutineRequestType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class ChatAiService {
+public class RoutinePromptAnalyzer extends PromptAnalyzer {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
@@ -26,18 +26,6 @@ public class ChatAiService {
     private String apiKey;
     @Value("${gemini.api.url}")
     private String apiUrl;
-
-    private String roopTemplate = """
-            
-            """;
-
-    private String systemTemplate= """
-            # 상황 
-            너는 복약 루틴을 관리하는 앱 메디지의 AI 채팅봇 메디씨야.
-            
-            너의 역할은 사용자의 채팅을 보고 그에 맞는 채팅 타입을 유추하여 앱의 내부 기능과 연계하여 사용자에게 서비스를 제공하는 것이야
-            """
-            ;
 
     private String basicStatusTemplate= """
             # 행동 
@@ -68,15 +56,25 @@ public class ChatAiService {
 
 
     public String analysisType(String message){
-        String url = apiUrl + apiKey;
-
-        List<String> requestTypes = Arrays.stream(RequestType.values())
-                .map(rt -> String.format("request_type: \"%s\", condition: \"%s\"", rt.getType(), rt.getCondition()))
+        List<String> requestTypes = Arrays.stream(RoutineRequestType.values())
+                .map(rt -> String.format(
+                        "request_type: \"%s\", condition: \"%s\"",
+                        rt.getType(),
+                        rt.getCondition()
+                ))
                 .toList();
 
+        // prompt 관련
         String prompt= String.format(basicStatusTemplate, requestTypes);
-
         String finalPrompt = systemTemplate + prompt;
+
+        return requestToAi(finalPrompt);
+    }
+
+
+    @Override
+    String requestToAi(String finalPrompt) {
+        String url = apiUrl + apiKey;
 
         // 요청 헤더 설정
         HttpHeaders headers = new HttpHeaders();
@@ -94,12 +92,5 @@ public class ChatAiService {
         // HTTP 요청 실행
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
         return restTemplate.postForObject(url, requestEntity, String.class);
-    }
-
-    /**
-     * 채팅으로부터 어떠한 기능을 수행하면 좋을지 판별하는 메서드
-     * */
-    public void analysisMessage(List<String> memoryMessages, String message) {
-
     }
 }
