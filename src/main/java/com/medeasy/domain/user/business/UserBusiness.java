@@ -231,4 +231,10 @@ public class UserBusiness {
     public void deleteUserReceiver(Long userId, Long receiverId) {
         userCareMappingService.deleteCareReceiver(userId, receiverId);
     }
+
+    @Transactional
+    public void updateUserName(Long userId, String name) {
+        UserEntity userEntity=userService.getUserById(userId);
+        userEntity.setName(name);
+    }
 }
