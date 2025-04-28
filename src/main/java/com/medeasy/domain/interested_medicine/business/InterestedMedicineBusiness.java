@@ -9,6 +9,9 @@ import com.medeasy.domain.medicine.service.MedicineDocumentService;
 import com.medeasy.domain.user.db.UserEntity;
 import com.medeasy.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Business
 @RequiredArgsConstructor
@@ -17,17 +20,24 @@ public class InterestedMedicineBusiness {
     private final UserService userService;
     private final MedicineDocumentService medicineDocumentService;
 
+    @Transactional
     public void registerInterestedMedicine(Long userId, InterestedMedicineRegisterRequest request) {
         UserEntity userEntity=userService.getUserById(userId);
         MedicineDocument medicineDocument=medicineDocumentService.findMedicineDocumentById(request.getMedicineId());
 
-        InterestedMedicineEntity entity=InterestedMedicineEntity.builder()
-                        .medicineId(request.getMedicineId())
-                        .user(userEntity)
-                        .build()
-                        ;
+        Optional<InterestedMedicineEntity> interestedMedicineEntityOptional=interestedMedicineService.getOptionalInterestedMedicine(userId, medicineDocument.getId());
 
-        interestedMedicineService.saveInterestedMedicine(entity);
+        if(interestedMedicineEntityOptional.isPresent()){
+            interestedMedicineService.deleteInterestedMedicine(interestedMedicineEntityOptional.get());
+        }else {
+            InterestedMedicineEntity entity=InterestedMedicineEntity.builder()
+                    .medicineId(request.getMedicineId())
+                    .user(userEntity)
+                    .build()
+                    ;
+
+            interestedMedicineService.saveInterestedMedicine(entity);
+        }
     }
 
     public void getInterestedMedicines(Long userId, int page, int size) {
