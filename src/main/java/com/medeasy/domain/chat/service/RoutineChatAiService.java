@@ -18,11 +18,9 @@ public class RoutineChatAiService {
 
     public RoutineAiChatResponse doRequest(PromptAnalyzer promptAnalyzer, UserSession userSession, String clientMessage) {
         try {
-            // 1. 사용자 메시지를 AI로 분석
             userSession.getMessages().add(clientMessage);
             String aiJsonResponse = promptAnalyzer.analysisType(userSession, clientMessage);
 
-            // 2. AI 응답 파싱 (AiChatResponse 객체)
             return geminiResponseParser.parseRoutineGeminiResponse(aiJsonResponse);
         } catch (Exception e) {
             log.error("AI 분석 및 파싱 실패", e);
