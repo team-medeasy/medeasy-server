@@ -36,15 +36,29 @@ public class InterestedMedicineController {
         return Api.OK(null);
     }
 
-    @Operation(summary = "관심 의약품 목록 조회 api(미완성)", description =
+    @Operation(summary = "관심 의약품 목록 조회 api", description =
             """
             요청 값: 
             
-            medicine_id
+            page: 페이지네이션 적용 페이지 번호 
+            
+            size: 한번에 가져올 관심 의약품 개수 
             
             응답 값: 
             
-            약 이름, 이미지, 
+            interested_medicine_id:  관심 의약품 식별자 
+            
+            entp_name: 제약사 이름
+            
+            item_name: 약품 이름
+            
+            class_name: 분류명
+            
+            etc_otc_name: 전문의약품 여부
+            
+            item_image: 이미지 Url
+            
+            medicine_id: 의약품 정보 식별자 
             
             """
     )
@@ -59,7 +73,7 @@ public class InterestedMedicineController {
             @Parameter(description = "불러올 데이터 개수 (default: 10)", required = false)
             int size
     ) {
-        interestedMedicineBusiness.getInterestedMedicines(userId, page, size);
-        return Api.OK(null);
+        var response=interestedMedicineBusiness.getInterestedMedicines(userId, page, size);
+        return Api.OK(response);
     }
 }
