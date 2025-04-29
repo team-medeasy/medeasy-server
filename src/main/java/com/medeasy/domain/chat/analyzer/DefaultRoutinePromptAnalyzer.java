@@ -1,6 +1,8 @@
 package com.medeasy.domain.chat.analyzer;
 
-import com.medeasy.domain.chat.dto.RoutineContext;
+import com.medeasy.domain.chat.db.UserSession;
+import com.medeasy.domain.chat.dto.RoutineAiChatResponse;
+import com.medeasy.domain.chat.parser.GeminiResponseParser;
 import com.medeasy.domain.chat.request_type.RoutineRequestType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class DefaultRoutinePromptAnalyzer extends PromptAnalyzer {
     private final RestTemplate restTemplate;
-    private final Map<Long, RoutineContext> routineContext = new ConcurrentHashMap<>();
+    private final GeminiResponseParser responseParser;
 
     @Value("${gemini.api.key}")
     private String apiKey;
@@ -78,8 +80,8 @@ public class DefaultRoutinePromptAnalyzer extends PromptAnalyzer {
             }
             """;
 
-    public String analysisType(Long userId, String message){
-        RoutineContext userRoutineContext = routineContext.computeIfAbsent(userId, id -> new RoutineContext());
+    public String analysisType(UserSession userSession, String message){
+        UserSession.RoutineContext routineContext = userSession.getRoutineContext();
 
         List<String> requestTypes = Arrays.stream(RoutineRequestType.values())
                 .map(rt -> String.format(
@@ -91,12 +93,18 @@ public class DefaultRoutinePromptAnalyzer extends PromptAnalyzer {
                 .toList();
 
         // prompt 관련
-        String prompt= String.format(basicStatusTemplate, userRoutineContext);
+        String prompt= String.format(basicStatusTemplate, routineContext);
         String finalPrompt = systemTemplate +  prompt + responseTemplate ;
 
         log.info("prompt debug: {}", finalPrompt);
 
-        return requestToAi(finalPrompt);
+        String requestJson=requestToAi(finalPrompt);
+        RoutineAiChatResponse response=responseParser.parseRoutineGeminiResponse(requestJson);
+
+
+        // TODO 추가 작업 필요
+        return null;
+
     }
 
 

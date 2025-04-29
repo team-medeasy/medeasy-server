@@ -1,5 +1,7 @@
 package com.medeasy.domain.chat.service;
 
+import com.medeasy.domain.chat.db.UserSession;
+import com.medeasy.domain.chat.db.UserSessionRepository;
 import com.medeasy.domain.chat.dto.AiChatResponse;
 import com.medeasy.domain.chat.parser.GeminiResponseParser;
 import com.medeasy.domain.chat.analyzer.PromptAnalyzer;
@@ -14,12 +16,11 @@ public class ChatAiService {
 
     private final GeminiResponseParser geminiResponseParser;
 
-    public AiChatResponse doRequest(PromptAnalyzer promptAnalyzer, Long userId, String clientMessage) {
+    public AiChatResponse doRequest(PromptAnalyzer promptAnalyzer, UserSession userSession, String clientMessage) {
         try {
-            // 1. 사용자 메시지를 AI로 분석
-            String aiJsonResponse = promptAnalyzer.analysisType(userId, clientMessage);
+            userSession.getMessages().add(clientMessage);
+            String aiJsonResponse = promptAnalyzer.analysisType(userSession, clientMessage);
 
-            // 2. AI 응답 파싱 (AiChatResponse 객체)
             return geminiResponseParser.parseGeminiResponse(aiJsonResponse);
         } catch (Exception e) {
             log.error("AI 분석 및 파싱 실패", e);

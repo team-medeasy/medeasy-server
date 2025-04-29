@@ -1,6 +1,7 @@
 package com.medeasy.domain.chat.analyzer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.domain.chat.db.UserSession;
 import com.medeasy.domain.chat.request_type.BasicRequestType;
 import com.medeasy.domain.chat.request_type.RoutineRequestType;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +52,7 @@ public class RoutinePromptAnalyzer extends PromptAnalyzer {
             특히, 사용자가 "처방전", "사진", "알약" 단어를 언급하는 경우에는 DEFAULT가 아닌 정확히 PRESCRIPTION 또는 PILLS_PHOTO로 매칭해줘.
             """;
 
-    public String analysisType(Long userId, String message){
+    public String analysisType(UserSession userSession, String message){
         List<String> requestTypes = Arrays.stream(RoutineRequestType.values())
                 .map(rt -> String.format(
                         requestJsonTemplate,

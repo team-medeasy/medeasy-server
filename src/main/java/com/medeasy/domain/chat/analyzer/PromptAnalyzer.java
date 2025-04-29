@@ -1,5 +1,7 @@
 package com.medeasy.domain.chat.analyzer;
 
+import com.medeasy.domain.chat.db.UserSession;
+
 abstract public class PromptAnalyzer {
 
     protected String systemTemplate= """
@@ -30,7 +32,7 @@ abstract public class PromptAnalyzer {
             }
             """;
 
-    public abstract String analysisType(Long userId, String message);
+    public abstract String analysisType(UserSession userSession, String message);
 
     abstract String requestToAi(String finalPrompt);
 }
