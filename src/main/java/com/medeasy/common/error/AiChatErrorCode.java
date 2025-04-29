@@ -16,7 +16,7 @@ public enum AiChatErrorCode implements ErrorCodeIfs{
 
     NULL_POINT(HttpStatus.INTERNAL_SERVER_ERROR.value(), 512, "Null Point"),
 
-    INVALID_FORMAT(HttpStatus.BAD_REQUEST.value(), 400, "올바르지 않은 매사자 형식입니다."),
+    INVALID_FORMAT(HttpStatus.BAD_REQUEST.value(), 400, "올바르지 않은 메시지 형식입니다."),
 
     SESSION_USER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR.value(), 500, "세션에 사용자 정보가 없습니다."),
 

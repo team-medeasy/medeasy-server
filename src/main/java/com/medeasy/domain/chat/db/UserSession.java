@@ -18,7 +18,7 @@ public class UserSession {
     private Long userId;
     private WebSocketSession session;
     private ChatStatusIfs chatStatus;
-    private RequestTypeIfs pastRequestType;       // ex) 루틴 등록 단계
+    private String pastRequestType;       // ex) 루틴 등록 단계
     private Map<String, Object> tempData = new HashMap<>(); // 중간 저장 데이터
 }
 

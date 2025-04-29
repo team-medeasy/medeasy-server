@@ -54,7 +54,7 @@ public class BasicPromptAnalyzer extends PromptAnalyzer {
             """;
 
 
-    public String analysisType(String message){
+    public String analysisType(Long userId, String message){
         List<String> requestTypes = Arrays.stream(BasicRequestType.values())
                 .map(rt -> String.format(
                         "request_type: \"%s\", condition: \"%s\"",

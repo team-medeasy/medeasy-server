@@ -1,8 +1,9 @@
 package com.medeasy.domain.chat.service;
 
-import com.medeasy.domain.chat.dto.AiChatResponse;
+import com.medeasy.domain.chat.dto.RoutineAiChatResponse;
 import com.medeasy.domain.chat.parser.GeminiResponseParser;
 import com.medeasy.domain.chat.analyzer.PromptAnalyzer;
+import com.medeasy.domain.chat.dto.AiChatResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -10,17 +11,17 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ChatAiService {
+public class RoutineChatAiService {
 
     private final GeminiResponseParser geminiResponseParser;
 
-    public AiChatResponse doRequest(PromptAnalyzer promptAnalyzer, Long userId, String clientMessage) {
+    public RoutineAiChatResponse doRequest(PromptAnalyzer promptAnalyzer, Long userId, String clientMessage) {
         try {
             // 1. 사용자 메시지를 AI로 분석
             String aiJsonResponse = promptAnalyzer.analysisType(userId, clientMessage);
 
             // 2. AI 응답 파싱 (AiChatResponse 객체)
-            return geminiResponseParser.parseGeminiResponse(aiJsonResponse);
+            return geminiResponseParser.parseRoutineGeminiResponse(aiJsonResponse);
         } catch (Exception e) {
             log.error("AI 분석 및 파싱 실패", e);
         }
