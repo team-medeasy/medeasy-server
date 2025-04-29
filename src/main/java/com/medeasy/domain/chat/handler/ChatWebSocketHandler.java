@@ -6,22 +6,22 @@ import com.medeasy.common.error.AiChatErrorCode;
 import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.ErrorCodeIfs;
 import com.medeasy.common.exception.ApiException;
-import com.medeasy.domain.ai.dto.AiChatResponse;
+import com.medeasy.domain.chat.analyzer.DefaultRoutinePromptAnalyzer;
+import com.medeasy.domain.chat.db.UserSessionRepository;
+import com.medeasy.domain.chat.dto.AiChatResponse;
 import com.medeasy.domain.chat.analyzer.BasicPromptAnalyzer;
-import com.medeasy.domain.chat.analyzer.PromptAnalyzer;
-import com.medeasy.domain.ai.service.GeminiResponseParser;
 import com.medeasy.domain.chat.action.ClientAction;
 import com.medeasy.domain.chat.analyzer.RoutinePromptAnalyzer;
+import com.medeasy.domain.chat.converter.RequestTypeConverter;
 import com.medeasy.domain.chat.db.UserSession;
 import com.medeasy.domain.chat.dto.ChatMessage;
 import com.medeasy.domain.chat.dto.ChatResponse;
+import com.medeasy.domain.chat.dto.RoutineAiChatResponse;
 import com.medeasy.domain.chat.message_creator.BasicMessageCreator;
-import com.medeasy.domain.chat.request_type.BasicRequestType;
-import com.medeasy.domain.chat.request_type.RequestTypeIfs;
 import com.medeasy.domain.chat.service.ChatAiService;
+import com.medeasy.domain.chat.service.RoutineChatAiService;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -29,7 +29,6 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,31 +36,47 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 public class ChatWebSocketHandler extends TextWebSocketHandler {
-
     private final ObjectMapper objectMapper;
-    private final Map<Long, UserSession> userSessions = new ConcurrentHashMap<>(); // 사용자별 세션 상태 관리
+    private final UserSessionRepository sessionRepository;
 
     private final ChatAiService chatAiService;
+    private final RoutineChatAiService routineChatAiService;
+
+    private final RequestTypeConverter requestTypeConverter;
 
 
     private final BasicMessageCreator basicMessageCreator;
 
     private final BasicPromptAnalyzer basicPromptAnalyzer;
     private final RoutinePromptAnalyzer routinePromptAnalyzer;
+    private final DefaultRoutinePromptAnalyzer defaultRoutinePromptAnalyzer;
 
     public ChatWebSocketHandler(
             ObjectMapper objectMapper,
+            UserSessionRepository sessionRepository,
+
+            RequestTypeConverter requestTypeConverter,
             BasicMessageCreator basicMessageCreator,
+
             ChatAiService chatAiService,
+            RoutineChatAiService routineChatAiService,
+
             BasicPromptAnalyzer basicPromptAnalyzer,
-            RoutinePromptAnalyzer routinePromptAnalyzer
+            RoutinePromptAnalyzer routinePromptAnalyzer,
+            DefaultRoutinePromptAnalyzer defaultRoutinePromptAnalyzer
         )
     {
         this.objectMapper = objectMapper;
+        this.sessionRepository = sessionRepository;
+        this.requestTypeConverter = requestTypeConverter;
+
         this.chatAiService = chatAiService;
+        this.routineChatAiService = routineChatAiService;
+
         this.basicMessageCreator = basicMessageCreator;
         this.basicPromptAnalyzer = basicPromptAnalyzer;
         this.routinePromptAnalyzer = routinePromptAnalyzer;
+        this.defaultRoutinePromptAnalyzer = defaultRoutinePromptAnalyzer;
     }
 
     @Override
@@ -84,7 +99,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                         .pastRequestType(null)
                         .build()
                         ;
-        userSessions.put(userId.get(), userSession);
+        sessionRepository.save(userSession);
 
         // 응답 생성
         ChatResponse response = ChatResponse.builder()
@@ -113,7 +128,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) {
         // 연결 끊겼을 때
         Long userId=getUserId(session).orElseThrow(() -> new ApiException(ErrorCode.SERVER_ERROR, "userId is missing in session attributes"));
-        userSessions.remove(userId);
+        sessionRepository.deleteByUserId(userId);
     }
 
     /**
@@ -125,14 +140,20 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
      * */
     private void processMessage(ChatMessage chatMessage, WebSocketSession session) throws IOException {
         Long userId=getUserId(session).orElseThrow(() -> new ApiException(ErrorCode.SERVER_ERROR, "userId is missing in session attributes"));
-        UserSession userSession=userSessions.get(userId);
+        UserSession userSession=sessionRepository.findByUserId(userId).get();
 
+        log.info("사용자 요청 처리 시작 request_type: {}", userSession.getPastRequestType());
+
+        /**
+         * 사용자가 수행할 기능이 정해지지 않은 경우
+         * */
         if (userSession.getPastRequestType() == null){
-            AiChatResponse aiChatResponse=chatAiService.doRequest(basicPromptAnalyzer, chatMessage.getMessage());
+            AiChatResponse aiChatResponse=chatAiService.doRequest(basicPromptAnalyzer, userSession, chatMessage.getMessage());
 
             ChatResponse chatResponse=ChatResponse.builder()
                     .message(aiChatResponse.getMessage())
                     .clientAction(null)
+                    .requestType(aiChatResponse.getRequestType())
                     .build()
                     ;
 
@@ -140,21 +161,56 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             String responseJson = objectMapper.writeValueAsString(response);
             session.sendMessage(new TextMessage(responseJson));
 
-            RequestTypeIfs requestType = mapBasicRequestType(aiChatResponse.getRequestType());
-            userSession.setPastRequestType(requestType);
+            userSession.setPastRequestType(aiChatResponse.getRequestType());
+        }
+        /**
+         * 루틴 등록 기능은 선택하였으나, 디테일한 기능이 정해지지 않은 경우
+         * */
+        else if (userSession.getPastRequestType().equals("ROUTINE_REGISTER")) {
+            AiChatResponse aiChatResponse=chatAiService.doRequest(routinePromptAnalyzer, userSession, chatMessage.getMessage());
 
-        } else if (userSession.getPastRequestType() == BasicRequestType.ROUTINE_REGISTER) {
-            // TODO 기본 루틴 등록, 처방전 등록, 알약 촬영 등록 중 판별
-            AiChatResponse aiChatResponse=chatAiService.doRequest(routinePromptAnalyzer, chatMessage.getMessage());
+            log.info("type 판단 이유 디버깅 {}", aiChatResponse.getResponseReason());
+            ChatResponse chatResponse=ChatResponse.builder()
+                    .message(aiChatResponse.getMessage())
+                    .clientAction(null)
+                    .requestType(aiChatResponse.getRequestType())
+                    .build()
+                    ;
 
+            var response=Api.OK(chatResponse);
+            String responseJson = objectMapper.writeValueAsString(response);
+            session.sendMessage(new TextMessage(responseJson));
 
-        } else if (userSession.getPastRequestType() == BasicRequestType.DEFAULT_ROUTINE_REGISTER) {
-            // TODO 기본 루틴 등록 로직 사용자의 채팅 메시지에 루틴 등록에 충분한 데이터가 있는지 검사
+            userSession.setPastRequestType(aiChatResponse.getRequestType());
+        }
+        /**
+         * 기본 루틴 등록을 할 경우
+         *
+         * 1. 사용자의 메시지로부터 복약 정보 추출
+         * 2. 사용자 복약정보 context와 메시지 비교 대입
+         * 3. context 리턴
+         * 4. context 조건을 전부 만족한 경우 루틴 등록
+         * 5. 아닌 경우는 message 출력하도록 프롬프트
+         * */
+        else if (userSession.getPastRequestType().equals("DEFAULT_ROUTINE_REGISTER")) {
+            log.info("기본 루틴 등록 시작");
+            RoutineAiChatResponse aiChatResponse=routineChatAiService.doRequest(defaultRoutinePromptAnalyzer, userSession, chatMessage.getMessage());
+
+            ChatResponse chatResponse=ChatResponse.builder()
+                    .message(aiChatResponse.getMessage())
+                    .clientAction(null)
+                    .requestType(aiChatResponse.getRequestType())
+                    .build()
+                    ;
+
+            var response=Api.OK(chatResponse);
+            String responseJson = objectMapper.writeValueAsString(response);
+            session.sendMessage(new TextMessage(responseJson));
+
+            userSession.setPastRequestType(aiChatResponse.getRequestType());
         } else {
             sendError(session, AiChatErrorCode.INVALID_FORMAT);
         }
-
-
 
     }
 
@@ -196,11 +252,5 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 });
     }
 
-    public RequestTypeIfs mapBasicRequestType(String requestType) {
-        return Arrays.stream(BasicRequestType.values())
-                .filter(e -> e.getType().equalsIgnoreCase(requestType))
-                .findFirst()
-                .orElseThrow(() -> new ApiException(ErrorCode.BAD_REQEUST, "Invalid request_type"));
-    }
 }
 

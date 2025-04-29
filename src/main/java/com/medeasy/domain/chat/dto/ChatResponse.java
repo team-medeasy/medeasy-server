@@ -14,4 +14,5 @@ public class ChatResponse {
 
     private ClientAction clientAction;
     private String message;
+    private String requestType;
 }
