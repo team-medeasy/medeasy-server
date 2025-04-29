@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -51,5 +52,12 @@ public class UserScheduleService {
 
     public UserScheduleEntity getUserScheduleByFetchJoin(Long id) {
         return userScheduleRepository.findByIdByFetchJoin(id).orElseThrow(()-> new ApiException(SchedulerError.NOT_FOUND));
+    }
+
+    public List<UserScheduleEntity> findUserScheduleByNames(Long userId, List<String> scheduleNames) {
+        if (scheduleNames == null || scheduleNames.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return userScheduleRepository.findByUserIdNameIn(userId, scheduleNames);
     }
 }
