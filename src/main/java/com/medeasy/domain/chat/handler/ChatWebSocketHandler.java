@@ -29,6 +29,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,6 +98,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                         .userId(userId.get())
                         .session(session)
                         .pastRequestType(null)
+                        .messages(new ArrayList<>())
+                        .routineContext(new UserSession.RoutineContext())
                         .build()
                         ;
         sessionRepository.save(userSession);
@@ -147,7 +150,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         /**
          * 사용자가 수행할 기능이 정해지지 않은 경우
          * */
-        if (userSession.getPastRequestType() == null){
+        if (userSession.getPastRequestType() == null || userSession.getPastRequestType().equals("COMPLETED")){
             AiChatResponse aiChatResponse=chatAiService.doRequest(basicPromptAnalyzer, userSession, chatMessage.getMessage());
 
             ChatResponse chatResponse=ChatResponse.builder()

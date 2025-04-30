@@ -78,4 +78,9 @@ public class MedicineDocumentService {
     public void updateMedicineAudioUrl(String medicineId, String audioUrl) {
         medicineSearchCustomRepository.updateMedicineAudioUrl(medicineId, audioUrl);
     }
+
+    public MedicineDocument findFirstMedicineByName(String medicineName) {
+        return medicineSearchCustomRepository.findFirstMedicineByName(medicineName)
+                .orElseThrow(() -> new ApiException(MedicineErrorCode.NOT_FOUND_MEDICINE));
+    }
 }

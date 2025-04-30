@@ -31,5 +31,7 @@ public class RoutineAiChatResponse {
         private Integer dose;
 
         private List<String> scheduleNames;
+
+        private Integer totalQuantity;
     }
 }

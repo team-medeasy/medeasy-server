@@ -14,4 +14,9 @@ public interface UserScheduleRepository extends JpaRepository<UserScheduleEntity
             "LEFT JOIN FETCH us.routine " +
             "WHERE us.id = :id")
     Optional<UserScheduleEntity> findByIdByFetchJoin(@Param("id") Long id);
+
+    @Query("SELECT us FROM UserScheduleEntity us " +
+            "WHERE us.user.id = :userId " +
+            "AND us.name IN :scheduleNames ")
+    List<UserScheduleEntity> findByUserIdNameIn(Long userId, List<String> scheduleNames);
 }

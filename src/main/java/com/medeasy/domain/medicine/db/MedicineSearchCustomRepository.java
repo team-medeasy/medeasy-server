@@ -4,6 +4,7 @@ import com.medeasy.domain.search.db.SearchHistoryDocument;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MedicineSearchCustomRepository {
 
@@ -20,4 +21,6 @@ public interface MedicineSearchCustomRepository {
     List<MedicineDocument> findMedicinesByMget(List<String> ids);
 
     void updateMedicineAudioUrl(String medicineId, String audioUrl);
+
+    Optional<MedicineDocument> findFirstMedicineByName(String medicineName);
 }

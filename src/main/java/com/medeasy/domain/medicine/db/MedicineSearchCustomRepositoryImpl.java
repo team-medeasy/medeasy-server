@@ -18,6 +18,7 @@ import org.apache.http.util.EntityUtils;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -35,6 +36,7 @@ import java.rmi.ServerError;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -297,6 +299,31 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
                 .build();
 
         elasticsearchOperations.update(updateQuery, IndexCoordinates.of("medicine_data"));
+    }
+
+    @Override
+    public Optional<MedicineDocument> findFirstMedicineByName(String medicineName) {
+        Query boolQuery = QueryBuilders.bool(boolQueryBuilder ->
+                boolQueryBuilder.must(queryBuilder ->
+                        queryBuilder.match(matchQueryBuilder ->
+                            matchQueryBuilder.field("item_name")
+                                    .query(medicineName)
+                        )
+                )
+        );
+
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(boolQuery)
+                .withPageable(Pageable.ofSize(1))
+                .build()
+                ;
+
+        SearchHits<MedicineDocument> searchHits = elasticsearchOperations.search(nativeQuery, MedicineDocument.class);
+
+        return searchHits.getSearchHits()
+                .stream()
+                .map(SearchHit::getContent)
+                .findFirst();
     }
 
 }
