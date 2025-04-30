@@ -4,6 +4,7 @@ import com.medeasy.common.annotation.Business;
 import com.medeasy.domain.interested_medicine.db.InterestedMedicineEntity;
 import com.medeasy.domain.interested_medicine.dto.InterestedMedicineRegisterRequest;
 import com.medeasy.domain.interested_medicine.dto.InterestedMedicineResponse;
+import com.medeasy.domain.interested_medicine.dto.IsInterestedMedicineResponse;
 import com.medeasy.domain.interested_medicine.service.InterestedMedicineService;
 import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.service.MedicineDocumentService;
@@ -12,6 +13,7 @@ import com.medeasy.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,5 +60,25 @@ public class InterestedMedicineBusiness {
                     .build()
                     ;
         }).toList();
+    }
+
+    @Transactional
+    public IsInterestedMedicineResponse getIsInterestedMedicines(Long userId, String medicineId) {
+        Optional<InterestedMedicineEntity> interestedMedicineEntityOption = interestedMedicineService.getOptionalInterestedMedicine(userId, medicineId);
+        if(interestedMedicineEntityOption.isPresent()){
+            InterestedMedicineEntity interestedMedicineEntity=interestedMedicineEntityOption.get();
+
+            return IsInterestedMedicineResponse.builder()
+                    .isInterestedMedicine(true)
+                    .interestedMedicineId(interestedMedicineEntity.getId())
+
+                    .build()
+                    ;
+        }
+
+        return IsInterestedMedicineResponse.builder()
+                .isInterestedMedicine(false)
+                .build()
+                ;
     }
 }

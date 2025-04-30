@@ -4,12 +4,16 @@ import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
 import com.medeasy.domain.interested_medicine.business.InterestedMedicineBusiness;
 import com.medeasy.domain.interested_medicine.dto.InterestedMedicineRegisterRequest;
+import com.medeasy.domain.interested_medicine.dto.InterestedMedicineResponse;
+import com.medeasy.domain.interested_medicine.dto.IsInterestedMedicineResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -63,7 +67,7 @@ public class InterestedMedicineController {
             """
     )
     @GetMapping("")
-    public Api<Object> getInterestedMedicines(
+    public Api<List<InterestedMedicineResponse>> getInterestedMedicines(
             @Parameter(hidden = true) @UserSession Long userId,
             @RequestParam(value = "page", defaultValue = "0", required = false)
             @Parameter(description = "페이지 번호(default: 0)", required = false)
@@ -73,7 +77,30 @@ public class InterestedMedicineController {
             @Parameter(description = "불러올 데이터 개수 (default: 10)", required = false)
             int size
     ) {
-        var response=interestedMedicineBusiness.getInterestedMedicines(userId, page, size);
+        List<InterestedMedicineResponse>  response=interestedMedicineBusiness.getInterestedMedicines(userId, page, size);
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "관심 의약품 여부 조회 api", description =
+            """
+            요청 값: 
+            
+            medicine_id: 의약품 정보 식별자 
+            
+            응답 값: 
+            
+            interested_medicine_id:  관심 의약품 식별자 
+            
+            is_interested: 관심 의약품 등록 여부              
+            
+            """
+    )
+    @GetMapping("/medicine/{medicine_id}")
+    public Api<IsInterestedMedicineResponse> getIsInterestedMedicines(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @PathVariable(name = "medicine_id") String medicineId
+    ) {
+        IsInterestedMedicineResponse response=interestedMedicineBusiness.getIsInterestedMedicines(userId, medicineId);
         return Api.OK(response);
     }
 }

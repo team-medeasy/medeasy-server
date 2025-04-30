@@ -150,7 +150,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         /**
          * 사용자가 수행할 기능이 정해지지 않은 경우
          * */
-        if (userSession.getPastRequestType() == null){
+        if (userSession.getPastRequestType() == null || userSession.getPastRequestType().equals("COMPLETED")){
             AiChatResponse aiChatResponse=chatAiService.doRequest(basicPromptAnalyzer, userSession, chatMessage.getMessage());
 
             ChatResponse chatResponse=ChatResponse.builder()
