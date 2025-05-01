@@ -20,6 +20,7 @@ public class ChatAiService {
         try {
             userSession.getMessages().add(clientMessage);
             String aiJsonResponse = promptAnalyzer.analysisType(userSession, clientMessage);
+            log.info("ai 응답 형식 로그: {}", aiJsonResponse);
 
             return geminiResponseParser.parseGeminiResponse(aiJsonResponse);
         } catch (Exception e) {

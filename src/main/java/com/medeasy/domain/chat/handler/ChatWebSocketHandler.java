@@ -197,7 +197,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
          * */
         else if (userSession.getPastRequestType().equals("DEFAULT_ROUTINE_REGISTER")) {
             log.info("기본 루틴 등록 시작");
-            RoutineAiChatResponse aiChatResponse=routineChatAiService.doRequest(defaultRoutinePromptAnalyzer, userSession, chatMessage.getMessage());
+            RoutineAiChatResponse aiChatResponse=routineChatAiService.registerDefaultRoutine(defaultRoutinePromptAnalyzer, userSession, chatMessage.getMessage());
 
             ChatResponse chatResponse=ChatResponse.builder()
                     .message(aiChatResponse.getMessage())

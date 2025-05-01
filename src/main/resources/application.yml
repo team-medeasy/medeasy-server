@@ -79,6 +79,11 @@ gemini:
     key: ${GEMINI_API_KEY}
     url: ${GEMINI_API_URL}
 
+gpt:
+  api:
+    key: ${GPT_API_KEY}
+    url: ${GPT_API_URL}
+
 kakao:
   api:
     user-info-uri: ${KAKAO_USER_INFO_URI}
