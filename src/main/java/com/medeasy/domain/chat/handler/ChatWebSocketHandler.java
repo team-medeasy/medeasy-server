@@ -106,7 +106,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         sessionRepository.save(userSession);
 
         ChatResponse response = ChatResponse.builder()
-                .clientAction(ClientAction.LIST)
+//                .clientAction(ClientAction.LIST)
                 .message("원하시는 기능을 선택해주세요.")
                 .actions(
                         Arrays.stream(BasicRequestType.values())

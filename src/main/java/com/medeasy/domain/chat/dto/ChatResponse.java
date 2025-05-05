@@ -1,6 +1,5 @@
 package com.medeasy.domain.chat.dto;
 
-import com.medeasy.domain.chat.action.ClientAction;
 import lombok.*;
 
 import java.util.List;
@@ -10,9 +9,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatResponse {
-    private ClientAction clientAction;
     private String message;
     private List<Action> actions;
+    private List<MedicineInfo> medicines;
 
     @Getter
     @Setter
@@ -22,5 +21,17 @@ public class ChatResponse {
     public static class Action{
         private String label;
         private String requestType;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class MedicineInfo{
+        private String imageUrl;
+        private String itemName;
+        private String entpName;
+        private String medicineId;
     }
 }

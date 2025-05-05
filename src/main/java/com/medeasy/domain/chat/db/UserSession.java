@@ -34,6 +34,7 @@ public class UserSession {
         private Integer dose;
         private List<String> scheduleNames;
         private Integer totalQuantity;
+        private Integer step;
 
         public void clear() {
             setMedicineName(null);
@@ -41,6 +42,7 @@ public class UserSession {
             setDose(null);
             setScheduleNames(null);
             setTotalQuantity(null);
+            setStep(null);
         }
     }
 
