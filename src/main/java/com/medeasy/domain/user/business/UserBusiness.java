@@ -19,6 +19,7 @@ import com.medeasy.domain.user_schedule.converter.UserScheduleConverter;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
+import com.medeasy.domain.user_schedule.dto.UserScheduleResponse;
 import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -78,10 +79,10 @@ public class UserBusiness {
      * 사용자 스케줄 반환 메서드
      * */
     @Transactional
-    public List<UserScheduleDto> getRoutineSchedule(Long userId) {
+    public List<UserScheduleResponse> getRoutineSchedule(Long userId) {
         UserEntity userEntity=userService.getUserByIdToFetchJoin(userId);
 
-        return userEntity.getUserSchedules().stream().map(userScheduleConverter::toDto).toList();
+        return userEntity.getUserSchedules().stream().map(userScheduleConverter::toResponse).toList();
     }
 
     /**
@@ -270,4 +271,7 @@ public class UserBusiness {
         return result;
     }
 
+    public void switchOtherUer(Long userId, UserSwitchRequest request) {
+        UserEntity userEntity = userService.getUserWithCareReceivers(userId);
+    }
 }

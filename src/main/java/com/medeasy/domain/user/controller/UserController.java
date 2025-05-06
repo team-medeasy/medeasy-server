@@ -8,12 +8,10 @@ import com.medeasy.domain.routine_group.service.CurrentRoutineStrategy;
 import com.medeasy.domain.routine_group.service.PastRoutineStrategy;
 import com.medeasy.domain.routine_group.service.RoutineDateRangeStrategy;
 import com.medeasy.domain.user.business.UserBusiness;
-import com.medeasy.domain.user.dto.UserDeleteRequest;
-import com.medeasy.domain.user.dto.UserListResponse;
-import com.medeasy.domain.user.dto.UserUpdateNameRequest;
-import com.medeasy.domain.user.dto.UserUsageDaysResponse;
+import com.medeasy.domain.user.dto.*;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
+import com.medeasy.domain.user_schedule.dto.UserScheduleResponse;
 import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -166,7 +164,7 @@ public class UserController {
             @Parameter(hidden = true)
             @UserSession Long userId
     ) {
-        List<UserScheduleDto> response=userBusiness.getRoutineSchedule(userId);
+        List<UserScheduleResponse> response=userBusiness.getRoutineSchedule(userId);
 
         return Api.OK(response);
     }
@@ -377,4 +375,29 @@ public class UserController {
         List<UserListResponse> response=userBusiness.getUsersList(userId);
         return Api.OK(response);
     }
+
+    @Operation(summary = "사용자 포함 피보호자 리스트 제공 API", description =
+            """
+                사용자 포함 피보호자 리스트 제공 API
+                
+                사용자 전환을 위해 사용자 리스트를 제공한다.
+                
+            응답 값:
+            
+            name: 사용자 또는 피보호자 이름
+            
+            is_currently_logged_in: 현재 로그인 중인 사용자 
+            
+            user_id: 사용자 식별자 
+            """
+    )
+    @PostMapping("/switch")
+    public Api<Object> switchOtherUser(
+        @Parameter(hidden = true) @UserSession Long userId,
+        @Valid @RequestBody UserSwitchRequest request
+    ) {
+        userBusiness.switchOtherUer(userId, request);
+        return Api.OK(null);
+    }
+
 }

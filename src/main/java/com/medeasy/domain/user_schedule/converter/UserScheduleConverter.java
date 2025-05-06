@@ -6,6 +6,7 @@ import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.user_schedule.db.MedicationTime;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
+import com.medeasy.domain.user_schedule.dto.UserScheduleResponse;
 
 import java.util.Comparator;
 import java.util.List;
@@ -17,6 +18,15 @@ public class UserScheduleConverter {
 
     public UserScheduleDto toDto(UserScheduleEntity userScheduleEntity) {
         return UserScheduleDto.builder()
+                .userScheduleId(userScheduleEntity.getId())
+                .name(userScheduleEntity.getName())
+                .takeTime(userScheduleEntity.getTakeTime())
+                .build()
+                ;
+    }
+
+    public UserScheduleResponse toResponse(UserScheduleEntity userScheduleEntity) {
+        return UserScheduleResponse.builder()
                 .userScheduleId(userScheduleEntity.getId())
                 .name(userScheduleEntity.getName())
                 .takeTime(userScheduleEntity.getTakeTime())
