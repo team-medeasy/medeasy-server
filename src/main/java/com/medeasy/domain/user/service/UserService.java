@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -31,6 +33,10 @@ public class UserService {
                 .orElseThrow(()-> new ApiException(UserErrorCode.USER_NOT_FOUNT));
 
         return userEntity;
+    }
+
+    public Optional<UserEntity> getOptionalUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     public UserEntity getUserById(Long id) {

@@ -84,7 +84,7 @@ public class AuthController {
     public Api<Object> kakaoLogin(
         @RequestBody KaKaoLoginRequest request
     ) {
-        authBusiness.loginByKakao(request);
-        return Api.OK(null);
+        TokenResponse response=authBusiness.loginByKakao(request);
+        return Api.OK(response);
     }
 }
