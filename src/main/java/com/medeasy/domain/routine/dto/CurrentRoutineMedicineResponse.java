@@ -35,4 +35,6 @@ public class CurrentRoutineMedicineResponse {
     private int scheduleSize;
 
     private Integer intervalDays;
+
+    private String itemSeq;
 }
