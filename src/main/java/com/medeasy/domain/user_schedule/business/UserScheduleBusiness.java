@@ -41,6 +41,8 @@ public class UserScheduleBusiness {
                     .build()
             ;
         }).toList();
+
+        userScheduleService.saveAll(userScheduleEntities);
     }
 
     /**

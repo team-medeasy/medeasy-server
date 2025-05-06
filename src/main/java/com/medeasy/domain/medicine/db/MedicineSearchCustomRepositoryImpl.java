@@ -302,7 +302,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
     }
 
     @Override
-    public Optional<MedicineDocument> findFirstMedicineByName(String medicineName) {
+    public List<MedicineDocument> findMedicineByName(String medicineName, int size) {
         Query boolQuery = QueryBuilders.bool(boolQueryBuilder ->
                 boolQueryBuilder.must(queryBuilder ->
                         queryBuilder.match(matchQueryBuilder ->
@@ -314,7 +314,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
 
         NativeQuery nativeQuery = NativeQuery.builder()
                 .withQuery(boolQuery)
-                .withPageable(Pageable.ofSize(1))
+                .withPageable(Pageable.ofSize(size))
                 .build()
                 ;
 
@@ -323,7 +323,7 @@ public class MedicineSearchCustomRepositoryImpl implements MedicineSearchCustomR
         return searchHits.getSearchHits()
                 .stream()
                 .map(SearchHit::getContent)
-                .findFirst();
+                .collect(Collectors.toList());
     }
 
 }

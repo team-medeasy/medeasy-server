@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.domain.chat.db.UserSession;
 import com.medeasy.domain.chat.request_type.BasicRequestType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,10 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicPromptAnalyzer extends PromptAnalyzer {
@@ -28,45 +29,52 @@ public class BasicPromptAnalyzer extends PromptAnalyzer {
     private String apiUrl;
 
     private String basicStatusTemplate= """
-            # 행동 
-            사용자의 채팅 내용을 보고 어떤 기능을 요청하는지 판별해줘.
-            판별 기준은 어떤 기능을 요청하는지 정리한 enum의 이름이 담긴 request_type과 요청 종류를 판별할 조건 condition이 아래와 같은 형태로 제공될거야.
-            
-            예시:
-            request_type: "ROUTINE_REGISTER", condition: "사용자가 정확히 루틴 등록 정보를 제공하지 않고, 일반적으로 루틴을 등록하고 싶다고 할 때"
-            
-            condition을 보고 제일 알맞는 request_type을 판별하여 응답 형태에 맞게 반환하면 돼.
-            
-            request_type 리스트: %s  
-            
-            # 응답 형태
-            응답 형태는 아래 json 형식으로 작성해줘 
-            json 형태 말고는 절대 어떠한 텍스트, 아이콘 등등이 들어가면 안돼 
-            
-            {
-                "request_type": "ROUTINE_REGISTER"
-                "message": "기본 루틴 등록, 처방전 루틴 등록, 알약 촬영 루틴 등록 중 어떤 루틴 등록을 원하시나요?"
-            }
-            
-            필드 설명
-            request_type: request_type의 원본 데이터인 enum의 이름
-            message: 클라이언트에 제공할 메시지       
-           
-            """;
+        # 행동
+        사용자의 채팅 내용을 보고 어떤 기능을 요청하는지 판별해줘.
+        판별 기준은 어떤 기능을 요청하는지 정리한 enum의 이름이 담긴 request_type과 요청 종류를 판별할 조건 condition이 아래와 같은 형태로 제공될거야.
+        
+        예시:
+        {
+            "request_type": "요청 기능 종류",
+            "condition" : "기능을 선택할 조건",
+            "recommendMessage" : "사용자에게 추천할 메시지"
+        }
+        
+        # 매우 중요한 request_type 매핑 규칙
+        condition을 보고 사용자 메시지와 제일 알맞는 request_type을 판별하여 아래 응답 형태에 맞게 반환하면 돼.
+        condition에 제시된 예시 문구를 참고하여 판단하고, 정확히 일치하지 않더라도 유사한 의미를 내포하고 있다면 해당 request_type으로 판단해줘.
+        
+        request_type 리스트: %s
+        
+        # 응답 형태
+        {
+            "request_type": "판별된 request_type enum 이름",
+            "message": "해당 request_type의 recommendMessage 값"
+        }
+        
+        # 주의사항
+        - request_type 리스트의 condition을 **정확히** 이해하고 분류해야 해.
+        - 예를 들어 '기본 루틴 등록하고 싶어'라는 메시지에는 반드시 DEFAULT_ROUTINE_REGISTER를 반환해야 해. '루틴'이라는 단어가 들어갔다고 해서 ROUTINE_REGISTER로 잘못 판단하지 않도록 주의해줘.
+        - 사용자가 의약품 정보를 얻고 싶어할 때는 MEDICINE_SEARCH를 반환해야 해. '약'이나 '의약품'과 관련된 단어가 있다면 MEDICINE_SEARCH일 가능성이 높아.
+        
+        """;
 
 
     public String analysisType(UserSession userSession, String message){
         List<String> requestTypes = Arrays.stream(BasicRequestType.values())
                 .map(rt -> String.format(
-                        "request_type: \"%s\", condition: \"%s\"",
+                        "request_type: \"%s\", condition: \"%s\", recommend_message: \"%s\"",
                         rt.getType(),
-                        rt.getCondition()
+                        rt.getCondition(),
+                        rt.getRecommendMessage()
                 ))
                 .toList();
 
         // prompt 관련
         String prompt= String.format(basicStatusTemplate, requestTypes);
-        String finalPrompt = systemTemplate + prompt;
+        String finalPrompt = responseTemplate + systemTemplate + prompt;
+
+        log.info("사용자 요청 분류 최종 프롬프트: {}", finalPrompt);
 
         return requestToAi(finalPrompt);
     }
@@ -80,14 +88,19 @@ public class BasicPromptAnalyzer extends PromptAnalyzer {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // 요청 바디 데이터 생성
-        Map<String, Object> requestBody = new HashMap<>();
-        Map<String, Object> content = new HashMap<>();
-        Map<String, Object> part = new HashMap<>();
+        // 요청 바디 생성
+        Map<String, Object> part = Map.of("text", finalPrompt);
+        Map<String, Object> content = Map.of("parts", List.of(part));
+        Map<String, Object> generationConfig = Map.of(
+                "temperature", 0.5,
+                "top_p", 0.2,
+                "top_k", 10
+        );
 
-        part.put("text", finalPrompt);
-        content.put("parts", new Map[]{part});
-        requestBody.put("contents", new Map[]{content});
+        Map<String, Object> requestBody = Map.of(
+                "contents", List.of(content),
+                "generationConfig", generationConfig
+        );
 
         // HTTP 요청 실행
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
