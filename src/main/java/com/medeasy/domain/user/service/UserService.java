@@ -35,6 +35,10 @@ public class UserService {
         return userEntity;
     }
 
+    public UserEntity getUserWithCareReceivers(Long userId) {
+        return userRepository.findByIdWithUserCareReceiver(userId).orElseThrow(()-> new ApiException(UserErrorCode.USER_NOT_FOUNT));
+    }
+
     public Optional<UserEntity> getOptionalUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }

@@ -237,4 +237,18 @@ public class UserBusiness {
         UserEntity userEntity=userService.getUserById(userId);
         userEntity.setName(name);
     }
+
+    public List<UserListResponse> getUsersList(Long userId) {
+        UserEntity userEntity = userService.getUserWithCareReceivers(userId);
+        return userEntity.getCareReceivers().stream().map(careReceiverMapping -> {
+            UserEntity careReceiver = careReceiverMapping.getCareReceiver();
+
+            return UserListResponse.builder()
+                    .userId(careReceiver.getId())
+                    .isCurrentlyLoggedIn(false)
+                    .name(careReceiver.getName())
+                    .build()
+                    ;
+        }).toList();
+    }
 }

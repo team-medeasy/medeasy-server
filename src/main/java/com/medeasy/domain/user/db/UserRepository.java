@@ -17,4 +17,12 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByIdToFetchJoin(
             @Param("userId") Long userId
     );
+
+    @Query("SELECT u FROM UserEntity u " +
+            "LEFT JOIN FETCH u.careReceivers crm " +
+            "LEFT JOIN FETCH crm.careReceiver receiver " +
+            "WHERE u.id=:userId ")
+    Optional<UserEntity> findByIdWithUserCareReceiver(
+            @Param("userId") Long userId
+    );
 }
