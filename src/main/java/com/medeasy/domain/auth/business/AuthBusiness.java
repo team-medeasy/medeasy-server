@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Business
@@ -131,12 +132,19 @@ public class AuthBusiness {
      * 카카오를 통한 로그인
      * */
     public TokenResponse loginByKakao(KaKaoLoginRequest request) {
+        UserEntity userEntity;
         KakaoUserProfile kakaoUserProfile=kakaoService.getUserInfo(request.getAccessToken());
         String userEmail=kakaoUserProfile.getKakao_account().getEmail();
 
         // 사용자를 찾은 경우 -> 로그인 -> jwt 토큰 발급
-        // 사용자가 존재하지 않은 경우 -> 예외처리 -> 먼저 회원가입 하도록 유도
-        UserEntity userEntity = userService.getUserByEmail(userEmail);
+        // 사용자가 존재하지 않은 경우 -> 회원가입 -> 토큰 발급
+        Optional<UserEntity> userEntityOptional=userService.getOptionalUserByEmail(userEmail);
+        userEntity = userEntityOptional.orElseGet(() -> UserEntity.builder()
+                .email(userEmail)
+                .name(kakaoUserProfile.getKakao_account().getProfile().getNickname())
+                .kakaoUid(kakaoUserProfile.getId().toString())
+                .build());
+
         return issueToken(userEntity.getId());
     }
 }

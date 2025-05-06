@@ -39,6 +39,9 @@ public class UserEntity {
     @Column(nullable = false, length = 50)
     private Gender gender;
 
+    @Column(nullable = true, length = 20)
+    private String kakaoUid;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "registered_at")
