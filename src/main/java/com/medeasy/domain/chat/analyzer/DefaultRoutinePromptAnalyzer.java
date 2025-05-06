@@ -105,7 +105,7 @@ public class DefaultRoutinePromptAnalyzer extends PromptAnalyzer {
         // routine context가 Null이 아닌 조건, res
         if(response.getRequestType().equals("COMPLETED") &&  isCompletedContext(userSession.getRoutineContext())){
             // TODO 루틴 등록전에 약 검색 스탭 하나 더 필요할 듯
-            MedicineDocument medicineDocument=medicineDocumentService.findFirstMedicineByName(routineContext.getMedicineName());
+            MedicineDocument medicineDocument=medicineDocumentService.findFirstMedicineByName(routineContext.getMedicineName(), 1).getFirst();
 
             // TODO 스케줄 찾기
             List<UserScheduleEntity> userScheduleEntities=userScheduleService.findUserScheduleByNames(userSession.getUserId(), routineContext.getScheduleNames());

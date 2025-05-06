@@ -1,18 +1,37 @@
 package com.medeasy.domain.chat.dto;
 
-import com.medeasy.domain.chat.action.ClientAction;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatResponse {
-
-    private ClientAction clientAction;
     private String message;
-    private String requestType;
+    private List<Action> actions;
+    private List<MedicineInfo> medicines;
+
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Action{
+        private String label;
+        private String requestType;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class MedicineInfo{
+        private String imageUrl;
+        private String itemName;
+        private String entpName;
+        private String medicineId;
+    }
 }

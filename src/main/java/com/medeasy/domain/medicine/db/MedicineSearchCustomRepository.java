@@ -22,5 +22,5 @@ public interface MedicineSearchCustomRepository {
 
     void updateMedicineAudioUrl(String medicineId, String audioUrl);
 
-    Optional<MedicineDocument> findFirstMedicineByName(String medicineName);
+    List<MedicineDocument> findMedicineByName(String medicineName, int size);
 }

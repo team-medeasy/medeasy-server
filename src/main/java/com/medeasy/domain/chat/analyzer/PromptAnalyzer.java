@@ -18,8 +18,8 @@ abstract public class PromptAnalyzer {
             응답 형태는 어떠한 경우에도 아래 json 형식과 같이 작성해주고, 나한테 추가 질의, 답변금지 
             
             {
-                "request_type": "ROUTINE_REGISTER",
-                "message": "기본 루틴 등록, 처방전 루틴 등록, 알약 촬영 루틴 등록 중 어떤 루틴 등록을 원하시나요?",
+                "request_type": 프롬프트에 제공한 routine_type 중 하나,
+                "message": "request_type에 맞는 질문",
                 "response_reason": "type을 판단한 이유는 ..."
             }
             """;
