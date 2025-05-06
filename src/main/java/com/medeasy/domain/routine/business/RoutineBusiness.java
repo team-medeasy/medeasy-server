@@ -426,6 +426,7 @@ public class RoutineBusiness {
                     .routineStartDate(routineGroupDateRangeDto.getStartDate())
                     .routineEndDate(routineGroupDateRangeDto.getEndDate())
                     .intervalDays(intervalDays)
+                    .itemSeq(medicineDocument.getItemSeq())
                     .build()
                     ;
         }).toList();

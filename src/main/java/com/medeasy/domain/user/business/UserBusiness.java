@@ -23,6 +23,7 @@ import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,9 +32,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Business
@@ -237,4 +236,38 @@ public class UserBusiness {
         UserEntity userEntity=userService.getUserById(userId);
         userEntity.setName(name);
     }
+
+    @Transactional
+    public List<UserListResponse> getUsersList(Long userId) {
+        UserEntity userEntity = userService.getUserWithCareReceivers(userId);
+
+        List<UserEntity> careReceivers = Optional.ofNullable(userEntity.getCareReceivers())
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(UserCareMappingEntity::getCareReceiver)
+                .toList();
+
+        List<UserListResponse> result = new ArrayList<>(1 + careReceivers.size());
+
+        result.add(UserListResponse.builder()
+                .userId(userEntity.getId())
+                .name(userEntity.getName())
+                .isCurrentlyLoggedIn(true)
+                .build()
+        );
+
+        result.addAll(
+                careReceivers.stream()
+                        .map(r -> UserListResponse.builder()
+                                .userId(r.getId())
+                                .name(r.getName())
+                                .isCurrentlyLoggedIn(false)
+                                .build()
+                        )
+                        .toList()
+        );
+
+        return result;
+    }
+
 }
