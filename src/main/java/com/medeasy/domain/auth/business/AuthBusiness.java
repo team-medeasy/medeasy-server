@@ -132,7 +132,7 @@ public class AuthBusiness {
      * 카카오를 통한 로그인
      * */
     @Transactional
-    public TokenResponse loginByKakao(KaKaoLoginRequest request) {
+    public Long getUserIdKakao(KaKaoLoginRequest request) {
         UserEntity userEntity;
         KakaoUserProfile kakaoUserProfile=kakaoService.getUserInfo(request.getAccessToken());
         String userEmail=kakaoUserProfile.getKakao_account().getEmail();
@@ -147,7 +147,7 @@ public class AuthBusiness {
                 .build());
 
         userService.registerUser(userEntity);
-
-        return issueToken(userEntity.getId());
+        userScheduleBusiness.registerUserDefaultSchedule(userEntity);
+        return userEntity.getId();
     }
 }
