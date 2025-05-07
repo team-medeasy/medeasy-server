@@ -143,7 +143,8 @@ public class AuthBusiness {
         userEntity = userEntityOptional.orElseGet(() -> UserEntity.builder()
                 .email(userEmail)
                 .name(kakaoUserProfile.getKakao_account().getProfile().getNickname())
-                .kakaoUid(kakaoUserProfile.getId().toString())
+                .kakaoUid(kakaoUserProfile.getId())
+                .password(jwtTokenHelper.generateSecurePassword(userEmail, kakaoUserProfile.getId()))
                 .build());
 
         userService.registerUser(userEntity);
