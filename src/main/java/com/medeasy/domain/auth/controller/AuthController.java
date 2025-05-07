@@ -84,7 +84,9 @@ public class AuthController {
     public Api<Object> kakaoLogin(
         @RequestBody KaKaoLoginRequest request
     ) {
-        TokenResponse response=authBusiness.loginByKakao(request);
-        return Api.OK(response);
+        Long userId=authBusiness.getUserIdKakao(request);
+        TokenResponse tokenResponse=authBusiness.issueToken(userId);
+        authBusiness.saveFcmToken(userId, request.getFcmToken());
+        return Api.OK(tokenResponse);
     }
 }

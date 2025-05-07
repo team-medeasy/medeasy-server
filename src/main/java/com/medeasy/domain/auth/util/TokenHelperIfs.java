@@ -13,4 +13,6 @@ public interface TokenHelperIfs {
     TokenDto recreateAccessToken(String refreshToken);
 
     Map<String, Object> validationTokenWithThrow(String token);
+
+    String generateSecurePassword(String email, String kakaoUid);
 }

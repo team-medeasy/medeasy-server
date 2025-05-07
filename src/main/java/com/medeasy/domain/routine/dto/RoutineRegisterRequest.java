@@ -11,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class RoutineRegisterRequest {
     @Schema(description = "복용 루틴으로 등록할 약 id", example = "3594")
     private String medicineId;

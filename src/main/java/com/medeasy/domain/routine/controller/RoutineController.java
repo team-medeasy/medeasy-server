@@ -2,6 +2,8 @@ package com.medeasy.domain.routine.controller;
 
 import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.routine.business.RoutineBusiness;
 import com.medeasy.domain.routine.dto.*;
 import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
@@ -74,6 +76,10 @@ public class RoutineController {
             @Valid
             @RequestBody RoutineRegisterRequest routineRegisterRequest
     ) {
+        if (routineRegisterRequest.getUserScheduleIds().isEmpty()) {
+            throw new ApiException(ErrorCode.BAD_REQEUST, "루틴 등록시 사용자 스케줄을 필수로 입력해야합니다.");
+        }
+        log.info(routineRegisterRequest.toString());
         routineBusiness.registerRoutine(userId, routineRegisterRequest);
         return Api.OK(null);
     }
