@@ -141,18 +141,17 @@ public class AuthBusiness {
         // 사용자가 존재하지 않은 경우 -> 회원가입 -> 토큰 발급
         Optional<UserEntity> userEntityOptional=userService.getOptionalUserByEmail(userEmail);
         userEntity = userEntityOptional.orElseGet(() -> {
-            UserEntity newUserEntity=UserEntity.builder()
+            return UserEntity.builder()
                 .email(userEmail)
                 .name(kakaoUserProfile.getKakao_account().getProfile().getNickname())
                 .kakaoUid(kakaoUserProfile.getId())
                 .password(jwtTokenHelper.generateSecurePassword(userEmail, kakaoUserProfile.getId()))
                 .build();
-
-            userScheduleBusiness.registerUserDefaultSchedule(newUserEntity);
-            return newUserEntity;
         });
 
-        userService.registerUser(userEntity);
+        UserEntity saveUserEntity=userService.registerUser(userEntity);
+        userScheduleBusiness.registerUserDefaultSchedule(saveUserEntity);
+
         return userEntity.getId();
     }
 }
