@@ -57,7 +57,9 @@ public class RoutineContainPastCreator implements RoutineCreator{
         int dose = request.getDose();
         int quantity = 0;
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());
-        String nickname=request.getNickname() == null ? medicineDocument.getItemName() : request.getNickname();
+        if (request.getNickname() == null) {
+            request.setNickname(medicineDocument.getItemName());
+        }
 
         // 날짜 분리
         List<LocalDate> pastDates = new ArrayList<>();

@@ -54,7 +54,9 @@ public class RoutineFutureCreator implements RoutineCreator{
         int dose = request.getDose();
         int quantity = 0;
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());
-        String nickname=request.getNickname() == null ? medicineDocument.getItemName() : request.getNickname();
+        if (request.getNickname() == null) {
+            request.setNickname(medicineDocument.getItemName());
+        }
 
         // 루틴 시작 첫번째 날짜가 시작 날짜인 경우
         if(routineDates.contains(startDate)) {
