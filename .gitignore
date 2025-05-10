@@ -1,3 +1,5 @@
+docker-compose.yml
+
 .DS_Store
 tts-mp3
 deploy-spring.sh
