@@ -31,7 +31,9 @@ public class RoutineBasicCreator implements RoutineCreator{
         int dose = request.getDose();
         int quantity = 0;
         MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(request.getMedicineId());
-        String nickname=request.getNickname() == null ? medicineDocument.getItemName() : request.getNickname();
+        if (request.getNickname() == null) {
+            request.setNickname(medicineDocument.getItemName());
+        }
 
         // 사용할 루틴 미리 조회 및 생성
         if(routineDates.contains(startDate)) {

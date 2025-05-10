@@ -11,7 +11,8 @@ public enum UserErrorCode implements ErrorCodeIfs{
 
     USER_NOT_FOUNT(400, 1404, "사용자를 찾을 수 없음."),
     INVALID_PASSWORD(400, 1405, "잘못된 비밀번호."),
-    DUPLICATE_CARE_ERROR(404, 1600, "중복된 보호자 등록")
+    DUPLICATE_CARE_ERROR(404, 1600, "중복된 보호자 등록"),
+    NOT_FOUND_CARE_RECEIVER(404, 1601, "not found care receiver")
     ;
 
 

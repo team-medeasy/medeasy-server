@@ -136,8 +136,6 @@ public class RoutineBusiness {
     public void registerRoutine(Long userId, RoutineRegisterRequest routineRegisterRequest) {
         // Entity 값 가져오기 user_schedule.time 은 오름차순
         UserEntity userEntity = userService.getUserByIdToFetchJoin(userId);
-
-        MedicineDocument medicineDocument = medicineDocumentService.findMedicineDocumentById(routineRegisterRequest.getMedicineId());
         List<UserScheduleEntity> userScheduleEntities=userEntity.getUserSchedules();
 
         // request 에 포함된 schedule 정보 가져오기

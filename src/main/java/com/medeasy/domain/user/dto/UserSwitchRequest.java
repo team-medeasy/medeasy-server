@@ -8,5 +8,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class UserSwitchRequest {
-    private Long userId;
+    private Long careReceiverUserId;
 }

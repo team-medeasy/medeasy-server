@@ -5,6 +5,9 @@ import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.business.AuthBusiness;
+import com.medeasy.domain.auth.dto.TokenResponse;
+import com.medeasy.domain.auth.util.JwtTokenHelper;
+import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.user.dto.*;
 import com.medeasy.domain.user.db.UserEntity;
@@ -51,6 +54,7 @@ public class UserBusiness {
     private final UserCareMappingService userCareMappingService;
     private final UserCareMappingConverter userCareMappingConverter;
     private final UserCareMappingRepository userCareMappingRepository;
+
 
     /**
      * request의 null이 아닌 수정사항만 사용자의 정보에서 업데이트
@@ -271,7 +275,20 @@ public class UserBusiness {
         return result;
     }
 
-    public void switchOtherUer(Long userId, UserSwitchRequest request) {
+    @Transactional
+    public TokenResponse loginByCareReceiver(Long userId, Long careReceiverUserId) {
         UserEntity userEntity = userService.getUserWithCareReceivers(userId);
+        List<Long> careReceiversIds = Optional.ofNullable(userEntity.getCareReceivers())
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(UserCareMappingEntity::getCareReceiver)
+                .map(UserEntity::getId)
+                .toList();
+
+        if(!careReceiversIds.contains(careReceiverUserId)){
+            throw new ApiException(UserErrorCode.NOT_FOUND_CARE_RECEIVER);
+        }
+
+        return authBusiness.issueToken(careReceiverUserId);
     }
 }
