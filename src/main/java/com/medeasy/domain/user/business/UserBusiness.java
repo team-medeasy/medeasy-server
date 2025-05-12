@@ -243,7 +243,7 @@ public class UserBusiness {
     }
 
     @Transactional
-    public List<UserListResponse> getUsersList(Long userId) {
+    public List<UserListResponse> getUserCareList(Long userId) {
         UserEntity userEntity = userService.getUserWithCareReceivers(userId);
 
         List<UserEntity> careReceivers = Optional.ofNullable(userEntity.getCareReceivers())
@@ -257,7 +257,8 @@ public class UserBusiness {
         result.add(UserListResponse.builder()
                 .userId(userEntity.getId())
                 .name(userEntity.getName())
-                .isCurrentlyLoggedIn(true)
+                .email(userEntity.getEmail())
+                .tag("내 계정")
                 .build()
         );
 
@@ -266,7 +267,8 @@ public class UserBusiness {
                         .map(r -> UserListResponse.builder()
                                 .userId(r.getId())
                                 .name(r.getName())
-                                .isCurrentlyLoggedIn(false)
+                                .email(r.getEmail())
+                                .tag("피보호자")
                                 .build()
                         )
                         .toList()

@@ -7,6 +7,7 @@ import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.RegisterCareRequest;
 import com.medeasy.domain.user.dto.RegisterCareResponse;
+import com.medeasy.domain.user.dto.UserListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -119,5 +122,31 @@ public class UserCareController {
         log.info("보호 대상 해제 완료: {}", userId);
 
         return Api.OK(null);
+    }
+
+
+    @Operation(summary = "복약 관리 목록 조회 API", description =
+            """
+                사용자 포함 피보호자 리스트 제공 API
+                
+                사용자 전환을 위해 사용자 리스트를 제공한다.
+                
+            응답 값:
+            
+            name: 사용자 또는 피보호자 이름
+            
+            email: 피보호자 이메일 
+            
+            user_id: 사용자 식별자 
+            
+            tag: 내 계정 또는 피보호자 
+            """
+    )
+    @GetMapping("/list")
+    public Api<Object> getUserCareList(
+            @Parameter(hidden = true) @UserSession Long userId
+    ) {
+        List<UserListResponse> response=userBusiness.getUserCareList(userId);
+        return Api.OK(response);
     }
 }
