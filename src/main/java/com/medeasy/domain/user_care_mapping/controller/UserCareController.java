@@ -4,6 +4,7 @@ import com.medeasy.common.annotation.UserSession;
 import com.medeasy.common.api.Api;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
+import com.medeasy.domain.auth.dto.CareAuthCodeResponse;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.RegisterCareRequest;
 import com.medeasy.domain.user.dto.RegisterCareResponse;
@@ -50,38 +51,6 @@ public class UserCareController {
     ) {
         try {
             var response=userBusiness.registerCareReceiver(userId, request);
-            return Api.OK(response);
-
-        }catch (DataIntegrityViolationException e){
-            throw new ApiException(UserErrorCode.DUPLICATE_CARE_ERROR);
-        }
-    }
-
-    @Operation(summary = "루틴 관리 보호자 등록 API", description =
-            """
-                루틴 관리 보호자 등록 API:
-                
-                루틴 정보와 알림을 제공할 보호자 등록
-            
-                보호자 이메일과 비밀번호를 입력하여 관계 검증 
-           
-            응답 값: 
-                
-            care_giver_id: 보호자 id 
-            
-            care_receiver_id: 피보호자 id
-            
-            registered_at: 관계가 등록된 시간 
-            """
-    )
-    @PostMapping("/provider")
-    public Api<RegisterCareResponse> registerCareProvider(
-            @Parameter(hidden = true) @UserSession Long userId,
-            @Valid @RequestBody RegisterCareRequest request
-    ) {
-        try {
-            var response=userBusiness.registerCareProvider(userId, request);
-            log.info("보호자 등록 완료: {}", userId);
             return Api.OK(response);
 
         }catch (DataIntegrityViolationException e){
@@ -148,5 +117,25 @@ public class UserCareController {
     ) {
         List<UserListResponse> response=userBusiness.getUserCareList(userId);
         return Api.OK(response);
+    }
+
+    @Operation(summary = "보호 대상 인증 코드 발급 API", description =
+            """
+                보호 대상 인증 코드 발급 API:
+                
+                보호 대상을 등록하기 위한 인증 코드 
+                
+                보호 대상이 인증 코드를 발급 받은 후, 보호자가 인증 코드를 입력하여 등록한다.
+           
+            응답 값: 
+                
+            auth_code: 보호 등록 인증 코드 
+            """
+    )
+    @PostMapping("/auth-code")
+    public CareAuthCodeResponse generateCareAuthCode(
+            @Parameter(hidden = true) @UserSession Long userId
+    ){
+        return userBusiness.generateCareAuthCode(userId);
     }
 }

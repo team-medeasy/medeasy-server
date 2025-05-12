@@ -5,7 +5,9 @@ import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.business.AuthBusiness;
+import com.medeasy.domain.auth.dto.CareAuthCodeResponse;
 import com.medeasy.domain.auth.dto.TokenResponse;
+import com.medeasy.domain.auth.service.AuthCodeService;
 import com.medeasy.domain.auth.util.JwtTokenHelper;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.routine.service.RoutineService;
@@ -50,6 +52,7 @@ public class UserBusiness {
     private final UserScheduleService userScheduleService;
     private final RoutineService routineService;
     private final AuthBusiness authBusiness;
+    private final AuthCodeService authCodeService;
 
     private final UserCareMappingService userCareMappingService;
     private final UserCareMappingConverter userCareMappingConverter;
@@ -292,5 +295,11 @@ public class UserBusiness {
         }
 
         return authBusiness.issueToken(careReceiverUserId);
+    }
+
+    public CareAuthCodeResponse generateCareAuthCode(Long userId) {
+        String authCode=authCodeService.generateAuthCode(userId.toString());
+
+        return new CareAuthCodeResponse(authCode);
     }
 }
