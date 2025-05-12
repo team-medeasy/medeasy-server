@@ -62,23 +62,6 @@ public class UserCareController {
         }
     }
 
-    @Operation(summary = "사용자 피보호자 리스트 조회", description =
-            """
-            사용자 피보호자 리스트 조회 API:
-            
-            사용자가 등록한 관리 대상 리스트를 보여준다.
-            """
-    )
-    @GetMapping("/receivers")
-    public Api<Object> getUserCareReceivers(
-            @Parameter(hidden = true) @UserSession Long userId
-    ) {
-        var response=userBusiness.getUserCareReceivers(userId);
-        log.info("피보호자 리스트 조회 완료: {}", userId);
-
-        return Api.OK(response);
-    }
-
     @Operation(summary = "보호 대상 삭제", description =
             """
             보호 대상 삭제 API:
