@@ -12,8 +12,9 @@ public enum ErrorCode implements ErrorCodeIfs{
 
     BAD_REQEUST(HttpStatus.BAD_REQUEST.value(), 400, "잘못된 요청"),
 
-    AUTH_ERROR(403, 403, "인증 오류"),
+    NOT_FOUND(HttpStatus.NOT_FOUND.value(), 404, "요청한 리소스를 찾을 수 없습니다"),
 
+    AUTH_ERROR(403, 403, "인증 오류"),
 
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), 500, "서버 에러"),
 
