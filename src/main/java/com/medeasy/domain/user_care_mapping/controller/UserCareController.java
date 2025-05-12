@@ -151,19 +151,15 @@ public class UserCareController {
             tag: 내 계정 또는 피보호자 
             """
     )
-    @GetMapping("/routine/{user_id}")
+    @GetMapping("/routine")
     public Api<List<RoutineGroupDto>> getCareReceiverRoutines(
             @Parameter(hidden = true) @UserSession Long userId,
-            @RequestParam(name = "user_id") Long careReceiverUserId,
+                @RequestParam(name = "care_receiver_user_id") Long careReceiverUserId,
             @Parameter(example = "2025-03-16") @RequestParam(name = "start_date", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(example = "2025-03-20") @RequestParam(name = "end_date", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-
-
         List<RoutineGroupDto> response= userCareBusiness.getCareReceiverRoutineListByDate(userId, careReceiverUserId, startDate, endDate);
 
-
-                routineBusiness.getRoutineListByDate(careReceiverUserId, startDate, endDate);
         return Api.OK(response);
     }
 
