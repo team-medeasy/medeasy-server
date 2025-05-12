@@ -33,7 +33,7 @@ public class ControllerLoggingAspect {
 
         Object result = joinPoint.proceed();
 
-        if (!requestUrl.startsWith("/open-api/auth")) {
+        if (!requestUrl.startsWith("/open-api/auth") && !requestUrl.startsWith("/care/auth-code")) {
             log.info("요청 완료 URL: {}, 사용자 ID: {}, 응답 결과: {}", requestUrl, userId, result);
         } else {
             log.info("요청 완료 URL: {}, 사용자 ID: {} (응답 결과 미출력)", requestUrl, userId);
