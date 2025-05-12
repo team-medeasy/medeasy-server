@@ -1,11 +1,15 @@
 package com.medeasy.domain.user.business;
 
 import com.medeasy.common.annotation.Business;
+import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.SchedulerError;
+import com.medeasy.common.error.TokenErrorCode;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.business.AuthBusiness;
+import com.medeasy.domain.auth.dto.CareAuthCodeResponse;
 import com.medeasy.domain.auth.dto.TokenResponse;
+import com.medeasy.domain.auth.service.AuthCodeService;
 import com.medeasy.domain.auth.util.JwtTokenHelper;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.routine.service.RoutineService;
@@ -50,6 +54,7 @@ public class UserBusiness {
     private final UserScheduleService userScheduleService;
     private final RoutineService routineService;
     private final AuthBusiness authBusiness;
+    private final AuthCodeService authCodeService;
 
     private final UserCareMappingService userCareMappingService;
     private final UserCareMappingConverter userCareMappingConverter;
@@ -194,7 +199,12 @@ public class UserBusiness {
 
     @Transactional
     public RegisterCareResponse registerCareReceiver(Long userId, RegisterCareRequest request) {
-        UserEntity careReceiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
+        Long careReceiverId=authCodeService.getUserIdByAuthCode(request.getAuthCode());
+        if (careReceiverId == null) {
+            throw new ApiException(ErrorCode.AUTH_ERROR, "잘못된 코드입니다. 다시 확인해주세요.");
+        }
+
+        UserEntity careReceiverUserEntity = userService.getUserById(careReceiverId);
         UserEntity careGiverUserEntity = userService.getUserById(userId);
 
         UserCareMappingEntity userCareMappingEntity=userCareMappingConverter.registerCareRelation(careGiverUserEntity, careReceiverUserEntity);
@@ -204,22 +214,6 @@ public class UserBusiness {
                 .careGiverId(newUserCareMappingEntity.getCareProvider().getId())
                 .careReceiverId(newUserCareMappingEntity.getCareReceiver().getId())
                 .registeredAt(newUserCareMappingEntity.getRegisteredAt())
-                .build()
-                ;
-    }
-
-    @Transactional
-    public RegisterCareResponse registerCareProvider(Long userId, RegisterCareRequest request) {
-        UserEntity careGiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
-        UserEntity careReceiverUserEntity= userService.getUserById(userId);
-
-        UserCareMappingEntity userCareMappingEntity=userCareMappingConverter.registerCareRelation(careGiverUserEntity, careReceiverUserEntity);
-        UserCareMappingEntity newUserCareMappingEntity=userCareMappingService.save(userCareMappingEntity);
-
-        return RegisterCareResponse.builder()
-                .careGiverId(newUserCareMappingEntity.getCareProvider().getId())
-                .careReceiverId(newUserCareMappingEntity.getCareReceiver().getId())
-                .registeredAt(LocalDateTime.now())
                 .build()
                 ;
     }
@@ -243,7 +237,7 @@ public class UserBusiness {
     }
 
     @Transactional
-    public List<UserListResponse> getUsersList(Long userId) {
+    public List<UserListResponse> getUserCareList(Long userId) {
         UserEntity userEntity = userService.getUserWithCareReceivers(userId);
 
         List<UserEntity> careReceivers = Optional.ofNullable(userEntity.getCareReceivers())
@@ -257,7 +251,8 @@ public class UserBusiness {
         result.add(UserListResponse.builder()
                 .userId(userEntity.getId())
                 .name(userEntity.getName())
-                .isCurrentlyLoggedIn(true)
+                .email(userEntity.getEmail())
+                .tag("내 계정")
                 .build()
         );
 
@@ -266,7 +261,8 @@ public class UserBusiness {
                         .map(r -> UserListResponse.builder()
                                 .userId(r.getId())
                                 .name(r.getName())
-                                .isCurrentlyLoggedIn(false)
+                                .email(r.getEmail())
+                                .tag("피보호자")
                                 .build()
                         )
                         .toList()
@@ -290,5 +286,11 @@ public class UserBusiness {
         }
 
         return authBusiness.issueToken(careReceiverUserId);
+    }
+
+    public CareAuthCodeResponse generateCareAuthCode(Long userId) {
+        String authCode=authCodeService.generateAuthCode(userId.toString());
+
+        return new CareAuthCodeResponse(authCode);
     }
 }

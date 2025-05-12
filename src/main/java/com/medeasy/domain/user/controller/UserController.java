@@ -353,30 +353,6 @@ public class UserController {
         return Api.OK(response);
     }
 
-
-    @Operation(summary = "사용자 포함 피보호자 리스트 제공 API", description =
-            """
-                사용자 포함 피보호자 리스트 제공 API
-                
-                사용자 전환을 위해 사용자 리스트를 제공한다.
-                
-            응답 값:
-            
-            name: 사용자 또는 피보호자 이름
-            
-            is_currently_logged_in: 현재 로그인 중인 사용자 
-            
-            user_id: 사용자 식별자 
-            """
-    )
-    @GetMapping("/list")
-    public Api<Object> getUserList(
-            @Parameter(hidden = true) @UserSession Long userId
-    ) {
-        List<UserListResponse> response=userBusiness.getUsersList(userId);
-        return Api.OK(response);
-    }
-
     @Operation(summary = "보호대상으로 로그인 API", description =
             """
                 보호대상으로 로그인 API

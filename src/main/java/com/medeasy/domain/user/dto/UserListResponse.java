@@ -11,9 +11,11 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class UserListResponse {
+    private String email;
+
     private String name;
 
-    private boolean isCurrentlyLoggedIn;
-
     private Long userId;
+
+    private String tag;
 }
