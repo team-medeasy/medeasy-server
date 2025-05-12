@@ -5,18 +5,23 @@ import com.medeasy.common.api.Api;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.dto.CareAuthCodeResponse;
+import com.medeasy.domain.routine.business.RoutineBusiness;
+import com.medeasy.domain.routine.dto.RoutineGroupDto;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.RegisterCareRequest;
 import com.medeasy.domain.user.dto.RegisterCareResponse;
 import com.medeasy.domain.user.dto.UserListResponse;
+import com.medeasy.domain.user_care_mapping.business.UserCareBusiness;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +31,8 @@ import java.util.List;
 public class UserCareController {
 
     private final UserBusiness userBusiness;
+    private final RoutineBusiness routineBusiness;
+    private final UserCareBusiness userCareBusiness;
 
     @Operation(summary = "루틴 관리 대상(피보호자) 등록 API", description =
             """
@@ -126,5 +133,38 @@ public class UserCareController {
         return userBusiness.generateCareAuthCode(userId);
     }
 
+
+    @Operation(summary = "복약 케어 루틴 조회 API", description =
+            """
+                복약 케어 루틴 조회 API
+                
+                복약 케어 대상의 루틴을 조회한다.
+                
+            응답 값:
+            
+            name: 사용자 또는 피보호자 이름
+            
+            email: 피보호자 이메일 
+            
+            user_id: 사용자 식별자 
+            
+            tag: 내 계정 또는 피보호자 
+            """
+    )
+    @GetMapping("/routine/{user_id}")
+    public Api<List<RoutineGroupDto>> getCareReceiverRoutines(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @RequestParam(name = "user_id") Long careReceiverUserId,
+            @Parameter(example = "2025-03-16") @RequestParam(name = "start_date", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(example = "2025-03-20") @RequestParam(name = "end_date", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+
+
+        List<RoutineGroupDto> response= userCareBusiness.getCareReceiverRoutineListByDate(userId, careReceiverUserId, startDate, endDate);
+
+
+                routineBusiness.getRoutineListByDate(careReceiverUserId, startDate, endDate);
+        return Api.OK(response);
+    }
 
 }
