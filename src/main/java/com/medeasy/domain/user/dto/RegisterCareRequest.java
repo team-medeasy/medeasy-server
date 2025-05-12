@@ -9,9 +9,5 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RegisterCareRequest {
-    @NotBlank
-    private String email;
-
-    @NotBlank
-    private String password;
+    private String authCode;
 }

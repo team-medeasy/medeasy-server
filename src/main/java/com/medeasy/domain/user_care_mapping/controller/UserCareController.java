@@ -31,9 +31,13 @@ public class UserCareController {
             """
                 루틴 관리 대상(피보호자) 등록 API:
                 
-                루틴 정보와 알림을 받고자 하는 피보호자를 등록
+                보호 대상을 등록하여 루틴 관리 및 관련 알림을 제공받는다.
+                
+                피보호자의 인증 코드를 입력하여 요청을 보낸다. 
+                
+            요청 값: 
             
-                피보호자의 이메일과 비밀번호를 입력하여 관계 검증 
+            auth_code: 인증 토큰 
            
             응답 값: 
                 
@@ -66,7 +70,7 @@ public class UserCareController {
             """
     )
     @GetMapping("/receivers")
-    public Api<Object> getUserCareProviders(
+    public Api<Object> getUserCareReceivers(
             @Parameter(hidden = true) @UserSession Long userId
     ) {
         var response=userBusiness.getUserCareReceivers(userId);
@@ -138,4 +142,6 @@ public class UserCareController {
     ){
         return userBusiness.generateCareAuthCode(userId);
     }
+
+
 }

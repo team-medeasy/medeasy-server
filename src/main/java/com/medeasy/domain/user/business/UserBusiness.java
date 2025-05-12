@@ -1,7 +1,9 @@
 package com.medeasy.domain.user.business;
 
 import com.medeasy.common.annotation.Business;
+import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.error.SchedulerError;
+import com.medeasy.common.error.TokenErrorCode;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.business.AuthBusiness;
@@ -197,7 +199,12 @@ public class UserBusiness {
 
     @Transactional
     public RegisterCareResponse registerCareReceiver(Long userId, RegisterCareRequest request) {
-        UserEntity careReceiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
+        Long careReceiverId=authCodeService.getUserIdByAuthCode(request.getAuthCode());
+        if (careReceiverId == null) {
+            throw new ApiException(ErrorCode.AUTH_ERROR, "잘못된 코드입니다. 다시 확인해주세요.");
+        }
+
+        UserEntity careReceiverUserEntity = userService.getUserById(careReceiverId);
         UserEntity careGiverUserEntity = userService.getUserById(userId);
 
         UserCareMappingEntity userCareMappingEntity=userCareMappingConverter.registerCareRelation(careGiverUserEntity, careReceiverUserEntity);
@@ -207,22 +214,6 @@ public class UserBusiness {
                 .careGiverId(newUserCareMappingEntity.getCareProvider().getId())
                 .careReceiverId(newUserCareMappingEntity.getCareReceiver().getId())
                 .registeredAt(newUserCareMappingEntity.getRegisteredAt())
-                .build()
-                ;
-    }
-
-    @Transactional
-    public RegisterCareResponse registerCareProvider(Long userId, RegisterCareRequest request) {
-        UserEntity careGiverUserEntity = authBusiness.validateUser(request.getEmail(), request.getPassword());
-        UserEntity careReceiverUserEntity= userService.getUserById(userId);
-
-        UserCareMappingEntity userCareMappingEntity=userCareMappingConverter.registerCareRelation(careGiverUserEntity, careReceiverUserEntity);
-        UserCareMappingEntity newUserCareMappingEntity=userCareMappingService.save(userCareMappingEntity);
-
-        return RegisterCareResponse.builder()
-                .careGiverId(newUserCareMappingEntity.getCareProvider().getId())
-                .careReceiverId(newUserCareMappingEntity.getCareReceiver().getId())
-                .registeredAt(LocalDateTime.now())
                 .build()
                 ;
     }

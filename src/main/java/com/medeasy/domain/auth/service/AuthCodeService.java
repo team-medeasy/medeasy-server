@@ -71,6 +71,14 @@ public class AuthCodeService {
     }
 
     /**
+     * auth code repo에서 user_id 조회
+     * */
+    public Long getUserIdByAuthCode(String authCode) {
+        AuthCodeInfo info = authCodes.get(authCode);
+        return Long.parseLong(info.userId);
+    }
+
+    /**
      * 계정 연동 처리 로직 (실제 구현 필요)
      */
     private void linkAccounts(String sourceUserId, String targetUserId) {
