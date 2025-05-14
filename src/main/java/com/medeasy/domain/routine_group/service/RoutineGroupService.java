@@ -46,4 +46,8 @@ public class RoutineGroupService {
         return routineGroupRepository.findFirstRoutineIdByUserIdAndMedicineId(userId, medicineId)
                 .orElseThrow(()-> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE, "해당 약을 복용하고 있는 루틴 그룹이 존재하지 않습니다."));
     }
+
+    public List<RoutineGroupEntity> findRoutineGroupInIds(List<Long> routineGroupIds) {
+        return routineGroupRepository.findByIdIn(routineGroupIds);
+    }
 }
