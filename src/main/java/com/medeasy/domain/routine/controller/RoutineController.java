@@ -151,15 +151,10 @@ public class RoutineController {
         return Api.OK(response);
     }
 
-    @Operation(summary = "루틴 복용 여부 체크 v2", description =
+    @Operation(summary = "스케줄에 해당하는 모든 루틴 복용 체크 api", description =
             """
-                루틴 복용 여부 체크 API: 특정 routine의 복용 여부 체크
+                스케줄에 해당하는 모든 루틴 복용 체크 api API: 특정 user_schedule_id에 존재하는 모든 루틴들의 복용 여부를 체크한다. 
             
-            routine_medicine_id와 복용 여부 'true' or 'false'를 query sting 으로 요청 
-            
-            반환값: routine_medicine_id, beforeIsTaken, afterIsTaken
-            
-            마지막 업데이트 3/16
             """
     )
     @PatchMapping("/check/schedule")
