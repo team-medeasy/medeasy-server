@@ -123,4 +123,8 @@ public class RoutineService {
     public void deleteRoutines(List<RoutineEntity> routines) {
         routineRepository.deleteAll(routines);
     }
+
+    public List<RoutineEntity> getRoutinesOnScheduleId(Long userId, Long routineId) {
+        return routineRepository.findRoutinesOnScheduleId(userId, routineId);
+    }
 }

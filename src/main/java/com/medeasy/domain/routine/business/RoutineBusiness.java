@@ -220,10 +220,10 @@ public class RoutineBusiness {
     /**
      * 루틴 복용 체크 메서드q
      * */
-    @Transactional()
-    public RoutineCheckResponse checkRoutine(Long routineId, Boolean isTaken) {
+    @Transactional
+    public RoutineCheckResponse checkRoutine(Long userId, Long routineId, Boolean isTaken) {
 
-        var routineEntity=routineService.getRoutineById(routineId);
+        var routineEntity=routineService.getUserRoutineById(userId, routineId);
         Boolean beforeTaken=routineEntity.getIsTaken();
 
         routineEntity.setIsTaken(isTaken);
@@ -234,6 +234,26 @@ public class RoutineBusiness {
                  .beforeIsTaken(beforeTaken)
                 .build()
                 ;
+    }
+
+    @Transactional
+    public List<RoutineCheckResponse> checkScheduleRoutines(Long userId, Long scheduleId) {
+        List<RoutineEntity> routineEntities=routineService.getRoutinesOnScheduleId(userId, scheduleId);
+
+        List<RoutineCheckResponse> responses = routineEntities.stream()
+                .map(routineEntity -> {
+                    Boolean beforeTaken = routineEntity.getIsTaken();
+                    routineEntity.setIsTaken(true);
+
+                    return RoutineCheckResponse.builder()
+                            .routine_id(routineEntity.getId())
+                            .beforeIsTaken(beforeTaken)
+                            .afterIsTaken(true)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return responses;
     }
 
     /**
@@ -657,4 +677,5 @@ public class RoutineBusiness {
     public Long getRoutineId(Long userId, String medicineId) {
         return routineGroupService.findUserRoutineGroupByMedicineId(userId, medicineId);
     }
+
 }

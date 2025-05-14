@@ -146,7 +146,25 @@ public class RoutineController {
             @Parameter(description = "약 복용 여부", required = true)
             Boolean isTaken
     ) {
-        RoutineCheckResponse response=routineBusiness.checkRoutine(routineId, isTaken);
+        RoutineCheckResponse response=routineBusiness.checkRoutine(userId, routineId, isTaken);
+
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "스케줄에 해당하는 모든 루틴 복용 체크 api", description =
+            """
+                스케줄에 해당하는 모든 루틴 복용 체크 api API: 특정 user_schedule_id에 존재하는 모든 루틴들의 복용 여부를 체크한다. 
+            
+            """
+    )
+    @PatchMapping("/check/schedule")
+    public Api<Object> checkScheduleRoutines(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @RequestParam("schedule_id")
+            @Parameter(description = "루틴을 전부 체크할 스케줄의 id", required = true)
+            Long routineId
+    ) {
+        List<RoutineCheckResponse> response=routineBusiness.checkScheduleRoutines(userId, routineId);
 
         return Api.OK(response);
     }
