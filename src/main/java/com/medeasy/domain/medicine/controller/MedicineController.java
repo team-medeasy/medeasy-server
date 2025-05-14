@@ -202,7 +202,7 @@ public class MedicineController {
             combination_contraindications: 현재 복용 중인 약물 중 병용 금기인 약물 정보 목록
                 - item_name: 약물 이름
                 - item_seq: 약물 식별자
-                - routine_group_id: 루틴 그룹 ID
+                - routine_group_ids: 루틴 그룹 IDS (루틴으로 동일한 약을 여러번 등록한 경우를 고려)
                 - prohbt_content: 병용 금기 내용
             """)
     @GetMapping("/current/contraindications/{item_seq}")
