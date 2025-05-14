@@ -82,4 +82,8 @@ public class MedicineDocumentService {
     public List<MedicineDocument> findFirstMedicineByName(String medicineName, int size) {
         return medicineSearchCustomRepository.findMedicineByName(medicineName, size);
     }
+
+    public List<MedicineDocument> findMedicinesByIds(List<String> medicineIds) {
+        return medicineSearchCustomRepository.findMedicinesByIds(medicineIds);
+    }
 }

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface RoutineGroupRepository extends JpaRepository<RoutineGroupEntity, Long> {
 
@@ -30,4 +31,6 @@ public interface RoutineGroupRepository extends JpaRepository<RoutineGroupEntity
             "ORDER BY rg.createdAt DESC " +
             "LIMIT 1")
     Optional<Long> findFirstRoutineIdByUserIdAndMedicineId(@Param("userId") Long userId, @Param("medicineId") String medicineId);
+
+    List<RoutineGroupEntity> findByIdIn(List<Long> ids);
 }

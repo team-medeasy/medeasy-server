@@ -19,6 +19,8 @@ public class RoutineGroupDateRangeDto {
 
     private LocalDateTime updatedAt;
 
+    private String medicineId;
+
     private LocalDate startDate;
 
     private LocalDate endDate;

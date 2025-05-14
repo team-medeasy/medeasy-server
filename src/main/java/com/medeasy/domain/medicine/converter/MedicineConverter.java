@@ -1,8 +1,10 @@
 package com.medeasy.domain.medicine.converter;
 
 import com.medeasy.common.annotation.Converter;
+import com.medeasy.domain.medicine.db.DrugContraindicationsDocument;
 import com.medeasy.domain.medicine.db.MedicineDocument;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
+import com.medeasy.domain.medicine.dto.MedicineResponseWithContraindications;
 import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import lombok.Builder;
 
@@ -50,6 +52,45 @@ public class MedicineConverter {
                 .audioUrl(document.getAudioUrl())
                 .build();
     }
+
+    public MedicineResponseWithContraindications toResponseWithContraindications(MedicineDocument medicineDocument, DrugContraindicationsDocument contraindicationsDocument) {
+
+//        return MedicineResponse.builder()
+//                .id(medicineDocument.getId())
+//                .itemSeq(medicineDocument.getItemSeq())
+//                .itemName(medicineDocument.getItemName())
+//                .entpName(medicineDocument.getEntpName())
+//                .entpSeq(medicineDocument.getEntpSeq())
+//                .chart(medicineDocument.getChart())
+//                .classNo(medicineDocument.getClassNo())
+//                .className(medicineDocument.getClassName())
+//                .ediCode(medicineDocument.getEdiCode())
+//                .drugShape(medicineDocument.getDrugShape())
+//                .colorClasses(medicineDocument.getColorClasses())
+//                .lineFront(medicineDocument.getLineFront())
+//                .lineBack(medicineDocument.getLineBack())
+//                .printFront(medicineDocument.getPrintFront())
+//                .printBack(medicineDocument.getPrintBack())
+//                .markCodeFrontAnal(medicineDocument.getMarkCodeFrontAnal()) // 수정: 중복된 `markCodeBackAnal` 제거
+//                .markCodeBackAnal(medicineDocument.getMarkCodeBackAnal())
+//                .indications(String.join("\n", medicineDocument.getIndications()))
+//                .dosage(String.join("\n", medicineDocument.getDosage()))
+//                .precautions(String.join("\n", medicineDocument.getPrecautions()))
+//                .sideEffects(String.join("\n", medicineDocument.getSideEffects()))
+//                .storageMethod(medicineDocument.getStorageMethod())
+//                .validTerm(medicineDocument.getValidTerm())
+//                .etcOtcName(medicineDocument.getEtcOtcName())
+//                .cancelName(medicineDocument.getCancelName())
+//                .itemImage(medicineDocument.getItemImage())
+//                .lengLong(medicineDocument.getLengLong())
+//                .lengShort(medicineDocument.getLengShort())
+//                .thick(medicineDocument.getThick())
+//                .isPill(medicineDocument.getIsPill())
+//                .audioUrl(medicineDocument.getAudioUrl())
+//                .build();
+        return null;
+    }
+
 
     public MedicineSimpleDto toSimpleResponseWithDocument(MedicineDocument document) {
         return MedicineSimpleDto.builder()
