@@ -41,13 +41,14 @@ public class RoutineQueryRepository {
                         RoutineGroupDateRangeDto.class,
                         rg.id,
                         rg.updatedAt,
+                        rg.medicineId,
                         r.takeDate.min(),
                         r.takeDate.max()
                 ))
                 .from(r)
                 .join(r.routineGroup, rg)
                 .where(where)
-                .groupBy(rg.id, rg.updatedAt)
+                .groupBy(rg.id, rg.updatedAt, rg.medicineId)
                 .having(r.takeDate.max().goe(today)) // max_date가 오늘날짜와 같거나 큰경우
                 .fetch();
     }
@@ -75,13 +76,14 @@ public class RoutineQueryRepository {
                         RoutineGroupDateRangeDto.class,
                         rg.id,
                         rg.updatedAt,
+                        rg.medicineId,
                         r.takeDate.min(),
                         r.takeDate.max()
                 ))
                 .from(r)
                 .join(r.routineGroup, rg)
                 .where(where)
-                .groupBy(rg.id, rg.updatedAt)
+                .groupBy(rg.id, rg.updatedAt, rg.medicineId)
                 .having(r.takeDate.max().lt(today)) // max_date가 오늘날짜보다 작은경우
                 // TODO 오늘날짜여도 약을 다 먹은 경우에는 표시
                 .fetch();
