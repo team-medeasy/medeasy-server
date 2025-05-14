@@ -5,6 +5,7 @@ import com.medeasy.common.api.Api;
 import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.medicine.db.MedicineColor;
 import com.medeasy.domain.medicine.db.MedicineShape;
+import com.medeasy.domain.medicine.dto.DrugContraindicationsResponse;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
@@ -152,6 +153,33 @@ public class MedicineController {
             @PathVariable(name = "medicine_id") String medicineId
     ) {
         var response=medicineBusiness.getMedicineInfoMp3FileUri(medicineId);
+
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "의약품 복용 금기사항 조회 API", description =
+            """
+                의약품 복용 금기사항 조회 API  
+                
+                item_seq에 해당하는 의약품의 복용 금기 사항을 조회한다.
+                
+            응답 값: 
+                
+            item_seq: 의약품 식별자
+                                
+            pregnancy_contraindication: 임산부 금기 사항
+                                
+            elderly_precaution: 노인 금기 사항
+                                
+            combination_contraindications: 병용 금기 약물 정보
+            
+            """)
+    @GetMapping("/contraindication/{item_seq}")
+    public Api<DrugContraindicationsResponse> getDrugContraindication(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @PathVariable(name = "item_seq") String itemSeq
+    ) {
+        var response=medicineBusiness.getContraindicationsByMedicineItemSeq(itemSeq);
 
         return Api.OK(response);
     }

@@ -8,10 +8,14 @@ import com.medeasy.common.annotation.Business;
 import com.medeasy.common.error.ErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.file.FileBucketService;
+import com.medeasy.domain.medicine.converter.DrugContraindicationsConverter;
 import com.medeasy.domain.medicine.converter.MedicineConverter;
 import com.medeasy.domain.medicine.db.*;
+import com.medeasy.domain.medicine.dto.DrugContraindicationsResponse;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
+import com.medeasy.domain.medicine.dto.MedicineResponseWithContraindications;
 import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
+import com.medeasy.domain.medicine.service.DrugContraindicationsService;
 import com.medeasy.domain.medicine.service.MedicineDocumentService;
 import com.medeasy.domain.medicine.util.MedicineInfoGenerator;
 import com.medeasy.domain.mp3.Mp3Service;
@@ -37,6 +41,8 @@ public class MedicineBusiness {
     private final TtsService ttsService;
     private final Mp3Service mp3Service;
     private final FileBucketService fileBucketService;
+    private final DrugContraindicationsService drugContraindicationsService;
+    private final DrugContraindicationsConverter drugContraindicationsConverter;
 
     public String combineColors(String color1, String color2) {
         // 컬러 값 결합 로직
@@ -120,5 +126,12 @@ public class MedicineBusiness {
         medicineDocumentService.updateMedicineAudioUrl(medicineId, audioUrl);
 
         return audioUrl;
+    }
+
+
+    public DrugContraindicationsResponse getContraindicationsByMedicineItemSeq(String itemSeq) {
+        DrugContraindicationsDocument drugContraindicationsDocument=drugContraindicationsService.findByItemSeq(itemSeq);
+
+        return drugContraindicationsConverter.toResponse(drugContraindicationsDocument);
     }
 }
