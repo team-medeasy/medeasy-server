@@ -146,7 +146,30 @@ public class RoutineController {
             @Parameter(description = "약 복용 여부", required = true)
             Boolean isTaken
     ) {
-        RoutineCheckResponse response=routineBusiness.checkRoutine(routineId, isTaken);
+        RoutineCheckResponse response=routineBusiness.checkRoutine(userId, routineId, isTaken);
+
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "루틴 복용 여부 체크 v2", description =
+            """
+                루틴 복용 여부 체크 API: 특정 routine의 복용 여부 체크
+            
+            routine_medicine_id와 복용 여부 'true' or 'false'를 query sting 으로 요청 
+            
+            반환값: routine_medicine_id, beforeIsTaken, afterIsTaken
+            
+            마지막 업데이트 3/16
+            """
+    )
+    @PatchMapping("/check/schedule")
+    public Api<Object> checkScheduleRoutines(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @RequestParam("schedule_id")
+            @Parameter(description = "루틴을 전부 체크할 스케줄의 id", required = true)
+            Long routineId
+    ) {
+        List<RoutineCheckResponse> response=routineBusiness.checkScheduleRoutines(userId, routineId);
 
         return Api.OK(response);
     }
