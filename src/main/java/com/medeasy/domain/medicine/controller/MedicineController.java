@@ -6,6 +6,7 @@ import com.medeasy.domain.medicine.business.MedicineBusiness;
 import com.medeasy.domain.medicine.db.MedicineColor;
 import com.medeasy.domain.medicine.db.MedicineShape;
 import com.medeasy.domain.medicine.dto.DrugContraindicationsResponse;
+import com.medeasy.domain.medicine.dto.MedicineContraindicationResponse;
 import com.medeasy.domain.medicine.dto.MedicineResponse;
 import com.medeasy.domain.medicine.dto.MedicineSimpleDto;
 import com.medeasy.domain.search.business.SearchHistoryBusiness;
@@ -180,6 +181,36 @@ public class MedicineController {
             @PathVariable(name = "item_seq") String itemSeq
     ) {
         var response=medicineBusiness.getContraindicationsByMedicineItemSeq(itemSeq);
+
+        return Api.OK(response);
+    }
+
+    @Operation(summary = "복용 의약품과 병용 금지 의약품 판별 API", description =
+            """
+                복용 의약품과 병용 금지 의약품 판별 API
+                
+                사용자가 현재 복용하고 있는 의약품들과 병용 금지인지 비교할 의약품의 item_seq를 통해 
+                
+                여부를 판단한다.
+                
+            응답 값:
+            
+            pregnancy_contraindication: 임산부 금기 사항
+            
+            elderly_precaution: 노인 금기 사항
+            
+            combination_contraindications: 현재 복용 중인 약물 중 병용 금기인 약물 정보 목록
+                - item_name: 약물 이름
+                - item_seq: 약물 식별자
+                - routine_group_id: 루틴 그룹 ID
+                - prohbt_content: 병용 금기 내용
+            """)
+    @GetMapping("/current/contraindications/{item_seq}")
+    public Api<MedicineContraindicationResponse> isContraindicationWithCurrentlyMedications(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @PathVariable(name = "item_seq") String itemSeq
+    ) {
+        var response=medicineBusiness.getContraindicationWithCurrentlyMedications(userId, itemSeq);
 
         return Api.OK(response);
     }
