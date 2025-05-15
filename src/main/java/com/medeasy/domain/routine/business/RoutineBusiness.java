@@ -230,7 +230,7 @@ public class RoutineBusiness {
         routineEntity.setIsTaken(isTaken);
 
         return RoutineCheckResponse.builder()
-                .routine_id(routineId)
+                .routineId(routineId)
                 .afterIsTaken(isTaken)
                  .beforeIsTaken(beforeTaken)
                 .build()
@@ -247,7 +247,7 @@ public class RoutineBusiness {
                     routineEntity.setIsTaken(true);
 
                     return RoutineCheckResponse.builder()
-                            .routine_id(routineEntity.getId())
+                            .routineId(routineEntity.getId())
                             .beforeIsTaken(beforeTaken)
                             .afterIsTaken(true)
                             .build();
