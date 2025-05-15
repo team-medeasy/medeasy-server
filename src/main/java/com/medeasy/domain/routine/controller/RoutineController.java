@@ -151,6 +151,28 @@ public class RoutineController {
         return Api.OK(response);
     }
 
+    @Operation(summary = "루틴 이름과 유사한 루틴 복용 여부 체크 api", description =
+            """
+                루틴 이름과 유사한 루틴 복용 여부 체크 api: 
+                
+            요청값: 
+            
+            schedule_id: 복용 기록할 시간대의 schedule id
+            
+            medicine_name: 복용 기록할 약품의 이름 또는 닉네임
+            """
+    )
+    @PatchMapping("/check/{medicine_name}")
+    public Api<Object> checkRoutineByMedicineNameOrNickname(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @RequestParam(name = "medicine_name") String medicineName,
+            @RequestParam("schedule_id") @Parameter(description = "루틴을 전부 체크할 스케줄의 id", required = true) Long scheduleId
+    ) {
+        RoutineCheckResponse response=routineBusiness.checkRoutineByMedicineName(userId, medicineName, scheduleId);
+
+        return Api.OK(response);
+    }
+
     @Operation(summary = "스케줄에 해당하는 모든 루틴 복용 체크 api", description =
             """
                 스케줄에 해당하는 모든 루틴 복용 체크 api API: 특정 user_schedule_id에 존재하는 모든 루틴들의 복용 여부를 체크한다. 
@@ -162,9 +184,9 @@ public class RoutineController {
             @Parameter(hidden = true) @UserSession Long userId,
             @RequestParam("schedule_id")
             @Parameter(description = "루틴을 전부 체크할 스케줄의 id", required = true)
-            Long routineId
+            Long scheduleId
     ) {
-        List<RoutineCheckResponse> response=routineBusiness.checkScheduleRoutines(userId, routineId);
+        List<RoutineCheckResponse> response=routineBusiness.checkScheduleRoutines(userId, scheduleId);
 
         return Api.OK(response);
     }

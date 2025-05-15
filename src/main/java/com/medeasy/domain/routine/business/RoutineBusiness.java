@@ -30,6 +30,7 @@ import com.medeasy.domain.user_schedule.db.MedicationTime;
 import com.medeasy.domain.user_schedule.db.UserScheduleEntity;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
@@ -678,4 +679,32 @@ public class RoutineBusiness {
         return routineGroupService.findUserRoutineGroupByMedicineId(userId, medicineId);
     }
 
+    /**
+     * 복용하지 않은 루틴 중, 제시한 의약품 이름 또는 닉네임과 유사한 루틴 복용 여부 체크
+     * */
+    @Transactional
+    public RoutineCheckResponse checkRoutineByMedicineName(Long userId, String medicineName, Long scheduleId) {
+        List<RoutineEntity> routineEntities=routineService.getNotTakenRoutinesOnScheduleIdWithRoutineGroup(userId, scheduleId);
+        List<RoutineGroupEntity> routineGroupEntities=routineEntities.stream().map(RoutineEntity::getRoutineGroup).toList();
+
+        // 약 이름과 일치하는 루틴 그룹 찾기
+        RoutineGroupEntity targetGroup = routineGroupEntities.stream()
+                .filter(group -> group.getNickname().equals(medicineName))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("해당 약 이름의 복약 일정을 찾을 수 없습니다: " + medicineName));
+
+        RoutineEntity targetRoutine = routineEntities.stream()
+                .filter(routine -> routine.getRoutineGroup().getId().equals(targetGroup.getId()))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("해당 스케줄의 루틴을 찾을 수 없습니다."));
+
+        targetRoutine.setIsTaken(true);
+
+        return RoutineCheckResponse.builder()
+                .routineId(targetRoutine.getId())
+                .beforeIsTaken(false) // 복용하지 않은 루틴들만 가져오기 때문에 무조건 false
+                .afterIsTaken(true)
+                .build()
+                ;
+    }
 }

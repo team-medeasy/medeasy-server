@@ -43,4 +43,15 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             @Param("user_id") Long userId,
             @Param("user_schedule_id") Long userScheduleId
     );
+
+    @Query("SELECT r FROM RoutineEntity r " +
+            "JOIN FETCH r.userSchedule us " +
+            "JOIN FETCH r.routineGroup rg " +
+            "WHERE us.user.id = :user_id " +
+            "AND us.id = :user_schedule_id " +
+            "AND r.isTaken = false ")
+    List<RoutineEntity> findNotTakenRoutinesOnScheduleIdWithRoutineGroup(
+            @Param("user_id") Long userId,
+            @Param("user_schedule_id") Long userScheduleId
+    );
 }
