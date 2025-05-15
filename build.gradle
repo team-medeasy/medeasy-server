@@ -75,6 +75,8 @@ dependencies {
 
 	// web socket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	implementation 'org.apache.commons:commons-text:1.11.0' // 최신 버전 사용
 }
 
 tasks.named('test') {

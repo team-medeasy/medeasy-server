@@ -32,6 +32,7 @@ import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -687,11 +688,14 @@ public class RoutineBusiness {
         List<RoutineEntity> routineEntities=routineService.getNotTakenRoutinesOnScheduleIdWithRoutineGroup(userId, scheduleId);
         List<RoutineGroupEntity> routineGroupEntities=routineEntities.stream().map(RoutineEntity::getRoutineGroup).toList();
 
-        // 약 이름과 일치하는 루틴 그룹 찾기
+        // 약 이름과 가장 유사한 루틴 그룹 찾기 (유사도 기준 내림차순 정렬)
         RoutineGroupEntity targetGroup = routineGroupEntities.stream()
-                .filter(group -> group.getNickname().equals(medicineName))
+                .map(group -> Map.entry(group, calculateSimilarity(group.getNickname(), medicineName)))
+                .filter(entry -> entry.getValue() > 0.7)  // 유사도 70% 이상만 고려
+                .sorted(Map.Entry.<RoutineGroupEntity, Double>comparingByValue().reversed())  // 유사도 내림차순 정렬
+                .map(Map.Entry::getKey)
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("해당 약 이름의 복약 일정을 찾을 수 없습니다: " + medicineName));
+                .orElseThrow(() -> new EntityNotFoundException("해당 약 이름과 유사한 복약 일정을 찾을 수 없습니다: " + medicineName));
 
         RoutineEntity targetRoutine = routineEntities.stream()
                 .filter(routine -> routine.getRoutineGroup().getId().equals(targetGroup.getId()))
@@ -706,5 +710,17 @@ public class RoutineBusiness {
                 .afterIsTaken(true)
                 .build()
                 ;
+    }
+
+    private double calculateSimilarity(String s1, String s2) {
+        if (s1 == null || s2 == null) {
+            return 0.0;
+        }
+
+        String str1 = s1.toLowerCase();
+        String str2 = s2.toLowerCase();
+
+         int distance = new LevenshteinDistance().apply(str1, str2);
+         return 1.0 - (double) distance / Math.max(str1.length(), str2.length());
     }
 }
