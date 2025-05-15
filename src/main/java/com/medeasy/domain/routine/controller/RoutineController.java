@@ -153,7 +153,9 @@ public class RoutineController {
 
     @Operation(summary = "루틴 이름과 유사한 루틴 복용 여부 체크 api", description =
             """
-                루틴 이름과 유사한 루틴 복용 여부 체크 api: 
+                복용 체크하려는 약 이름 또는 닉네임과 유사한 복용 일정 기록 api:
+                
+                입력한 이름과 유사도 점수가 0.7 이상인 루틴 중 가장 높은 루틴 체크(사용자의 오타 및 stt오류 고려)                  
                 
             요청값: 
             
