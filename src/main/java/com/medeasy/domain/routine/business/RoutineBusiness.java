@@ -691,16 +691,16 @@ public class RoutineBusiness {
         // 약 이름과 가장 유사한 루틴 그룹 찾기 (유사도 기준 내림차순 정렬)
         RoutineGroupEntity targetGroup = routineGroupEntities.stream()
                 .map(group -> Map.entry(group, calculateSimilarity(group.getNickname(), medicineName)))
-                .filter(entry -> entry.getValue() > 0.7)  // 유사도 70% 이상만 고려
+                .filter(entry -> entry.getValue() > 0.4)  // 유사도 70% 이상만 고려
                 .sorted(Map.Entry.<RoutineGroupEntity, Double>comparingByValue().reversed())  // 유사도 내림차순 정렬
                 .map(Map.Entry::getKey)
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("해당 약 이름과 유사한 복약 일정을 찾을 수 없습니다: " + medicineName));
+                .orElseThrow(() -> new ApiException(ErrorCode.BAD_REQEUST, "말씀하신 약 이름에 해당하는 일정을 못찾았습니다. 조금 더 자세히 말씀해 주세요. " + medicineName));
 
         RoutineEntity targetRoutine = routineEntities.stream()
                 .filter(routine -> routine.getRoutineGroup().getId().equals(targetGroup.getId()))
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("해당 스케줄의 루틴을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.SERVER_ERROR, "해당 스케줄의 루틴을 찾을 수 없습니다."));
 
         targetRoutine.setIsTaken(true);
 
@@ -716,11 +716,14 @@ public class RoutineBusiness {
         if (s1 == null || s2 == null) {
             return 0.0;
         }
+        // 괄호와 내용 제거 (옵션)
+        String preprocessed1 = s1.replaceAll("\\([^\\)]*\\)", "");
+        String preprocessed2 = s2.replaceAll("\\([^\\)]*\\)", "");
 
-        String str1 = s1.toLowerCase();
-        String str2 = s2.toLowerCase();
+        String str1 = preprocessed1.toLowerCase().trim();
+        String str2 = preprocessed2.toLowerCase().trim();
 
-         int distance = new LevenshteinDistance().apply(str1, str2);
-         return 1.0 - (double) distance / Math.max(str1.length(), str2.length());
+        int distance = new LevenshteinDistance().apply(str1, str2);
+        return 1.0 - (double) distance / Math.max(str1.length(), str2.length());
     }
 }

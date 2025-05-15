@@ -164,7 +164,7 @@ public class RoutineController {
             medicine_name: 복용 기록할 약품의 이름 또는 닉네임
             """
     )
-    @PatchMapping("/check/{medicine_name}")
+    @PatchMapping("/check/medicine_name")
     public Api<Object> checkRoutineByMedicineNameOrNickname(
             @Parameter(hidden = true) @UserSession Long userId,
             @RequestParam(name = "medicine_name") String medicineName,
