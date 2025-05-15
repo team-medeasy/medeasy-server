@@ -26,4 +26,6 @@ public class UserResponse {
     private LocalDateTime loginedAt;
 
     private Date birthday;
+
+    private Boolean isNotificationAgreed;
 }
