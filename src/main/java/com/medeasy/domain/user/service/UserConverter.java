@@ -29,6 +29,7 @@ public class UserConverter {
                 .registeredAt(userEntity.getRegisteredAt())
                 .loginedAt(userEntity.getLoginedAt())
                 .birthday(userEntity.getBirthday())
+                .isNotificationAgreed(userEntity.getIsNotificationAgreed())
                 .build()
                 ;
     }
