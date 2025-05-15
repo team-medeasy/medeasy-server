@@ -70,4 +70,8 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     @OrderBy("takeTime ASC")
     private List<UserScheduleEntity> userSchedules = new ArrayList<>();
+
+    @Column(name = "is_notification_agreed", nullable = false)
+    @Builder.Default
+    private Boolean isNotificationAgreed = true;
 }
