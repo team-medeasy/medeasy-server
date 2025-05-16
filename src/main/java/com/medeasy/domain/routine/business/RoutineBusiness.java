@@ -239,8 +239,8 @@ public class RoutineBusiness {
     }
 
     @Transactional
-    public List<RoutineCheckResponse> checkScheduleRoutines(Long userId, Long scheduleId) {
-        List<RoutineEntity> routineEntities=routineService.getRoutinesOnScheduleId(userId, scheduleId);
+    public List<RoutineCheckResponse> checkScheduleRoutines(Long userId, Long scheduleId, LocalDate startDate, LocalDate endDate) {
+        List<RoutineEntity> routineEntities=routineService.getRoutinesOnScheduleIdAndTakeDate(userId, scheduleId, startDate, endDate);
 
         List<RoutineCheckResponse> responses = routineEntities.stream()
                 .map(routineEntity -> {

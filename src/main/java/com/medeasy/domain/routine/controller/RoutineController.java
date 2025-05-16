@@ -185,10 +185,13 @@ public class RoutineController {
     public Api<Object> checkScheduleRoutines(
             @Parameter(hidden = true) @UserSession Long userId,
             @RequestParam("schedule_id")
-            @Parameter(description = "루틴을 전부 체크할 스케줄의 id", required = true)
-            Long scheduleId
+            @Parameter(description = "루틴을 전부 체크할 스케줄의 id", required = true) Long scheduleId,
+            @RequestParam("start_date")
+            @Parameter(description = "복용 체크할 시작 날짜", required = true) LocalDate startDate,
+            @RequestParam("end_date")
+            @Parameter(description = "복용 체크할 시작 날짜", required = true) LocalDate endDate
     ) {
-        List<RoutineCheckResponse> response=routineBusiness.checkScheduleRoutines(userId, scheduleId);
+        List<RoutineCheckResponse> response=routineBusiness.checkScheduleRoutines(userId, scheduleId, startDate, endDate);
 
         return Api.OK(response);
     }
