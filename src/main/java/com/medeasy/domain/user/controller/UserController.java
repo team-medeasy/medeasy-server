@@ -221,7 +221,7 @@ public class UserController {
             @UserSession Long userId,
             @Valid@RequestBody UserDeleteRequest request
     ) {
-        userBusiness.unregisterUser(userId, request.getPassword());
+        userBusiness.unregisterUser(userId, request.getRefreshToken());
 
         return Api.OK(null);
     }
