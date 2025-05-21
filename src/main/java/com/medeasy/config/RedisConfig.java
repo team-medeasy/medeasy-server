@@ -1,7 +1,10 @@
 package com.medeasy.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.domain.routine.event.RoutineCheckEvent;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +12,12 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 
@@ -33,6 +41,7 @@ public class RedisConfig {
 
     @Value("${redis.alarm.password}")
     private String redisAlarmPassword;
+
 
 
     // 첫 번째 Redis (6379)
@@ -95,9 +104,33 @@ public class RedisConfig {
         return new StringRedisTemplate(redisConnectionFactoryJwt);
     }
 
-    // 두 번째 Redis에 대한 StringRedisTemplate
-    @Bean(name = "alarmRedisTemplate")
-    public StringRedisTemplate alarmRedisTemplate(RedisConnectionFactory redisConnectionFactoryAlarm) {
-        return new StringRedisTemplate(redisConnectionFactoryAlarm);
+    /**
+     * Redis JSON 직렬화 설정
+     */
+    @Bean
+    public RedisSerializer<Object> redisSerializer(ObjectMapper redisObjectMapper) {
+        return new GenericJackson2JsonRedisSerializer(redisObjectMapper);
+    }
+
+    // 알림용 RedisTemplate - 제네릭 타입 문제 해결
+    @Bean(name = "redisAlarmTemplate")
+    public RedisTemplate<String, RoutineCheckEvent> redisAlarmTemplate(
+            @Qualifier("redisConnectionFactoryAlarm") RedisConnectionFactory connectionFactory,
+            RedisSerializer<Object> redisSerializer) {
+
+        RedisTemplate<String, RoutineCheckEvent> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        // Key Serializer
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+
+        // Value Serializer
+        template.setValueSerializer(redisSerializer);
+        template.setHashValueSerializer(redisSerializer);
+
+        template.afterPropertiesSet();
+        return template;
+
     }
 }
