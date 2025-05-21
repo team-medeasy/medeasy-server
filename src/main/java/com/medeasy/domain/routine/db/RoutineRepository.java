@@ -57,4 +57,15 @@ public interface RoutineRepository extends JpaRepository<RoutineEntity, Long> {
             @Param("user_id") Long userId,
             @Param("user_schedule_id") Long userScheduleId
     );
+
+    @Query("SELECT r FROM RoutineEntity r " +
+            "JOIN FETCH r.userSchedule us " +
+            "WHERE r.userSchedule.id = (SELECT r2.userSchedule.id FROM RoutineEntity r2 WHERE r2.id = :routineId) " +
+            "AND r.takeDate = :takeDate " +
+            "AND r.userSchedule.user.id = :userId ")
+    List<RoutineEntity> findRoutinesByScheduleIdOfRoutineIdAndTakeDateAndUserID(
+            @Param("userId") Long userId,
+            @Param("routineId") Long routineId,
+            @Param("takeDate") LocalDate takeDate
+    );
 }
