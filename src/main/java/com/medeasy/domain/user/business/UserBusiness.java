@@ -31,6 +31,7 @@ import com.medeasy.domain.user_schedule.dto.UserScheduleUpdateRequest;
 import com.medeasy.domain.user_schedule.service.UserScheduleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.antlr.v4.runtime.Token;
 import org.apache.catalina.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +60,7 @@ public class UserBusiness {
     private final UserCareMappingService userCareMappingService;
     private final UserCareMappingConverter userCareMappingConverter;
     private final UserCareMappingRepository userCareMappingRepository;
+    private final JwtTokenHelper jwtTokenHelper;
 
 
     /**
@@ -149,11 +151,12 @@ public class UserBusiness {
      * 사용자 회원탈퇴 메서드
      * */
     @Transactional
-    public void unregisterUser(Long userId, String password) {
+    public void unregisterUser(Long userId, String refreshToken) {
         UserEntity userEntity=userService.getUserById(userId);
+        String storedRefreshToken=jwtTokenHelper.getRefreshTokenByUserId(userId.toString());
 
-        if (!passwordEncoder.matches(password, userEntity.getPassword())) {
-            throw new ApiException(UserErrorCode.INVALID_PASSWORD);
+        if(!refreshToken.equals(storedRefreshToken)){
+            throw new ApiException(TokenErrorCode.INVALID_TOKEN, "Refresh token does not match");
         }
 
         userService.deleteUser(userId);

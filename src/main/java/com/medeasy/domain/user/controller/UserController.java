@@ -210,7 +210,7 @@ public class UserController {
             """
             사용자 회원 탈퇴 API:
             
-            사용자 비밀번호를 추가로 입력받아
+            사용자 리프레시 토큰을 입력받아
             
             인증이 완료되면 사용자 삭제 
             """
@@ -221,7 +221,7 @@ public class UserController {
             @UserSession Long userId,
             @Valid@RequestBody UserDeleteRequest request
     ) {
-        userBusiness.unregisterUser(userId, request.getPassword());
+        userBusiness.unregisterUser(userId, request.getRefreshToken());
 
         return Api.OK(null);
     }

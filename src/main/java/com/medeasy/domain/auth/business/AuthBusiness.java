@@ -4,6 +4,7 @@ import com.medeasy.common.annotation.Business;
 import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.dto.*;
+import com.medeasy.domain.auth.service.AppleService;
 import com.medeasy.domain.auth.service.KakaoService;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.user.db.UserEntity;
@@ -33,6 +34,7 @@ public class AuthBusiness {
     private final UserScheduleBusiness userScheduleBusiness;
     private final StringRedisTemplate redisTemplateForJwt;
     private final KakaoService kakaoService;
+    private final AppleService appleService;
 
     public AuthBusiness(
             UserService userService,
@@ -41,8 +43,8 @@ public class AuthBusiness {
             TokenHelperIfs jwtTokenHelper,
             UserScheduleBusiness userScheduleBusiness,
             @Qualifier("redisTemplateForJwt") StringRedisTemplate redisTemplateForJwt,
-            KakaoService kakaoService
-    ) {
+            KakaoService kakaoService,
+            AppleService appleService) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.userConverter = userConverter;
@@ -50,6 +52,7 @@ public class AuthBusiness {
         this.userScheduleBusiness = userScheduleBusiness;
         this.redisTemplateForJwt = redisTemplateForJwt;
         this.kakaoService = kakaoService;
+        this.appleService = appleService;
     }
 
 
@@ -147,6 +150,30 @@ public class AuthBusiness {
                 .kakaoUid(kakaoUserProfile.getId())
                 .password(jwtTokenHelper.generateSecurePassword(userEmail, kakaoUserProfile.getId()))
                 .build();
+
+            UserEntity saveUserEntity=userService.registerUser(newUserEntity);
+            userScheduleBusiness.registerUserDefaultSchedule(saveUserEntity);
+
+            return saveUserEntity;
+        });
+
+        return userEntity.getId();
+    }
+
+    public Long getUserIdApple(AppleLoginRequest request) {
+        UserEntity userEntity;
+        AppleUserProfile appleUserProfile=appleService.verifyAppleToken(request.getIdentityToken());
+
+        // 사용자를 찾은 경우 -> 로그인 -> jwt 토큰 발급
+        // 사용자가 존재하지 않은 경우 -> 회원가입 -> 토큰 발급
+        Optional<UserEntity> userEntityOptional=userService.getOptionalUserByEmail(appleUserProfile.getEmail());
+        userEntity = userEntityOptional.orElseGet(() -> {
+            UserEntity newUserEntity=UserEntity.builder()
+                    .email(appleUserProfile.getEmail())
+                    .name(request.getFirstName()+request.getLastName())
+                    .appleUid(appleUserProfile.getAppleUserId())
+                    .password(jwtTokenHelper.generateSecurePassword(appleUserProfile.getEmail(), appleUserProfile.getAppleUserId()))
+                    .build();
 
             UserEntity saveUserEntity=userService.registerUser(newUserEntity);
             userScheduleBusiness.registerUserDefaultSchedule(saveUserEntity);

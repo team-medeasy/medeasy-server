@@ -89,4 +89,21 @@ public class AuthController {
         authBusiness.saveFcmToken(userId, request.getFcmToken());
         return Api.OK(tokenResponse);
     }
+
+    @Operation(summary = "애플 로그인", description = """
+                    
+                    애플 로그인 후 받은 정보들을 가지고 애플 로그인한다.
+                    
+                    first_name과 last_name은 첫 로그인시에만 정보를 받을 수 있기 때문에, 이후 로그인에서는 null값을 넣는다.
+                        
+                    """)
+    @PostMapping("/apple")
+    public Api<Object> appleLogin(
+            @RequestBody AppleLoginRequest request
+    ) {
+        Long userId=authBusiness.getUserIdApple(request);
+        TokenResponse tokenResponse=authBusiness.issueToken(userId);
+        authBusiness.saveFcmToken(userId, request.getFcmToken());
+        return Api.OK(tokenResponse);
+    }
 }

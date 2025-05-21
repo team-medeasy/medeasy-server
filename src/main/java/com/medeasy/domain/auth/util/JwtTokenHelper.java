@@ -1,6 +1,7 @@
 package com.medeasy.domain.auth.util;
 
 import com.medeasy.common.error.TokenErrorCode;
+import com.medeasy.common.error.UserErrorCode;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.auth.dto.TokenDto;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -207,6 +208,76 @@ public class JwtTokenHelper implements TokenHelperIfs {
         } catch (NoSuchAlgorithmException e) {
             // 더 안전한 대안으로 BCrypt 사용 (SHA-256을 사용할 수 없는 경우)
             return BCrypt.hashpw(combinedString, BCrypt.gensalt(12));
+        }
+    }
+
+    public String getUserIdFromRefreshToken(String refreshToken) {
+        var key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        var parser = Jwts.parser()
+                .setSigningKey(key)
+                .build();
+
+        try {
+            var result = parser.parseClaimsJws(refreshToken);
+            var claims = result.getBody();
+
+            // Extract userId from claims
+            String userId = String.valueOf(claims.get("userId"));
+
+            if (userId == null || userId.isEmpty()) {
+                throw new ApiException(TokenErrorCode.INVALID_TOKEN, "토큰 내 user 정보가 없습니다.");
+            }
+
+            // Verify that this refresh token is actually stored in Redis for this userId
+            String storedRefreshToken = redisJwtTemplate.opsForValue().get(userId);
+            if (storedRefreshToken == null) {
+                throw new ApiException(TokenErrorCode.INVALID_TOKEN, "Redis에 저장된 Refresh Token이 없습니다.");
+            }
+
+            // Check if the provided token matches the stored token
+            if (!storedRefreshToken.equals(refreshToken)) {
+                throw new ApiException(TokenErrorCode.INVALID_TOKEN, "Refresh Token 불일치");
+            }
+
+            return userId;
+
+        } catch (SignatureException e) {
+            throw new ApiException(TokenErrorCode.INVALID_TOKEN, "토큰 서명 검증 실패");
+        } catch (ExpiredJwtException e) {
+            throw new ApiException(TokenErrorCode.EXPIRED_TOKEN, "Refresh Token이 만료되었습니다.");
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApiException(TokenErrorCode.TOKEN_EXCEPTION, e);
+        }
+    }
+
+    /**
+     * Retrieve the refresh token for a given userId
+     *
+     * @param userId the userId to lookup the refresh token for
+     * @return the refresh token associated with the userId or null if not found
+     */
+    public String getRefreshTokenByUserId(String userId) {
+        try {
+            if (userId == null || userId.isEmpty()) {
+                throw new ApiException(UserErrorCode.USER_NOT_FOUNT, "사용자 ID가 없습니다.");
+            }
+
+            // Get the refresh token from Redis using the userId as key
+            String refreshToken = redisJwtTemplate.opsForValue().get(userId);
+
+            // Log the lookup result (for debugging purposes)
+            if (refreshToken == null) {
+                log.info("사용자 ID {}에 대한 Refresh Token이 Redis에 없습니다.", userId);
+            } else {
+                log.debug("사용자 ID {}에 대한 Refresh Token을 조회했습니다.", userId);
+            }
+
+            return refreshToken;
+        } catch (Exception e) {
+            log.error("사용자 ID {}에 대한 Refresh Token 조회 중 오류 발생: {}", userId, e.getMessage());
+            throw new ApiException(TokenErrorCode.TOKEN_EXCEPTION, "Refresh Token 조회 실패");
         }
     }
 }
