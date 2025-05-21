@@ -42,6 +42,9 @@ public class UserEntity {
     @Column(nullable = true, length = 20)
     private String kakaoUid;
 
+    @Column(nullable = true, length = 20)
+    private String appleUid;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "registered_at")
