@@ -1,5 +1,7 @@
 package com.medeasy.domain.auth.service;
 
+import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.exception.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -59,6 +61,12 @@ public class AuthCodeService {
      * auth code repo에서 user_id 조회
      * */
     public Long getUserIdByAuthCode(String authCode) {
-        return (Long) redisTemplate.opsForValue().get(AUTH_CODE_PREFIX + authCode);
+        String userId = (String) redisTemplate.opsForValue().get(AUTH_CODE_PREFIX + authCode);
+        redisTemplate.delete(AUTH_CODE_PREFIX + authCode);
+
+        if(userId==null){
+            throw new ApiException(ErrorCode.AUTH_ERROR, "잘못된 인증 코드");
+        }
+        return Long.parseLong(userId);
     }
 }
