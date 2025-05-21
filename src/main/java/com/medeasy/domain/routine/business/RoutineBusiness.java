@@ -258,7 +258,7 @@ public class RoutineBusiness {
         }
 
         if (allTaken) {
-            routineEventService.publishRoutineCheckEvent(userId, targetRoutine.getUserSchedule().getId());
+            routineEventService.publishRoutineCheckEvent(userId, targetRoutine.getUserSchedule().getName());
         }
 
         return RoutineCheckResponse.builder()

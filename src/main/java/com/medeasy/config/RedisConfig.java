@@ -1,6 +1,7 @@
 package com.medeasy.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medeasy.domain.routine.event.RoutineCheckEvent;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -41,13 +42,7 @@ public class RedisConfig {
     @Value("${redis.alarm.password}")
     private String redisAlarmPassword;
 
-    /**
-     * Redis JSON 직렬화 설정
-     */
-    @Bean
-    public RedisSerializer<Object> redisSerializer(ObjectMapper redisObjectMapper) {
-        return new GenericJackson2JsonRedisSerializer(redisObjectMapper);
-    }
+
 
     // 첫 번째 Redis (6379)
     @Bean(name = "redisConnectionFactoryJwt")
@@ -109,13 +104,21 @@ public class RedisConfig {
         return new StringRedisTemplate(redisConnectionFactoryJwt);
     }
 
+    /**
+     * Redis JSON 직렬화 설정
+     */
+    @Bean
+    public RedisSerializer<Object> redisSerializer(ObjectMapper redisObjectMapper) {
+        return new GenericJackson2JsonRedisSerializer(redisObjectMapper);
+    }
+
     // 알림용 RedisTemplate - 제네릭 타입 문제 해결
     @Bean(name = "redisAlarmTemplate")
-    public RedisTemplate<String, Object> redisAlarmTemplate(
+    public RedisTemplate<String, RoutineCheckEvent> redisAlarmTemplate(
             @Qualifier("redisConnectionFactoryAlarm") RedisConnectionFactory connectionFactory,
             RedisSerializer<Object> redisSerializer) {
 
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        RedisTemplate<String, RoutineCheckEvent> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         // Key Serializer
