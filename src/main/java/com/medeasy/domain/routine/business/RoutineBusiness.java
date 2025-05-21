@@ -3,6 +3,7 @@ package com.medeasy.domain.routine.business;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medeasy.common.annotation.Business;
 import com.medeasy.common.error.ErrorCode;
+import com.medeasy.common.error.RoutineErrorCode;
 import com.medeasy.common.error.SchedulerError;
 import com.medeasy.common.exception.ApiException;
 import com.medeasy.domain.ai.dto.AiResponseDto;
@@ -16,6 +17,7 @@ import com.medeasy.domain.routine.db.RoutineEntity;
 import com.medeasy.domain.routine.db.RoutineQueryRepository;
 import com.medeasy.domain.routine.db.RoutineRepository;
 import com.medeasy.domain.routine.dto.*;
+import com.medeasy.domain.routine.event.RoutineEventService;
 import com.medeasy.domain.routine.service.RoutineService;
 import com.medeasy.domain.routine_group.converter.RoutineGroupConverter;
 import com.medeasy.domain.routine_group.db.RoutineGroupEntity;
@@ -74,6 +76,7 @@ public class RoutineBusiness {
     private final RoutineCreator routineContainPastCreator;
     private final RoutineCreator routineFutureCreator;
     private final UserScheduleBusiness userScheduleBusiness;
+    private final RoutineEventService routineEventService;
 
     // 생성자 주입 + @Qualifier 적용
     public RoutineBusiness(
@@ -99,7 +102,7 @@ public class RoutineBusiness {
             @Qualifier("routineBasicCreator") RoutineCreator routineBasicCreator,
             @Qualifier("routineContainPastCreator") RoutineCreator routineContainPastCreator,
             @Qualifier("routineFutureCreator") RoutineCreator routineFutureCreator,
-            UserScheduleBusiness userScheduleBusiness) {
+            UserScheduleBusiness userScheduleBusiness, RoutineEventService routineEventService) {
         this.routineService = routineService;
         this.routineGroupService = routineGroupService;
         this.userService = userService;
@@ -126,6 +129,7 @@ public class RoutineBusiness {
         this.routineBasicCreator = routineBasicCreator;
         this.routineContainPastCreator = routineContainPastCreator;
         this.routineFutureCreator = routineFutureCreator;
+        this.routineEventService = routineEventService;
     }
     /**
      * 단일 약 루틴 저장
@@ -220,20 +224,47 @@ public class RoutineBusiness {
     }
 
     /**
-     * 루틴 복용 체크 메서드q
+     * 루틴 복용 체크 메서드
+     *
+     * 체크한 루틴과 같은 시간대의 다른 루틴들도 전부 체크되어있을 경우에 알림 전송
+     *
      * */
     @Transactional
     public RoutineCheckResponse checkRoutine(Long userId, Long routineId, Boolean isTaken) {
+        List<RoutineEntity> routineEntities=routineService.getUserRoutinesInSameTimes(userId, routineId);
 
-        var routineEntity=routineService.getUserRoutineById(userId, routineId);
-        Boolean beforeTaken=routineEntity.getIsTaken();
+        RoutineEntity targetRoutine = null;
+        Boolean beforeTaken = null;
 
-        routineEntity.setIsTaken(isTaken);
+        for (RoutineEntity routine : routineEntities) {
+            if (routine.getId().equals(routineId)) {
+                targetRoutine = routine;
+                beforeTaken = routine.getIsTaken();
+                routine.setIsTaken(isTaken);
+                break;
+            }
+        }
+
+        if (targetRoutine == null) {
+            throw new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE, "요청한 루틴을 찾을 수 없습니다: " + routineId);
+        }
+
+        boolean allTaken = true;
+        for (RoutineEntity routine : routineEntities) {
+            if (!routine.getIsTaken()) {
+                allTaken = false;
+                break;
+            }
+        }
+
+        if (allTaken) {
+            routineEventService.publishRoutineCheckEvent(userId, targetRoutine.getUserSchedule().getId());
+        }
 
         return RoutineCheckResponse.builder()
                 .routineId(routineId)
                 .afterIsTaken(isTaken)
-                 .beforeIsTaken(beforeTaken)
+                .beforeIsTaken(beforeTaken)
                 .build()
                 ;
     }

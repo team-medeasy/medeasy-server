@@ -97,6 +97,10 @@ public class RoutineService {
         return routineRepository.findRoutineByUserIdAndId(userId, id).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
     }
 
+    public List<RoutineEntity> getUserRoutinesInSameTimes(Long userId, Long id) {
+        return routineRepository.findRoutinesByScheduleIdAndSameTakeDateOfRoutineIdAndUserId(userId, id);
+    }
+
     public void deleteRoutineByUserIdAndId(Long userId, Long routineId) {
         // 먼저 요청을 보낸 사용자의 루틴인지 인가처리
         routineRepository.findRoutineByUserIdAndId(userId, routineId).orElseThrow(() -> new ApiException(RoutineErrorCode.NOT_FOUND_ROUTINE));
