@@ -1,5 +1,8 @@
 package com.medeasy.domain.auth.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -9,8 +12,18 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AuthCodeService {
 
-    // 발급된 인증 코드를 저장하는 맵 (코드 -> 사용자 ID)
-    private final ConcurrentHashMap<String, AuthCodeInfo> authCodes = new ConcurrentHashMap<>();
+    private final RedisTemplate redisTemplate;
+
+    // Redis에 저장할 키 접두사
+    private static final String AUTH_CODE_PREFIX = "auth:code:";
+    private static final String USER_CODE_PREFIX = "auth:user:";
+
+    @Autowired
+    public AuthCodeService(
+            @Qualifier("redisTemplateForJwt") RedisTemplate redisTemplate
+    ){
+        this.redisTemplate=redisTemplate;
+    }
 
     // 인증 코드 유효 시간 (분)
     private static final int CODE_EXPIRY_MINUTES = 5;
@@ -35,75 +48,17 @@ public class AuthCodeService {
             // 지정된 길이로 자르기
             authCode = alphanumeric.substring(0, CODE_LENGTH).toUpperCase();
 
-        } while (authCodes.containsKey(authCode));
+        } while (Boolean.TRUE.equals(redisTemplate.hasKey(AUTH_CODE_PREFIX + authCode)));
 
-        // 인증 코드 정보 저장 (만료 시간 설정)
-        long expiryTime = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(CODE_EXPIRY_MINUTES);
-        authCodes.put(authCode, new AuthCodeInfo(userId, expiryTime));
+        redisTemplate.opsForValue().set(AUTH_CODE_PREFIX + authCode, userId, CODE_EXPIRY_MINUTES, TimeUnit.MINUTES);
 
         return authCode;
-    }
-
-    /**
-     * 인증 코드 검증
-     */
-    public boolean verifyAuthCode(String authCode, String targetUserId) {
-        // 인증 코드 존재 여부 확인
-        AuthCodeInfo info = authCodes.get(authCode);
-        if (info == null) {
-            return false;
-        }
-
-        // 만료 시간 확인
-        if (System.currentTimeMillis() > info.expiryTime) {
-            // 만료된 코드 제거
-            authCodes.remove(authCode);
-            return false;
-        }
-
-        // 사용된 코드 제거 (일회용)
-        authCodes.remove(authCode);
-
-        // 계정 연동을 위한 로직 추가 (예: 두 계정 정보 연결)
-        linkAccounts(info.userId, targetUserId);
-
-        return true;
     }
 
     /**
      * auth code repo에서 user_id 조회
      * */
     public Long getUserIdByAuthCode(String authCode) {
-        AuthCodeInfo info = authCodes.get(authCode);
-        return Long.parseLong(info.userId);
-    }
-
-    /**
-     * 계정 연동 처리 로직 (실제 구현 필요)
-     */
-    private void linkAccounts(String sourceUserId, String targetUserId) {
-        // 계정 연동 로직 구현
-        // 예: accountRepository.linkAccounts(sourceUserId, targetUserId);
-    }
-
-    /**
-     * 만료된 인증 코드 정리 (스케줄링 작업으로 주기적 실행 권장)
-     */
-    public void cleanupExpiredCodes() {
-        long currentTime = System.currentTimeMillis();
-        authCodes.entrySet().removeIf(entry -> entry.getValue().expiryTime < currentTime);
-    }
-
-    /**
-     * 인증 코드 정보 저장을 위한 내부 클래스
-     */
-    private static class AuthCodeInfo {
-        private final String userId;
-        private final long expiryTime;
-
-        public AuthCodeInfo(String userId, long expiryTime) {
-            this.userId = userId;
-            this.expiryTime = expiryTime;
-        }
+        return (Long) redisTemplate.opsForValue().get(AUTH_CODE_PREFIX + authCode);
     }
 }
