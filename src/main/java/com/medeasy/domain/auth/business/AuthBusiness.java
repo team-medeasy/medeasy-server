@@ -163,10 +163,12 @@ public class AuthBusiness {
     public Long getUserIdApple(AppleLoginRequest request) {
         UserEntity userEntity;
         AppleUserProfile appleUserProfile=appleService.verifyAppleToken(request.getIdentityToken());
-
+        log.info("user email: {}", appleUserProfile.getEmail());
+        log.info("apple user id: {}",appleUserProfile.getAppleUserId());
         // 사용자를 찾은 경우 -> 로그인 -> jwt 토큰 발급
         // 사용자가 존재하지 않은 경우 -> 회원가입 -> 토큰 발급
         Optional<UserEntity> userEntityOptional=userService.getOptionalUserByEmail(appleUserProfile.getEmail());
+
         userEntity = userEntityOptional.orElseGet(() -> {
             String firstName = Optional.ofNullable(request.getFirstName()).orElse("");
             String lastName = Optional.ofNullable(request.getLastName()).orElse("");
