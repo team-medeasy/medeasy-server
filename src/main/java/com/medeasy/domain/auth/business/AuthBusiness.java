@@ -168,9 +168,13 @@ public class AuthBusiness {
         // 사용자가 존재하지 않은 경우 -> 회원가입 -> 토큰 발급
         Optional<UserEntity> userEntityOptional=userService.getOptionalUserByEmail(appleUserProfile.getEmail());
         userEntity = userEntityOptional.orElseGet(() -> {
+            String firstName = Optional.ofNullable(request.getFirstName()).orElse("");
+            String lastName = Optional.ofNullable(request.getLastName()).orElse("");
+            String fullName = firstName + lastName;
+
             UserEntity newUserEntity=UserEntity.builder()
                     .email(appleUserProfile.getEmail())
-                    .name(request.getFirstName()+request.getLastName())
+                    .name(fullName)
                     .appleUid(appleUserProfile.getAppleUserId())
                     .password(jwtTokenHelper.generateSecurePassword(appleUserProfile.getEmail(), appleUserProfile.getAppleUserId()))
                     .build();

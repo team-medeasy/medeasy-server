@@ -7,6 +7,8 @@ import lombok.*;
 // 요청 DTO
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AppleLoginRequest {
     private String identityToken;
     private String firstName; // 애플 최초 로그인 시 제공
