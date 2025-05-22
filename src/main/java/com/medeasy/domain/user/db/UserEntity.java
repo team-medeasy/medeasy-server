@@ -45,6 +45,9 @@ public class UserEntity {
     @Column(nullable = true, length = 20)
     private String appleUid;
 
+    @Column(nullable = true, length = 200)
+    private String appleRefreshToken;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "registered_at")

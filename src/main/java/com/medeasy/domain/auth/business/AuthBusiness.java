@@ -8,6 +8,7 @@ import com.medeasy.domain.auth.service.AppleService;
 import com.medeasy.domain.auth.service.KakaoService;
 import com.medeasy.domain.auth.util.TokenHelperIfs;
 import com.medeasy.domain.user.db.UserEntity;
+import com.medeasy.domain.user.dto.AppleUserDeleteRequest;
 import com.medeasy.domain.user.dto.UserDto;
 import com.medeasy.domain.user.dto.UserResponse;
 import com.medeasy.domain.user.service.UserConverter;
@@ -167,17 +168,20 @@ public class AuthBusiness {
         log.info("apple user id: {}",appleUserProfile.getAppleUserId());
         // 사용자를 찾은 경우 -> 로그인 -> jwt 토큰 발급
         // 사용자가 존재하지 않은 경우 -> 회원가입 -> 토큰 발급
+
         Optional<UserEntity> userEntityOptional=userService.getOptionalUserByEmail(appleUserProfile.getEmail());
 
         userEntity = userEntityOptional.orElseGet(() -> {
             String firstName = Optional.ofNullable(request.getFirstName()).orElse("");
             String lastName = Optional.ofNullable(request.getLastName()).orElse("");
             String fullName = firstName + lastName;
+            String refreshToken=appleService.getRefreshToken(request.getAuthorizationCode());
 
             UserEntity newUserEntity=UserEntity.builder()
                     .email(appleUserProfile.getEmail())
                     .name(fullName)
                     .appleUid(appleUserProfile.getAppleUserId())
+                    .appleRefreshToken(refreshToken)
                     .password(jwtTokenHelper.generateSecurePassword(appleUserProfile.getEmail(), appleUserProfile.getAppleUserId()))
                     .build();
 
@@ -188,5 +192,10 @@ public class AuthBusiness {
         });
 
         return userEntity.getId();
+    }
+
+    public void withdrawAppleAccount(Long userId, AppleUserDeleteRequest request) {
+        UserEntity userEntity=userService.getUserById(userId);
+        appleService.revokeAppleToken(userEntity.getAppleRefreshToken());
     }
 }

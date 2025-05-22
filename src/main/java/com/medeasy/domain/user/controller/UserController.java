@@ -10,6 +10,7 @@ import com.medeasy.domain.routine_group.service.PastRoutineStrategy;
 import com.medeasy.domain.routine_group.service.RoutineDateRangeStrategy;
 import com.medeasy.domain.user.business.UserBusiness;
 import com.medeasy.domain.user.dto.*;
+import com.medeasy.domain.user.service.UserService;
 import com.medeasy.domain.user_schedule.dto.UserScheduleDto;
 import com.medeasy.domain.user_schedule.dto.UserScheduleRegisterRequest;
 import com.medeasy.domain.user_schedule.dto.UserScheduleResponse;
@@ -36,19 +37,21 @@ public class UserController {
 
     private final RoutineDateRangeStrategy currentRoutineStrategy;
     private final RoutineDateRangeStrategy pastRoutineStrategy;
+    private final UserService userService;
 
     public UserController(
             UserBusiness userBusiness,
             AuthBusiness authBusiness,
             RoutineBusiness routineBusiness,
             @Qualifier(value = "currentRoutineStrategy") RoutineDateRangeStrategy currentRoutineStrategy,
-            @Qualifier(value = "pastRoutineStrategy") RoutineDateRangeStrategy pastRoutineStrategy
-    ) {
+            @Qualifier(value = "pastRoutineStrategy") RoutineDateRangeStrategy pastRoutineStrategy,
+            UserService userService) {
         this.userBusiness = userBusiness;
         this.authBusiness = authBusiness;
         this.routineBusiness = routineBusiness;
         this.currentRoutineStrategy = currentRoutineStrategy;
         this.pastRoutineStrategy = pastRoutineStrategy;
+        this.userService = userService;
     }
 
     @Operation(summary = "사용자 루틴 스케줄 수정 api v2", description =
@@ -221,6 +224,22 @@ public class UserController {
             @UserSession Long userId,
             @Valid@RequestBody UserDeleteRequest request
     ) {
+        userBusiness.unregisterUser(userId, request.getRefreshToken());
+
+        return Api.OK(null);
+    }
+
+    @Operation(summary = "애플 사용자 탈퇴 API", description =
+            """
+            애플 사용자 탈퇴 API
+            """
+    )
+    @DeleteMapping("/apple/delete")
+    public Api<Object> deleteAppleUser(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @Valid@RequestBody AppleUserDeleteRequest request
+    ) {
+        authBusiness.withdrawAppleAccount(userId, request);
         userBusiness.unregisterUser(userId, request.getRefreshToken());
 
         return Api.OK(null);
