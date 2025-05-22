@@ -239,7 +239,7 @@ public class UserController {
             @Parameter(hidden = true) @UserSession Long userId,
             @Valid@RequestBody AppleUserDeleteRequest request
     ) {
-        authBusiness.withdrawAppleAccount(userId, request);
+        authBusiness.withdrawAppleAccount(request);
         userBusiness.unregisterUser(userId, request.getRefreshToken());
 
         return Api.OK(null);
