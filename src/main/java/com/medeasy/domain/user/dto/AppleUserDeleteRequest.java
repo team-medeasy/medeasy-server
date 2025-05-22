@@ -11,4 +11,7 @@ import lombok.*;
 public class AppleUserDeleteRequest {
     @NotBlank
     private String refreshToken;
+
+    @NotBlank
+    private String authorizationCode;
 }
