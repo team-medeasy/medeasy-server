@@ -175,10 +175,12 @@ public class AuthBusiness {
             String firstName = Optional.ofNullable(request.getFirstName()).orElse("");
             String lastName = Optional.ofNullable(request.getLastName()).orElse("");
             String fullName = firstName + lastName;
+            String appleRefreshToken=appleService.getRefreshToken(request.getAuthorizationCode());
 
             UserEntity newUserEntity=UserEntity.builder()
                     .email(appleUserProfile.getEmail())
                     .name(fullName)
+                    .appleRefreshToken(appleRefreshToken)
                     .appleUid(appleUserProfile.getAppleUserId())
                     .password(jwtTokenHelper.generateSecurePassword(appleUserProfile.getEmail(), appleUserProfile.getAppleUserId()))
                     .build();
@@ -192,8 +194,9 @@ public class AuthBusiness {
         return userEntity.getId();
     }
 
-    public void withdrawAppleAccount(AppleUserDeleteRequest request) {
-        String appleRefreshToken=appleService.getRefreshToken(request.getRefreshToken());
+    public void withdrawAppleAccount(Long userId) {
+        UserEntity userEntity=userService.getUserById(userId);
+        String appleRefreshToken=appleService.getRefreshToken(userEntity.getAppleRefreshToken());
         appleService.revokeAppleToken(appleRefreshToken);
     }
 }
