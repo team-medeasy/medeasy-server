@@ -196,7 +196,7 @@ public class AuthBusiness {
 
     public void withdrawAppleAccount(Long userId) {
         UserEntity userEntity=userService.getUserById(userId);
-        String appleRefreshToken=appleService.getRefreshToken(userEntity.getAppleRefreshToken());
+        String appleRefreshToken=userEntity.getAppleRefreshToken();
         appleService.revokeAppleToken(appleRefreshToken);
     }
 }
