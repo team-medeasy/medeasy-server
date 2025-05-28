@@ -414,4 +414,13 @@ public class RoutineController {
         RoutineGroupInfoResponse response = routineBusiness.getRoutineGroupInfo(userId, routineId);
         return Api.OK(response);
     }
+
+    @DeleteMapping("/group/{routine_group_id}")
+    public Api<Object> deleteRoutineGroup(
+            @Parameter(hidden = true) @UserSession Long userId,
+            @PathVariable(name = "routine_group_id") Long routineGroupId
+    ){
+        routineBusiness.deleteRoutineGroup(userId, routineGroupId);
+        return Api.OK(null);
+    }
 }

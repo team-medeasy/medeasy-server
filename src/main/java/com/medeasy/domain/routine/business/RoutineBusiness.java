@@ -602,6 +602,12 @@ public class RoutineBusiness {
     }
 
     @Transactional
+    public void deleteRoutineGroup(Long userId, Long routineGroupId) {
+        RoutineGroupEntity routineGroupEntity=routineGroupService.findRoutineGroupById(routineGroupId);
+        routineGroupRepository.delete(routineGroupEntity);
+    }
+
+    @Transactional
     public void patchRoutineNickname(Long userId, Long routineId, String newNickname) {
         RoutineGroupEntity routineGroupEntity = routineGroupService.findByRoutineIdAndUserId(routineId, userId);
         routineGroupEntity.setNickname(newNickname);
