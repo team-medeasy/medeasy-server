@@ -101,6 +101,7 @@ public class RoutineQueryRepository {
                 .select(Projections.constructor(
                         RoutineFlatDto.class,
                         rg.id,
+                        r.id,
                         r.takeDate,
                         us.id,
                         rg.medicineId,

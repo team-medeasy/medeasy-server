@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @Builder
 public class RoutineFlatDto {
     private Long routineGroupId;
+    private Long routineId;
 
     private LocalDate takeDate;
     private Long userScheduleId;
