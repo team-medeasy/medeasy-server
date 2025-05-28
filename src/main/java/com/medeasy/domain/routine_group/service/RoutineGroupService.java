@@ -50,4 +50,8 @@ public class RoutineGroupService {
     public List<RoutineGroupEntity> findRoutineGroupInIds(List<Long> routineGroupIds) {
         return routineGroupRepository.findByIdIn(routineGroupIds);
     }
+
+    public RoutineGroupEntity findRoutineGroupById(Long routineGroupId) {
+        return routineGroupRepository.findById(routineGroupId).orElseThrow(()-> new ApiException(ErrorCode.BAD_REQEUST, "루틴 그룹이 존재하지 않습니다."));
+    }
 }
