@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum RoutineErrorCode implements ErrorCodeIfs{
 
     OK(200, 200, "루틴 관련 요청 성공"),
-    NOT_FOUND_ROUTINE(404, 404, "해당되는 루틴이이 존재하지 않습니다.")
+    NOT_FOUND_ROUTINE(404, 404, "해당되는 루틴이 존재하지 않습니다.")
     ;
 
     private final Integer httpStatusCode;
