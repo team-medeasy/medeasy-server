@@ -450,6 +450,7 @@ public class RoutineBusiness {
             RoutineGroupDateRangeDto routineGroupDateRangeDto=mapGroupIdToDateRange.get(routineGroupId);
             List<RoutineFlatDto> routines=mapGroupedByGroupId.get(routineGroupId);
 
+            List<Long> routineIds = routines.stream().map(RoutineFlatDto::getRoutineId).toList();
             List<LocalDate> takeDates=routines.stream().map(RoutineFlatDto::getTakeDate).toList();
             LocalDate updatedDate=routineGroupDateRangeDto.getUpdatedAt().toLocalDate();
 
@@ -464,6 +465,8 @@ public class RoutineBusiness {
             Integer intervalDays = calculateIntervalDaysAfterUpdatedAt(takeDates, updatedDate);
 
             return CurrentRoutineMedicineResponse.builder()
+                    .routineGroupId(routineGroupId)
+                    .routineIds(routineIds)
                     .medicineId(medicineDocument.getId())
                     .intervalDays(intervalDays)
                     .nickname(routineFlat.getNickname())

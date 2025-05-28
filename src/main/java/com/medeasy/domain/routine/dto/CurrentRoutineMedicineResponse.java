@@ -11,6 +11,9 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CurrentRoutineMedicineResponse {
+    private Long routineGroupId;
+
+    private List<Long> routineIds;
 
     private String medicineId;
 
