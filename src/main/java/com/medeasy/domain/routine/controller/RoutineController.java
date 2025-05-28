@@ -415,7 +415,7 @@ public class RoutineController {
         return Api.OK(response);
     }
 
-    @DeleteMapping("/group/{routine_group_id}")
+    @DeleteMapping("/group/routine_group_id/{routine_group_id}")
     public Api<Object> deleteRoutineGroup(
             @Parameter(hidden = true) @UserSession Long userId,
             @PathVariable(name = "routine_group_id") Long routineGroupId
